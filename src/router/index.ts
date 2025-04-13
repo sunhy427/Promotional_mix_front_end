@@ -18,6 +18,11 @@ const router = createRouter({
           name: 'group',
           component: () => import(/* webpackChunkName: "group" */ '../views/group/index.vue'),
         },
+        {
+          path: 'project/:group/:project',
+          name: 'project',
+          component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
+        },
       ],
     },
     // {

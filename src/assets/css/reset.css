@@ -191,8 +191,9 @@ hr {
   border-top: 0.02rem solid #cacaca;
 }
 a {
-  color: #f36633;
+  color: #e99d42;
   text-decoration: none;
+  cursor: pointer;
 }
 body,
 input,
