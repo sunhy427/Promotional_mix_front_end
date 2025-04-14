@@ -77,6 +77,19 @@ const confirm = () => {
 }
 const create = async () => {
   let param = form
+  data.groupList.push({
+    group_name: form.name,
+    created_datetime: '2023-02-07T06:58:04.450Z',
+    project_count: 0,
+    privileges: ['create', 'upload'],
+    projects_list: [],
+  })
+  ElMessage({
+    message: 'create group success',
+    type: 'success',
+  })
+  showDialog.value = false
+
   //   let res = await createGroup(param)
   //   if (res && res.status === 1) {
   //     ElMessage({

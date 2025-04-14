@@ -17,10 +17,18 @@
                 <p class="name">{{ item.group_name }}</p>
                 <p>Created {{ formatDate(item.created_datetime) }}</p>
               </div>
+
               <div class="number">
-                <el-button type="primary" color="#e99d42"> New Analysis </el-button>
+                <el-button
+                  type="primary"
+                  color="#e99d42"
+                  @click.stop="createProjectFn(item.group_name)"
+                >
+                  New Analysis
+                </el-button>
                 <el-button type="primary" color="#e99d42"> Upload </el-button>
                 <span class="span-100">
+                  <el-icon @click.stop="deleteGroupConfirm(item.group_name)"><Delete /></el-icon>
                   <el-icon><Document /></el-icon>
                   <span>{{ item.projects_list.length }}</span>
                 </span>
@@ -38,6 +46,7 @@
                     {{ formatDate(itemProject.updated_datetime) }}
                   </p>
                 </div>
+
                 <div class="btn-wrap">
                   <a
                     v-for="(itemPrivileges, indexPrivileges) in itemProject.privileges"
@@ -67,6 +76,7 @@
         @current-change="changePage"
       />
     </div>
+
     <el-dialog v-model="showRenameDialog" title="Rename Current Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter New Group Name" :label-width="200">
@@ -81,9 +91,9 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showCreateProjectDialog" title="Create project in Group">
+    <el-dialog v-model="data.showCreateProjectDialog" title="Create New Analysis in Group">
       <el-form :model="form" label-position="top">
-        <el-form-item label="Enter project Name" :label-width="200">
+        <el-form-item label="Enter Analysis Name" :label-width="200">
           <el-input v-model="createProjectForm.name" />
         </el-form-item>
       </el-form>
@@ -252,19 +262,23 @@ const deleteGroupConfirm = (group_name) => {
     })
 }
 const deleteGroupFn = async (group_name) => {
-  let res = await deleteGroup({ group_name })
-  if (res && res.status === 1) {
-    ElMessage({
-      type: 'success',
-      message: 'Delete completed',
-    })
-    getList()
-  } else {
-    ElMessage({
-      message: res && res.message ? res.message : 'delete error',
-      type: 'error',
-    })
-  }
+  ElMessage({
+    type: 'success',
+    message: 'Delete completed',
+  })
+  // let res = await deleteGroup({ group_name })
+  // if (res && res.status === 1) {
+  //   ElMessage({
+  //     type: 'success',
+  //     message: 'Delete completed',
+  //   })
+  //   getList()
+  // } else {
+  //   ElMessage({
+  //     message: res && res.message ? res.message : 'delete error',
+  //     type: 'error',
+  //   })
+  // }
 }
 
 const form = reactive({
@@ -318,19 +332,24 @@ const createProjectFn = (group_name) => {
   createProjectForm.name = ''
 }
 const confirmCreateProject = async () => {
-  let param = {
-    group_name: createProjectForm.group_name,
-    project_name: createProjectForm.name,
-  }
-  let res = await createProject(param)
-  if (res && res.status === 1) {
-    ElMessage({
-      message: 'create success',
-      type: 'success',
-    })
-    data.showCreateProjectDialog = false
-    getList()
-  }
+  ElMessage({
+    message: 'create analysis success',
+    type: 'success',
+  })
+  data.showCreateProjectDialog = false
+  // let param = {
+  //   group_name: createProjectForm.group_name,
+  //   project_name: createProjectForm.name,
+  // }
+  // let res = await createProject(param)
+  // if (res && res.status === 1) {
+  //   ElMessage({
+  //     message: 'create success',
+  //     type: 'success',
+  //   })
+  //   data.showCreateProjectDialog = false
+  //   getList()
+  // }
 }
 
 const formatDate = computed(() => {
@@ -367,6 +386,9 @@ const formatDate = computed(() => {
             font-weight: bold;
           }
         }
+      }
+      .delete-wrap {
+        margin: 0 140px;
       }
       .number {
         display: inline-block;

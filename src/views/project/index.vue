@@ -5,12 +5,14 @@
       :currentProjectName="data.currentProjectName"
       :projectList="data.projectList"
     ></Aside>
+    <TopBar></TopBar>
   </div>
 </template>
 <script setup>
 import { onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Aside from './aside.vue'
+
 const router = useRouter()
 
 const data = reactive({
