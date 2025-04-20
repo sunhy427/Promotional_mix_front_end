@@ -19,10 +19,20 @@ const router = createRouter({
           component: () => import(/* webpackChunkName: "group" */ '../views/group/index.vue'),
         },
         {
-          path: 'project/:group/:project',
-          name: 'project',
+          path: 'analysis/:group/:project',
+          name: 'analysis',
+          component: () => import(/* webpackChunkName: "analysis" */ '../views/project/index.vue'),
+        },
+        {
+          path: 'output/:group/:project',
+          name: 'output',
           component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
         },
+        // {
+        //   path: 'simulator/:group/:project',
+        //   name: 'simulator',
+        //   component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
+        // },
       ],
     },
     // {

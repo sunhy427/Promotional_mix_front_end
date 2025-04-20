@@ -5,23 +5,30 @@
       :currentProjectName="data.currentProjectName"
       :projectList="data.projectList"
     ></Aside>
-    <TopBar></TopBar>
+    <div class="content">
+      <Analysis v-if="data.currentComponent === 'analysis'"></Analysis>
+      <Output v-if="data.currentComponent === 'output'"></Output>
+    </div>
   </div>
 </template>
 <script setup>
 import { onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Aside from './aside.vue'
+import Analysis from './analysis.vue'
+import Output from './output.vue'
 
 const router = useRouter()
 
 const data = reactive({
+  currentComponent: '',
   groupName: router.currentRoute._value.params.group,
   currentProjectName: router.currentRoute._value.params.project,
   projectList: [],
 })
 
 onMounted(() => {
+  data.currentComponent = router.currentRoute._value.name
   getProjectList()
 })
 
@@ -44,3 +51,8 @@ const getProjectList = async () => {
   ]
 }
 </script>
+<style lang="less" scoped>
+.content {
+  margin-left: 200px;
+}
+</style>

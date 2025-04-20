@@ -38,3 +38,8 @@ a,
   color: #fff;
   border: none;
 }
+#app {
+  .el-card {
+    border: 2px solid #e99d42;
+  }
+}

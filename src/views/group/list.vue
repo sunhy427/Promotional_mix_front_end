@@ -46,12 +46,22 @@
                     {{ formatDate(itemProject.updated_datetime) }}
                   </p>
                 </div>
+                <div class="publish">
+                  <el-checkbox
+                    v-model="item.publish"
+                    label="Publish"
+                    size="small"
+                    @click.stop="() => {}"
+                  />
+                </div>
 
                 <div class="btn-wrap">
                   <a
                     v-for="(itemPrivileges, indexPrivileges) in itemProject.privileges"
                     :key="indexPrivileges"
-                    @click="goProject(item.group_name, itemProject.project_name)"
+                    @click="
+                      goProject(item.group_name, itemProject.project_name, itemProject.project_status)
+                    "
                   >
                     <el-icon v-if="itemPrivileges === 'Enter'"><Promotion /></el-icon>
                     <el-icon v-if="itemPrivileges === 'Copy'"><CopyDocument /></el-icon>
@@ -144,8 +154,18 @@ watch(
   { deep: true, immediate: true },
 )
 
-const goProject = (group, project) => {
-  router.push({ name: 'project', params: { group: group, project: project } })
+const goProject = (group, project, status) => {
+  let name = ''
+  if (status === 'EMPTY') {
+    name = 'analysis'
+  }
+  if (status === 'MODELING') {
+    name = 'output'
+  }
+  if (status === 'SIMULATION') {
+    name = 'simulator'
+  }
+  router.push({ name: name, params: { group: group, project: project } })
 }
 
 const sliceData = () => {
@@ -387,6 +407,7 @@ const formatDate = computed(() => {
           }
         }
       }
+
       .delete-wrap {
         margin: 0 140px;
       }
@@ -447,6 +468,9 @@ const formatDate = computed(() => {
         padding: 0 30px 0 20px;
         .group-name {
           text-align: left;
+        }
+        .publish {
+          padding-top: 15px;
         }
         .btn-wrap {
           line-height: 45px;

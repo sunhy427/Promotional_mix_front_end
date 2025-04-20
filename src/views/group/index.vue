@@ -14,6 +14,22 @@
         </el-button>
       </div>
     </div>
+    <div class="search-wrap">
+      <div class="group-numer">
+        <span>Your Groups</span>
+        <i>2</i>
+      </div>
+      <div class="search">
+        <!-- <el-autocomplete
+          v-model="data.searchKey"
+          :fetch-suggestions="querySearch"
+          clearable
+          class="inline-input w-50"
+          placeholder="Please Input"
+          @select="handleSelect"
+        /> -->
+      </div>
+    </div>
     <group-list :groupList="data.groupList"></group-list>
     <el-dialog v-model="showDialog" title="Create a New Group">
       <el-form :model="form" label-position="top">
@@ -40,6 +56,7 @@ const form = reactive({
   name: '',
 })
 const data = reactive({
+  searchKey: '',
   groupList: [
     {
       group_name: 'Sulperazon',
@@ -55,10 +72,16 @@ const data = reactive({
       projects_list: [
         {
           project_name: 'aaa_1',
-          project_status: 'MODELING',
+          project_status: 'EMPTY',
           updated_datetime: '2023-02-07T09:23:00.386Z',
           privileges: ['Enter', 'Copy', 'Share', 'Delete'],
         },
+        {
+          project_name: 'aaa_2',
+          project_status: 'MODELING',
+          updated_datetime: '2023-02-07T09:23:00.386Z',
+          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
+        }
       ],
     },
   ],
@@ -83,6 +106,7 @@ const create = async () => {
     project_count: 0,
     privileges: ['create', 'upload'],
     projects_list: [],
+    publish: false,
   })
   ElMessage({
     message: 'create group success',
@@ -120,6 +144,24 @@ const getGroupList = async () => {}
       font-size: 32px;
       color: #e99d42;
       font-weight: bold;
+    }
+  }
+  .search-wrap {
+    padding: 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+    border-top: 1px solid #e99d42;
+    color: #e99d42;
+    i {
+      color: #fff;
+      background-color: #c9c8c8;
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+      line-height: 20px;
+      border-radius: 24px;
+      margin: 10px;
     }
   }
 }
