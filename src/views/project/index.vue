@@ -8,6 +8,7 @@
     <div class="content">
       <Analysis v-if="data.currentComponent === 'analysis'"></Analysis>
       <Output v-if="data.currentComponent === 'output'"></Output>
+      <Simulator v-if="data.currentComponent === 'simulator'"></Simulator>
     </div>
   </div>
 </template>
@@ -17,6 +18,7 @@ import { useRouter } from 'vue-router'
 import Aside from './aside.vue'
 import Analysis from './analysis.vue'
 import Output from './output.vue'
+import Simulator from './simulator.vue'
 
 const router = useRouter()
 

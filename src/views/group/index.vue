@@ -8,7 +8,10 @@
           color="#e99d42"
           @click="showDialog = true"
           style="color: #fff"
-          v-if="data.groupPrivilege.length > 0 && data.groupPrivilege[0] === 'create'"
+          v-if="
+            groupItemList.group_meta.privileges.length > 0 &&
+            groupItemList.group_meta.privileges[0] === 'create'
+          "
         >
           New Group
         </el-button>
@@ -17,7 +20,7 @@
     <div class="search-wrap">
       <div class="group-numer">
         <span>Your Groups</span>
-        <i>2</i>
+        <i>{{ groupItemList.group_list.length }}</i>
       </div>
       <div class="search">
         <!-- <el-autocomplete
@@ -30,7 +33,7 @@
         /> -->
       </div>
     </div>
-    <group-list :groupList="data.groupList"></group-list>
+    <group-list :groupList="groupItemList.group_list"></group-list>
     <el-dialog v-model="showDialog" title="Create a New Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Group Name" :label-width="200">
@@ -47,9 +50,9 @@
   </div>
 </template>
 <script setup>
-// import { createGroup } from '../../api/api'
+import { getGroupList } from '../../api/api'
 import { ElMessage } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
 const showDialog = ref(false)
 const form = reactive({
@@ -57,35 +60,13 @@ const form = reactive({
 })
 const data = reactive({
   searchKey: '',
-  groupList: [
-    {
-      group_name: 'Sulperazon',
-      created_datetime: '2023-02-07T06:58:04.450Z',
-      project_count: 0,
-      privileges: ['create', 'upload'],
-      projects_list: [],
-    },
-    {
-      group_name: 'aaa',
-      created_datetime: '2023-02-07T09:23:00.338Z',
-      project_count: 1,
-      projects_list: [
-        {
-          project_name: 'aaa_1',
-          project_status: 'EMPTY',
-          updated_datetime: '2023-02-07T09:23:00.386Z',
-          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
-        },
-        {
-          project_name: 'aaa_2',
-          project_status: 'MODELING',
-          updated_datetime: '2023-02-07T09:23:00.386Z',
-          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
-        }
-      ],
-    },
-  ],
-  groupPrivilege: ['create'],
+})
+
+const groupItemList = reactive({
+  group_meta: {
+    privileges: [],
+  },
+  group_list: [],
 })
 const ComponentGroupList = ref(null)
 const confirm = () => {
@@ -100,7 +81,7 @@ const confirm = () => {
 }
 const create = async () => {
   let param = form
-  data.groupList.push({
+  groupItemList.group_list.push({
     group_name: form.name,
     created_datetime: '2023-02-07T06:58:04.450Z',
     project_count: 0,
@@ -130,7 +111,42 @@ const create = async () => {
   //   }
 }
 
-const getGroupList = async () => {}
+const getGroupFn = async () => {
+  //let res = await getGroupList()
+  groupItemList.group_meta.privileges = ['create']
+  groupItemList.group_list = [
+    {
+      group_name: 'Sulperazon',
+      created_datetime: '2023-02-07T06:58:04.450Z',
+      project_count: 0,
+      privileges: ['create', 'upload'],
+      projects_list: [],
+    },
+    {
+      group_name: 'aaa',
+      created_datetime: '2023-02-07T09:23:00.338Z',
+      project_count: 1,
+      projects_list: [
+        {
+          project_name: 'aaa_1',
+          project_status: 'EMPTY',
+          updated_datetime: '2023-02-07T09:23:00.386Z',
+          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
+        },
+        {
+          project_name: 'aaa_2',
+          project_status: 'MODELING',
+          updated_datetime: '2023-02-07T09:23:00.386Z',
+          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
+        },
+      ],
+    },
+  ]
+}
+
+onMounted(() => {
+  getGroupFn()
+})
 </script>
 
 <style lang="less" scoped>

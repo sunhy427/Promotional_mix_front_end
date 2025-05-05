@@ -41,5 +41,29 @@ a,
 #app {
   .el-card {
     border: 2px solid #e99d42;
+    margin-bottom: 15px;
+  }
+  .el-segmented__item-selected {
+    background-color: #e99d42;
+  }
+  .card-title {
+    background-color: #e99d42;
+    display: inline-block;
+    color: #fff;
+    border-radius: 20px;
+    & > i {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      text-align: center;
+      line-height: 15px;
+      background-color: #fff;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 10px;
+    }
+    & > span {
+      padding: 0 20px 0 5px;
+    }
   }
 }

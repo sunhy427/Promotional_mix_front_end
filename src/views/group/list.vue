@@ -1,6 +1,6 @@
 <template>
   <div class="list-page">
-    <el-empty description="description" v-if="data.groupList.length === 0" />
+    <el-empty description="Group list is empty." v-if="data.groupList.length === 0" />
     <div class="demo-collapse" v-if="data.groupList.length > 0">
       <el-collapse accordion>
         <el-collapse-item

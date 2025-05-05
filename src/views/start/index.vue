@@ -20,14 +20,14 @@
               <el-input v-model="data.formLogin.username" />
             </el-form-item>
             <el-form-item label="Password">
-              <el-input v-model="data.formLogin.password" />
+              <el-input v-model="data.formLogin.password" type="password" />
             </el-form-item>
           </el-form>
-          <el-button type="primary">Sign in</el-button>
+          <el-button type="primary" class="sign-btn">Sign in</el-button>
         </el-card>
-        <el-card class="saml-wrap"> 
-          <p>Sign in with</p>
-          <el-button>SAML</el-button>
+        <el-card class="saml-wrap">
+          <p class="saml-title">Sign in with</p>
+          <el-button class="saml-btn">SAML</el-button>
         </el-card>
       </el-col>
     </el-row>
@@ -93,11 +93,20 @@ const data = reactive({
   }
   .login-wrap {
     width: 70%;
-    margin: 20vh auto 0 auto;
+    margin: 25vh auto 0 auto;
+    .sign-btn {
+      width: 100%;
+    }
   }
   .saml-wrap {
     width: 70%;
     margin: 1vh auto 0 auto;
+    .saml-title {
+      margin-bottom: 20px;
+    }
+    .saml-btn {
+      width: 100%;
+    }
   }
 }
 </style>

@@ -28,11 +28,11 @@ const router = createRouter({
           name: 'output',
           component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
         },
-        // {
-        //   path: 'simulator/:group/:project',
-        //   name: 'simulator',
-        //   component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
-        // },
+        {
+          path: 'simulator/:group/:project',
+          name: 'simulator',
+          component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
+        },
       ],
     },
     // {
