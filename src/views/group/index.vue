@@ -7,7 +7,7 @@
           type="primary"
           color="#e99d42"
           @click="showDialog = true"
-          style="color: #fff"
+          style="color: #fff;margin-right: 10px;"
           v-if="
             groupItemList.group_meta.privileges.length > 0 &&
             groupItemList.group_meta.privileges[0] === 'create'
@@ -15,6 +15,12 @@
         >
           New Group
         </el-button>
+        <router-link to="/setting"
+          ><el-button type="primary" class="setting-btn">
+            <el-icon><Setting /></el-icon>
+            Setting
+          </el-button></router-link
+        >
       </div>
     </div>
     <div class="search-wrap">
@@ -160,6 +166,13 @@ onMounted(() => {
       font-size: 32px;
       color: #e99d42;
       font-weight: bold;
+    }
+    .btn-wrap {
+      .setting-btn {
+        i {
+          margin-right: 5px;
+        }
+      }
     }
   }
   .search-wrap {

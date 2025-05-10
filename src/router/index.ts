@@ -33,6 +33,11 @@ const router = createRouter({
           name: 'simulator',
           component: () => import(/* webpackChunkName: "project" */ '../views/project/index.vue'),
         },
+        {
+          path: 'setting',
+          name: 'setting',
+          component: () => import(/* webpackChunkName: "project" */ '../views/config/index.vue'),
+        },
       ],
     },
     // {
