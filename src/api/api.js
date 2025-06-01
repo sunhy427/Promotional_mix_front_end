@@ -6,6 +6,26 @@ export function getGroupList() {
   return request.get(basic.apiUrl + 'groups')
 }
 
+// create group
+export function createGroup(params) {
+  return request.put(`${basic.apiUrl}/groups/${params}`, params)
+}
+
+//delete group
+export function deleteGroup(params) {
+  return request.delete(`${basic.apiUrl}groups/${params.group_name}`)
+}
+
+//create new project
+export function createProject(params) {
+  return request.put(`${basic.apiUrl}${params.group_name}/${params.project_name}`, params)
+}
+
+//get project list
+export function getProjectList() {
+  return request.get(`${basic.apiUrl}${params.group_name}/projects`)
+}
+
 // Add simulation
 export function addSimulation(params) {
   return request.put(

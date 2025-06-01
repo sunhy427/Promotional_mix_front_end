@@ -22,11 +22,14 @@
                 <el-button
                   type="primary"
                   color="#e99d42"
-                  @click.stop="createProjectFn(item.group_name)"
+                  @click.stop="
+                    createAndUploadAnalysisFn(item.group_name, itemGroupInternalPrivileges)
+                  "
+                  v-for="itemGroupInternalPrivileges in item.group_internal_privileges"
                 >
-                  New Analysis
+                  {{ itemGroupInternalPrivileges }}
                 </el-button>
-                <el-button type="primary" color="#e99d42"> Upload </el-button>
+                <!-- <el-button type="primary" color="#e99d42"> Upload </el-button> -->
                 <span class="span-100">
                   <el-icon @click.stop="deleteGroupConfirm(item.group_name)"><Delete /></el-icon>
                   <el-icon><Document /></el-icon>
@@ -35,7 +38,7 @@
               </div>
             </div>
           </template>
-          <ul class="list">
+          <ul class="list" v-if="item.projects_list.length > 0">
             <li v-for="(itemProject, indexProject) in item.projects_list" :key="indexProject">
               <i>{{ itemProject.project_name.charAt(0) }}</i>
               <div class="info">
@@ -56,23 +59,33 @@
                 </div>
 
                 <div class="btn-wrap">
-                  <a
-                    v-for="(itemPrivileges, indexPrivileges) in itemProject.privileges"
+                  <span
+                    v-for="(itemPrivileges, indexPrivileges) in itemProject.project_privileges"
                     :key="indexPrivileges"
-                    @click="
-                      goProject(item.group_name, itemProject.project_name, itemProject.project_status)
-                    "
+                    class="analysis-btn"
                   >
-                    <el-icon v-if="itemPrivileges === 'Enter'"><Promotion /></el-icon>
-                    <el-icon v-if="itemPrivileges === 'Copy'"><CopyDocument /></el-icon>
-                    <el-icon v-if="itemPrivileges === 'Share'"><Share /></el-icon>
-                    <el-icon v-if="itemPrivileges === 'Delete'"><Delete /></el-icon>
-                    {{ itemPrivileges }}
-                  </a>
+                    <a
+                      v-if="itemPrivileges != 'Publish'"
+                      @click="
+                        goProject(
+                          item.group_name,
+                          itemProject.project_name,
+                          itemProject.project_status,
+                        )
+                      "
+                    >
+                      <el-icon v-if="itemPrivileges === 'Enter'"><Promotion /></el-icon>
+                      <el-icon v-if="itemPrivileges === 'Copy'"><CopyDocument /></el-icon>
+                      <el-icon v-if="itemPrivileges === 'Share'"><Share /></el-icon>
+                      <el-icon v-if="itemPrivileges === 'Delete'"><Delete /></el-icon>
+                      {{ itemPrivileges }}
+                    </a>
+                  </span>
                 </div>
               </div>
             </li>
           </ul>
+          <el-empty v-else description="Empty" />
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -121,7 +134,7 @@ import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
 import { useRouter } from 'vue-router'
 
 import { watch, ref, reactive, computed } from 'vue'
-
+import { deleteGroup, createProject } from '../../api/api'
 const props = defineProps({
   groupList: {
     type: Array,
@@ -282,23 +295,19 @@ const deleteGroupConfirm = (group_name) => {
     })
 }
 const deleteGroupFn = async (group_name) => {
-  ElMessage({
-    type: 'success',
-    message: 'Delete completed',
-  })
-  // let res = await deleteGroup({ group_name })
-  // if (res && res.status === 1) {
-  //   ElMessage({
-  //     type: 'success',
-  //     message: 'Delete completed',
-  //   })
-  //   getList()
-  // } else {
-  //   ElMessage({
-  //     message: res && res.message ? res.message : 'delete error',
-  //     type: 'error',
-  //   })
-  // }
+  let res = await deleteGroup({ group_name })
+  if (res && res.status === 1) {
+    ElMessage({
+      type: 'success',
+      message: 'Delete completed',
+    })
+    getList()
+  } else {
+    ElMessage({
+      message: res && res.message ? res.message : 'delete error',
+      type: 'error',
+    })
+  }
 }
 
 const form = reactive({
@@ -352,24 +361,19 @@ const createProjectFn = (group_name) => {
   createProjectForm.name = ''
 }
 const confirmCreateProject = async () => {
-  ElMessage({
-    message: 'create analysis success',
-    type: 'success',
-  })
-  data.showCreateProjectDialog = false
-  // let param = {
-  //   group_name: createProjectForm.group_name,
-  //   project_name: createProjectForm.name,
-  // }
-  // let res = await createProject(param)
-  // if (res && res.status === 1) {
-  //   ElMessage({
-  //     message: 'create success',
-  //     type: 'success',
-  //   })
-  //   data.showCreateProjectDialog = false
-  //   getList()
-  // }
+  let param = {
+    group_name: createProjectForm.group_name,
+    project_name: createProjectForm.name,
+  }
+  let res = await createProject(param)
+  if (res && res.status === 1) {
+    ElMessage({
+      message: 'create success',
+      type: 'success',
+    })
+    data.showCreateProjectDialog = false
+    getList()
+  }
 }
 
 const formatDate = computed(() => {
@@ -380,6 +384,19 @@ const formatDate = computed(() => {
 //   defineExpose({
 //     getList,
 //   });
+
+const createAndUploadAnalysisFn = (groupName, operation) => {
+  if (operation === 'Create New Analysis') {
+    createProjectFn(groupName)
+  }
+  if (operation === 'Upload') {
+    uploadAnalysisFn(groupName)
+  }
+}
+
+const uploadAnalysisFn = async (groupName) => {
+
+}
 </script>
 
 <style lang="less">
@@ -474,7 +491,7 @@ const formatDate = computed(() => {
         }
         .btn-wrap {
           line-height: 45px;
-          & > a {
+          .analysis-btn > a {
             margin-right: 15px;
             cursor: pointer;
           }

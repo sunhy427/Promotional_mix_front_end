@@ -7,10 +7,10 @@
           type="primary"
           color="#e99d42"
           @click="showDialog = true"
-          style="color: #fff;margin-right: 10px;"
+          style="color: #fff; margin-right: 10px"
           v-if="
-            groupItemList.group_meta.privileges.length > 0 &&
-            groupItemList.group_meta.privileges[0] === 'create'
+            groupItemList.group_meta.group_privileges.length > 0 &&
+            groupItemList.group_meta.group_privileges[0] === 'Create New Group'
           "
         >
           New Group
@@ -43,26 +43,26 @@
     <el-dialog v-model="showDialog" title="Create a New Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Group Name" :label-width="200">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.group_name" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirm"> Confirm </el-button>
+          <el-button type="primary" @click="createConfirm"> Confirm </el-button>
         </span>
       </template>
     </el-dialog>
   </div>
 </template>
 <script setup>
-import { getGroupList } from '../../api/api'
+import { getGroupList, createGroup } from '../../api/api'
 import { ElMessage } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
 const showDialog = ref(false)
 const form = reactive({
-  name: '',
+  group_name: '',
 })
 const data = reactive({
   searchKey: '',
@@ -70,13 +70,13 @@ const data = reactive({
 
 const groupItemList = reactive({
   group_meta: {
-    privileges: [],
+    group_privileges: [],
   },
   group_list: [],
 })
 const ComponentGroupList = ref(null)
-const confirm = () => {
-  if (!form.name) {
+const createConfirm = () => {
+  if (!form.group_name) {
     ElMessage({
       message: 'Please input group name',
       type: 'error',
@@ -87,63 +87,44 @@ const confirm = () => {
 }
 const create = async () => {
   let param = form
-  groupItemList.group_list.push({
-    group_name: form.name,
-    created_datetime: '2023-02-07T06:58:04.450Z',
-    project_count: 0,
-    privileges: ['create', 'upload'],
-    projects_list: [],
-    publish: false,
-  })
-  ElMessage({
-    message: 'create group success',
-    type: 'success',
-  })
-  showDialog.value = false
-
-  //   let res = await createGroup(param)
-  //   if (res && res.status === 1) {
-  //     ElMessage({
-  //       message: 'create success',
-  //       type: 'success',
-  //     })
-  //     ComponentGroupList.value.getList()
-  //     showDialog.value = false
-  //   } else {
-  //     ElMessage({
-  //       message: res && res.message ? res.message : 'create error',
-  //       type: 'error',
-  //     })
-  //   }
+  let res = await createGroup(param.group_name)
+  if (res && res.status === 1) {
+    ElMessage({
+      message: 'create success',
+      type: 'success',
+    })
+    showDialog.value = false
+  }
 }
 
 const getGroupFn = async () => {
-  //let res = await getGroupList()
-  groupItemList.group_meta.privileges = ['create']
+  // let res = await getGroupList()
+  groupItemList.group_meta.group_privileges = ['Create New Group']
   groupItemList.group_list = [
     {
       group_name: 'Sulperazon',
       created_datetime: '2023-02-07T06:58:04.450Z',
       project_count: 0,
-      privileges: ['create', 'upload'],
+      group_internal_privileges: ['Create New Analysis', 'Upload'],
       projects_list: [],
     },
     {
       group_name: 'aaa',
       created_datetime: '2023-02-07T09:23:00.338Z',
       project_count: 1,
+      group_internal_privileges: ['Create New Analysis', 'Upload'],
       projects_list: [
         {
           project_name: 'aaa_1',
           project_status: 'EMPTY',
           updated_datetime: '2023-02-07T09:23:00.386Z',
-          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
+          project_privileges: ['Publish', 'Enter', 'Copy', 'Share', 'Delete'],
         },
         {
           project_name: 'aaa_2',
           project_status: 'MODELING',
           updated_datetime: '2023-02-07T09:23:00.386Z',
-          privileges: ['Enter', 'Copy', 'Share', 'Delete'],
+          project_privileges: ['Publish', 'Enter', 'Copy', 'Share', 'Delete'],
         },
       ],
     },
