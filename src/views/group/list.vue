@@ -29,7 +29,6 @@
                 >
                   {{ itemGroupInternalPrivileges }}
                 </el-button>
-                <!-- <el-button type="primary" color="#e99d42"> Upload </el-button> -->
                 <span class="span-100">
                   <el-icon @click.stop="deleteGroupConfirm(item.group_name)"><Delete /></el-icon>
                   <el-icon><Document /></el-icon>
@@ -64,22 +63,36 @@
                     :key="indexPrivileges"
                     class="analysis-btn"
                   >
-                    <a
-                      v-if="itemPrivileges != 'Publish'"
-                      @click="
-                        goProject(
-                          item.group_name,
-                          itemProject.project_name,
-                          itemProject.project_status,
-                        )
-                      "
-                    >
-                      <el-icon v-if="itemPrivileges === 'Enter'"><Promotion /></el-icon>
-                      <el-icon v-if="itemPrivileges === 'Copy'"><CopyDocument /></el-icon>
-                      <el-icon v-if="itemPrivileges === 'Share'"><Share /></el-icon>
-                      <el-icon v-if="itemPrivileges === 'Delete'"><Delete /></el-icon>
-                      {{ itemPrivileges }}
-                    </a>
+                    <template v-if="itemPrivileges != 'Publish'">
+                      <a
+                        v-if="itemPrivileges === 'Enter'"
+                        @click="
+                          goProject(
+                            item.group_name,
+                            itemProject.project_name,
+                            itemProject.project_status,
+                          )
+                        "
+                      >
+                        <el-icon><Promotion /></el-icon>
+                        {{ itemPrivileges }}
+                      </a>
+                      <a v-if="itemPrivileges === 'Copy'">
+                        <el-icon><CopyDocument /></el-icon>
+                        {{ itemPrivileges }}
+                      </a>
+                      <a v-if="itemPrivileges === 'Share'">
+                        <el-icon><Share /></el-icon>
+                        {{ itemPrivileges }}
+                      </a>
+                      <a
+                        v-if="itemPrivileges === 'Delete'"
+                        @click="deleteProjectConfirm(item.group_name, itemProject.project_name)"
+                      >
+                        <el-icon><Delete /></el-icon>
+                        {{ itemPrivileges }}
+                      </a>
+                    </template>
                   </span>
                 </div>
               </div>
@@ -117,7 +130,7 @@
     <el-dialog v-model="data.showCreateProjectDialog" title="Create New Analysis in Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Analysis Name" :label-width="200">
-          <el-input v-model="createProjectForm.name" />
+          <el-input v-model="createProjectForm.brand_name" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -134,18 +147,13 @@ import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
 import { useRouter } from 'vue-router'
 
 import { watch, ref, reactive, computed } from 'vue'
-import { deleteGroup, createProject } from '../../api/api'
+import { deleteGroup, createProject, publishProject, deleteProject } from '../../api/api'
 const props = defineProps({
   groupList: {
     type: Array,
     required: true,
   },
 })
-
-// onMounted(() => {
-//   data.groupList = props.groupList
-//   console.log('xxxx', data.groupList)
-// })
 
 const data = reactive({
   groupList: [],
@@ -161,7 +169,6 @@ const data = reactive({
 watch(
   () => props.groupList,
   (value) => {
-    console.log('value', value)
     data.groupList = value
   },
   { deep: true, immediate: true },
@@ -246,6 +253,7 @@ const handleProjectStatus = (groupName, projectName, index) => {
 }
 
 const deleteProjectConfirm = (group_name, project_name) => {
+  console.log('delete project')
   ElMessageBox.confirm('Platform will permanently delete the project. Continue?', 'Warning', {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
@@ -353,17 +361,19 @@ const renameGroupConfirm = async (new_name, group_name) => {
 
 const createProjectForm = reactive({
   group_name: '',
-  name: '',
+  brand_name: '',
 })
 const createProjectFn = (group_name) => {
   createProjectForm.group_name = group_name
   data.showCreateProjectDialog = true
-  createProjectForm.name = ''
+  createProjectForm.brand_name = ''
 }
 const confirmCreateProject = async () => {
   let param = {
     group_name: createProjectForm.group_name,
-    project_name: createProjectForm.name,
+    brand_name: createProjectForm.brand_name,
+    time_period_id: dayjs().month(),
+    data_version_id: dayjs().format('YYYYMMDD'),
   }
   let res = await createProject(param)
   if (res && res.status === 1) {
@@ -394,9 +404,7 @@ const createAndUploadAnalysisFn = (groupName, operation) => {
   }
 }
 
-const uploadAnalysisFn = async (groupName) => {
-
-}
+const uploadAnalysisFn = async (groupName) => {}
 </script>
 
 <style lang="less">

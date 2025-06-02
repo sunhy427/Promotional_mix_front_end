@@ -8,7 +8,7 @@ export function getGroupList() {
 
 // create group
 export function createGroup(params) {
-  return request.put(`${basic.apiUrl}/groups/${params}`, params)
+  return request.put(`${basic.apiUrl}groups/${params}`, params)
 }
 
 //delete group
@@ -24,6 +24,23 @@ export function createProject(params) {
 //get project list
 export function getProjectList() {
   return request.get(`${basic.apiUrl}${params.group_name}/projects`)
+}
+
+//Publish project  api缺少publish字段，待沟通
+export function publishProject(params) {
+  return request.post(`${basic.apiUrl}contents/${params.group_name}/${params.project_name}/publish`)
+}
+
+//cancel Publish project  api缺少publish字段，待沟通
+export function cancelPublishProject(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/cancel_publish`,
+  )
+}
+
+//Delete exsting project
+export function deleteProject(params) {
+  return request.delete(`${basic.apiUrl}projects/${params.group_name}/${params.project_name}`)
 }
 
 // Add simulation
