@@ -23,6 +23,9 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    assetsDir: 'static', // 将所有静态资源输出到 dist/static/ 目录
+  },
 })
 // import { defineConfig } from 'vite'
 // import vue from '@vitejs/plugin-vue'

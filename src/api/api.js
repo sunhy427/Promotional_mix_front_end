@@ -1,6 +1,16 @@
 import request from './config'
 import { basic } from '../config/index.js'
 
+// /as/ack SAML
+export function getSAML() {
+  return request.get('/as/ack')
+}
+
+// /api/user_profile
+export function getUserProfile() {
+  return request.get(basic.apiUrl + 'user_profile')
+}
+
 // Get group list
 export function getGroupList() {
   return request.get(basic.apiUrl + 'groups')

@@ -1,5 +1,5 @@
 <template>
-  <div class="layout">
+  <div class="layout" v-watermark="userInfo.userId">
     <el-container>
       <el-header>
         <HeaderNav></HeaderNav>
@@ -15,8 +15,23 @@
     </el-container>
   </div>
 </template>
-<script setup lang="ts">
+<script setup>
 import HeaderNav from '../components/header.vue'
+import { getUserProfile } from '../api/api'
+import { onMounted, reactive } from 'vue'
+
+const userInfo = reactive({
+  userId: '',
+})
+const getUserId = async () => {
+  let res = await getUserProfile()
+  if (res && res.User_id) {
+    userInfo.userId = res.User_id
+  }
+}
+onMounted(() => {
+  getUserId()
+})
 </script>
 
 <style lang="less">

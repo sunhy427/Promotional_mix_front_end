@@ -27,7 +27,7 @@
         </el-card>
         <el-card class="saml-wrap">
           <p class="saml-title">Sign in with</p>
-          <el-button class="saml-btn">SAML</el-button>
+          <el-button class="saml-btn" @click="goSAML">Oauth2.0</el-button>
         </el-card>
       </el-col>
     </el-row>
@@ -35,12 +35,17 @@
 </template>
 <script setup>
 import { reactive } from 'vue'
+import { getSAML } from '../../api/api'
 const data = reactive({
   formLogin: {
     username: '',
     password: '',
   },
 })
+const goSAML = async () => {
+  await getSAML()
+}
+
 </script>
 
 <style lang="less" scoped>

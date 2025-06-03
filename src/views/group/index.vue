@@ -139,6 +139,7 @@ onMounted(() => {
 <style lang="less" scoped>
 .group-list-page {
   padding: 0 30px;
+  min-height: 80vh;
   .top-welcome {
     display: flex;
     justify-content: space-between;
