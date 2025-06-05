@@ -47,18 +47,25 @@ service.interceptors.request.use(
 //响应拦截
 service.interceptors.response.use(
   (response) => {
+    console.log('response', response.status, response.headers)
     if (response.status === 302 && response.headers.location) {
       window.location.href = response.headers.location // 跳转到重定向地址
       return new Promise(() => {}) // 中断当前请求链，避免后续处理
     }
-    
+
     let res = response.data
+    console.log('res', res)
     if (res.status === 0) {
       if (res.message) {
         ElMessage.error(res.message)
       } else if (res.msg) {
         ElMessage.error(res.msg)
       }
+      return Promise.resolve(res)
+    }
+    if (res.status === 302) {
+      window.location.href = res.redirect_url
+
       return Promise.resolve(res)
     } else {
       return Promise.resolve(res)
