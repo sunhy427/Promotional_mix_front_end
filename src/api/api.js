@@ -28,7 +28,7 @@ export function deleteGroup(params) {
 
 //create new project
 export function createProject(params) {
-  return request.put(`${basic.apiUrl}${params.group_name}/${params.project_name}`, params)
+  return request.put(`${basic.apiUrl}${params.group_name}/${params.brand_name}`, params)
 }
 
 //get project list
@@ -36,7 +36,7 @@ export function getProjectList() {
   return request.get(`${basic.apiUrl}${params.group_name}/projects`)
 }
 
-//Publish project  api缺少publish字段，待沟通
+//Publish project
 export function publishProject(params) {
   return request.post(`${basic.apiUrl}contents/${params.group_name}/${params.project_name}/publish`)
 }
@@ -51,6 +51,27 @@ export function cancelPublishProject(params) {
 //Delete exsting project
 export function deleteProject(params) {
   return request.delete(`${basic.apiUrl}projects/${params.group_name}/${params.project_name}`)
+}
+
+//Share project
+export function shareProject(params) {
+  return request.post(
+    `${basic.apiUrl}projects/${params.group_name}/${params.project_name}/share`,
+    params,
+  )
+}
+
+//Fork project
+export function forkProject(params) {
+  return request.post(
+    `${basic.apiUrl}projects/${params.group_name}/${params.project_name}/fork`,
+    params,
+  )
+}
+
+//Export excel project（download data）
+export function exportExportProject(params) {
+  return request.get(`${basic.apiUrl}${params.group_name}/${params.project_name}`, { params })
 }
 
 // Add simulation

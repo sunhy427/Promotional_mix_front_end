@@ -9,8 +9,8 @@
           @click="showDialog = true"
           style="color: #fff; margin-right: 10px"
           v-if="
-            groupItemList.group_meta.group_privileges.length > 0 &&
-            groupItemList.group_meta.group_privileges[0] === 'Create New Group'
+            groupIndex.group_meta.group_privileges.length > 0 &&
+            groupIndex.group_meta.group_privileges[0] === 'Create New Group'
           "
         >
           New Group
@@ -26,7 +26,7 @@
     <div class="search-wrap">
       <div class="group-numer">
         <span>Your Groups</span>
-        <i>{{ groupItemList.group_list.length }}</i>
+        <i>{{ groupIndex.group_list.length }}</i>
       </div>
       <div class="search">
         <!-- <el-autocomplete
@@ -39,7 +39,7 @@
         /> -->
       </div>
     </div>
-    <group-list :groupList="groupItemList.group_list"></group-list>
+    <group-list :groupList="groupIndex.group_list"></group-list>
     <el-dialog v-model="showDialog" title="Create a New Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Group Name" :label-width="200">
@@ -68,7 +68,7 @@ const data = reactive({
   searchKey: '',
 })
 
-const groupItemList = reactive({
+const groupIndex = reactive({
   group_meta: {
     group_privileges: [],
   },
@@ -94,41 +94,17 @@ const create = async () => {
       type: 'success',
     })
     showDialog.value = false
+    form.group_name = ''
+    getGroupFn()
   }
 }
 
 const getGroupFn = async () => {
-  // let res = await getGroupList()
-  groupItemList.group_meta.group_privileges = ['Create New Group']
-  groupItemList.group_list = [
-    {
-      group_name: 'Sulperazon',
-      created_datetime: '2023-02-07T06:58:04.450Z',
-      project_count: 0,
-      group_internal_privileges: ['Create New Analysis', 'Upload'],
-      projects_list: [],
-    },
-    {
-      group_name: 'aaa',
-      created_datetime: '2023-02-07T09:23:00.338Z',
-      project_count: 1,
-      group_internal_privileges: ['Create New Analysis', 'Upload'],
-      projects_list: [
-        {
-          project_name: 'aaa_1',
-          project_status: 'EMPTY',
-          updated_datetime: '2023-02-07T09:23:00.386Z',
-          project_privileges: ['Publish', 'Enter', 'Copy', 'Share', 'Delete'],
-        },
-        {
-          project_name: 'aaa_2',
-          project_status: 'MODELING',
-          updated_datetime: '2023-02-07T09:23:00.386Z',
-          project_privileges: ['Publish', 'Enter', 'Copy', 'Share', 'Delete'],
-        },
-      ],
-    },
-  ]
+  let res = await getGroupList()
+  if(res && res.group_meta) {
+    groupIndex.group_meta.group_privileges = res.group_meta.group_privileges
+    groupIndex.group_list = res.group_list
+  }
 }
 
 onMounted(() => {

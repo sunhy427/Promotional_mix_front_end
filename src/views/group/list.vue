@@ -77,11 +77,17 @@
                         <el-icon><Promotion /></el-icon>
                         {{ itemPrivileges }}
                       </a>
-                      <a v-if="itemPrivileges === 'Copy'">
+                      <a
+                        v-if="itemPrivileges === 'Copy'"
+                        @click="openForkProjectDialog(item.group_name, itemProject.project_name)"
+                      >
                         <el-icon><CopyDocument /></el-icon>
                         {{ itemPrivileges }}
                       </a>
-                      <a v-if="itemPrivileges === 'Share'">
+                      <a
+                        v-if="itemPrivileges === 'Share'"
+                        @click="openShareProjectDialog(item.group_name, itemProject.project_name)"
+                      >
                         <el-icon><Share /></el-icon>
                         {{ itemPrivileges }}
                       </a>
@@ -140,14 +146,86 @@
         </span>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="data.showShareProjectDialog" title="Share Project">
+      <el-form
+        :model="shareProjectForm"
+        label-width="140"
+        ref="shareProjectRuleFormRef"
+        :rules="shareProjectRuleFormRefRules"
+      >
+        <el-form-item label="Group Name">
+          <el-input v-model="shareProjectForm.group_name" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="Project Name">
+          <el-input v-model="shareProjectForm.project_name" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="Share Type">
+          <el-select v-model="shareProjectForm.type" placeholder="Please select share type">
+            <el-option label="Mudid" value="mudid" />
+            <el-option label="Email address" value="email address" />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          :label="shareProjectForm.type === 'mudid' ? 'Mudid' : 'Email address'"
+          prop="mudid"
+        >
+          <el-input v-model="shareProjectForm.mudid" />
+        </el-form-item>
+        <el-form-item label="Message">
+          <el-input v-model="shareProjectForm.msg" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="data.showShareProjectDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="shareProjectConfirm()"> Confirm </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="data.showForkProjectDialog" title="Copy Project">
+      <el-form
+        :model="forkProjectForm"
+        label-width="140"
+        ref="forkProjectRuleFormRef"
+        :rules="forkProjectRuleFormRefRules"
+      >
+        <el-form-item label="Group Name">
+          <el-input v-model="forkProjectForm.group_name" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="Project Name">
+          <el-input v-model="forkProjectForm.project_name" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="New Group Name">
+          <el-input v-model="forkProjectForm.group_name_new" />
+        </el-form-item>
+        <el-form-item label="New Project Name">
+          <el-input v-model="forkProjectForm.project_name_new" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="data.showForkProjectDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="forkProjectConfirm()"> Confirm </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
 import { useRouter } from 'vue-router'
-
 import { watch, ref, reactive, computed } from 'vue'
-import { deleteGroup, createProject, publishProject, deleteProject } from '../../api/api'
+import {
+  deleteGroup,
+  createProject,
+  publishProject,
+  deleteProject,
+  getProjectList,
+  shareProject,
+  forkProject,
+} from '../../api/api'
 const props = defineProps({
   groupList: {
     type: Array,
@@ -159,11 +237,21 @@ const data = reactive({
   groupList: [],
   currentList: [],
   showCreateProjectDialog: false,
+  showShareProjectDialog: false,
+  showForkProjectDialog: false,
   page: {
     total: 0,
     size: 10,
     currentPage: 0,
   },
+})
+
+const shareProjectForm = reactive({
+  group_name: '',
+  project_name: '',
+  mudid: '',
+  type: 'mudid',
+  msg: '',
 })
 
 watch(
@@ -277,7 +365,7 @@ const deleteProjectFn = async (group_name, project_name) => {
       message: 'delete success',
       type: 'success',
     })
-    getList()
+    // 请求
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'delete error',
@@ -365,8 +453,8 @@ const createProjectForm = reactive({
 })
 const createProjectFn = (group_name) => {
   createProjectForm.group_name = group_name
-  data.showCreateProjectDialog = true
   createProjectForm.brand_name = ''
+  data.showCreateProjectDialog = true
 }
 const confirmCreateProject = async () => {
   let param = {
@@ -405,6 +493,90 @@ const createAndUploadAnalysisFn = (groupName, operation) => {
 }
 
 const uploadAnalysisFn = async (groupName) => {}
+
+const shareProjectRuleFormRef = ref(null)
+
+const shareProjectRuleFormRefRules = reactive({
+  mudid: [{ required: true, message: 'Please input', trigger: 'blur' }],
+})
+
+const shareProjectFn = async () => {
+  let res = await shareProject(shareProjectForm)
+  if (res && res.status === 1) {
+    ElMessage({
+      type: 'success',
+      message: 'Share Success',
+    })
+    data.showShareProjectDialog = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.message ? res.message : 'Error',
+    })
+  }
+}
+
+const shareProjectConfirm = () => {
+  shareProjectRuleFormRef.value?.validate?.((valid) => {
+    if (valid) {
+      // 提交表单逻辑
+      shareProjectFn()
+    } else {
+      return false
+    }
+  })
+}
+const openShareProjectDialog = (group_name, project_name) => {
+  shareProjectForm.group_name = group_name
+  shareProjectForm.project_name = project_name
+  data.showShareProjectDialog = true
+}
+
+const forkProjectForm = reactive({
+  group_name: '',
+  project_name: '',
+  group_name_new: '确认下是否跨group',
+  project_name_new: '',
+})
+
+const forkProjectRuleFormRef = ref(null)
+
+const forkProjectRuleFormRefRules = reactive({
+  project_name_new: [{ required: true, message: 'Please input new project name', trigger: 'blur' }],
+})
+
+const openForkProjectDialog = (group_name, project_name) => {
+  forkProjectForm.group_name = group_name
+  forkProjectForm.project_name = project_name
+  data.showForkProjectDialog = true
+}
+
+const forkProjectConfirm = () => {
+  forkProjectRuleFormRef.value?.validate?.((valid) => {
+    if (valid) {
+      // 提交表单逻辑
+      forkProjectFn()
+    } else {
+      return false
+    }
+  })
+}
+
+const forkProjectFn = async () => {
+  let res = await forkProject(forkProjectForm)
+  if (res && res.status === 1) {
+    ElMessage({
+      type: 'success',
+      message: 'Copy Success',
+    })
+    data.showForkProjectDialog = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.message ? res.message : 'Error',
+    })
+  }
+}
 </script>
 
 <style lang="less">
