@@ -13,15 +13,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  // server: {
-  //   proxy: {
-  //     // 配置代理规则
-  //     '/api': {
-  //       target: 'http://api.example.com', // 目标服务器地址
-  //       changeOrigin: true, // 允许跨域
-  //     },
-  //   },
-  // },
+  server: {
+    proxy: {
+      // 配置代理规则
+      '/api': {
+        target: 'http://shauapp003p.rxcorp.com:14003', // 目标服务器地址
+        changeOrigin: true, // 允许跨域
+      },
+    },
+  },
   build: {
     assetsDir: 'static', // 将所有静态资源输出到 dist/static/ 目录
   },

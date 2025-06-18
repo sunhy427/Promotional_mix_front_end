@@ -101,7 +101,7 @@ const create = async () => {
 
 const getGroupFn = async () => {
   let res = await getGroupList()
-  if(res && res.group_meta) {
+  if (res && res.group_meta) {
     groupIndex.group_meta.group_privileges = res.group_meta.group_privileges
     groupIndex.group_list = res.group_list
   }

@@ -30,15 +30,17 @@
                   {{ itemGroupInternalPrivileges }}
                 </el-button>
                 <span class="span-100">
-                  <el-icon @click.stop="deleteGroupConfirm(item.group_name)"><Delete /></el-icon>
-                  <el-icon><Document /></el-icon>
-                  <span>{{ item.projects_list.length }}</span>
+                  <span>
+                    <!-- <el-icon @click.stop="deleteGroupConfirm(item.group_name)"><Delete /></el-icon> -->
+                    <el-icon><Document /></el-icon>
+                    <span>{{ item.project_list.length }}</span>
+                  </span>
                 </span>
               </div>
             </div>
           </template>
-          <ul class="list" v-if="item.projects_list.length > 0">
-            <li v-for="(itemProject, indexProject) in item.projects_list" :key="indexProject">
+          <ul class="list" v-if="item.project_list.length > 0">
+            <li v-for="(itemProject, indexProject) in item.project_list" :key="indexProject">
               <i>{{ itemProject.project_name.charAt(0) }}</i>
               <div class="info">
                 <div class="group-name">
@@ -53,7 +55,7 @@
                     v-model="item.publish"
                     label="Publish"
                     size="small"
-                    @click.stop="() => {}"
+                    @click.stop="publishProject(item)"
                   />
                 </div>
 
@@ -98,6 +100,13 @@
                         <el-icon><Delete /></el-icon>
                         {{ itemPrivileges }}
                       </a>
+                      <a
+                        v-if="itemPrivileges === 'Rename'"
+                        @click="openRenameProjectDialog(item.group_name, itemProject.project_name)"
+                      >
+                        <el-icon><Edit /></el-icon>
+                        {{ itemPrivileges }}
+                      </a>
                     </template>
                   </span>
                 </div>
@@ -119,16 +128,30 @@
       />
     </div>
 
-    <el-dialog v-model="showRenameDialog" title="Rename Current Group">
-      <el-form :model="form" label-position="top">
+    <el-dialog v-model="data.showRenameGroupDialog" title="Rename Current Group">
+      <el-form :model="renameGroupForm" label-position="top">
         <el-form-item label="Enter New Group Name" :label-width="200">
-          <el-input v-model="form.name" />
+          <el-input v-model="renameGroupForm.group_name_new" />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="showRenameDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmRename"> Confirm </el-button>
+          <el-button @click="data.showRenameGroupDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="confirmRenameGroup"> Confirm </el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="data.showRenameProjectDialog" title="Rename Current Analysis">
+      <el-form :model="form" label-position="top">
+        <el-form-item label="Enter New Analysis Name" :label-width="200">
+          <el-input v-model="renameProjectForm.project_name_new" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="data.showRenameProjectDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="confirmRenameProject"> Confirm </el-button>
         </span>
       </template>
     </el-dialog>
@@ -136,7 +159,7 @@
     <el-dialog v-model="data.showCreateProjectDialog" title="Create New Analysis in Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Analysis Name" :label-width="200">
-          <el-input v-model="createProjectForm.brand_name" />
+          <el-input v-model="createProjectForm.project_name" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -160,16 +183,13 @@
         <el-form-item label="Project Name">
           <el-input v-model="shareProjectForm.project_name" :disabled="true" />
         </el-form-item>
-        <el-form-item label="Share Type">
+        <!-- <el-form-item label="Share Type">
           <el-select v-model="shareProjectForm.type" placeholder="Please select share type">
             <el-option label="Mudid" value="mudid" />
             <el-option label="Email address" value="email address" />
           </el-select>
-        </el-form-item>
-        <el-form-item
-          :label="shareProjectForm.type === 'mudid' ? 'Mudid' : 'Email address'"
-          prop="mudid"
-        >
+        </el-form-item> -->
+        <el-form-item label="Mudid" prop="mudid">
           <el-input v-model="shareProjectForm.mudid" />
         </el-form-item>
         <el-form-item label="Message">
@@ -184,21 +204,23 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showForkProjectDialog" title="Copy Project">
+    <el-dialog v-model="data.showForkProjectDialog" title="Copy a project file">
       <el-form
         :model="forkProjectForm"
         label-width="140"
         ref="forkProjectRuleFormRef"
         :rules="forkProjectRuleFormRefRules"
       >
-        <el-form-item label="Group Name">
-          <el-input v-model="forkProjectForm.group_name" :disabled="true" />
+        <!-- <el-form-item label="Group Name">
+          <el-input v-model="forkProjectForm.group_name_old" :disabled="true" />
         </el-form-item>
         <el-form-item label="Project Name">
           <el-input v-model="forkProjectForm.project_name" :disabled="true" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="New Group Name">
-          <el-input v-model="forkProjectForm.group_name_new" />
+          <el-select v-model="forkProjectForm.group_name" placeholder="Select">
+            <el-option :label="item" :value="item" v-for="(item, index) in data.groupListOptions"/>
+          </el-select>
         </el-form-item>
         <el-form-item label="New Project Name">
           <el-input v-model="forkProjectForm.project_name_new" />
@@ -225,6 +247,8 @@ import {
   getProjectList,
   shareProject,
   forkProject,
+  renameGroup,
+  renameProject,
 } from '../../api/api'
 const props = defineProps({
   groupList: {
@@ -239,6 +263,9 @@ const data = reactive({
   showCreateProjectDialog: false,
   showShareProjectDialog: false,
   showForkProjectDialog: false,
+  showRenameGroupDialog: false,
+  showRenameProjectDialog: false,
+  groupListOptions: [],
   page: {
     total: 0,
     size: 10,
@@ -284,15 +311,15 @@ const sliceData = () => {
   return currentList
 }
 
-const getList = async () => {
-  let res = await getGroupList()
-  if (res && res.group_list) {
-    data.groupList = res.group_list
-    data.page.total = data.groupList.length
-    data.page.currentPage = 0
-    data.currentList = sliceData()
-  }
-}
+// const getList = async () => {
+//   let res = await getGroupList()
+//   if (res && res.group_list) {
+//     data.groupList = res.group_list
+//     data.page.total = data.groupList.length
+//     data.page.currentPage = 0
+//     data.currentList = sliceData()
+//   }
+// }
 
 const changePage = (value) => {
   data.page.currentPage = value - 1
@@ -323,25 +350,8 @@ const getProjectStatus = async (groupName, projectName) => {
     setState(groupName, projectName, current.project_status)
   }
 }
-const setState = (groupName, projectName, status) => {
-  store.commit('changeProjectStatus', status)
-  handleProjectStatus(groupName, projectName, store.state.index)
-}
-const handleProjectStatus = (groupName, projectName, index) => {
-  if (index < 3) {
-    enter(groupName, projectName, 'upload')
-  }
-
-  if (index === 3) {
-    enter(groupName, projectName, 'baseline')
-  }
-  if (index > 3) {
-    enter(groupName, projectName, 'MCMC')
-  }
-}
 
 const deleteProjectConfirm = (group_name, project_name) => {
-  console.log('delete project')
   ElMessageBox.confirm('Platform will permanently delete the project. Continue?', 'Warning', {
     confirmButtonText: 'OK',
     cancelButtonText: 'Cancel',
@@ -397,7 +407,6 @@ const deleteGroupFn = async (group_name) => {
       type: 'success',
       message: 'Delete completed',
     })
-    getList()
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'delete error',
@@ -406,39 +415,71 @@ const deleteGroupFn = async (group_name) => {
   }
 }
 
-const form = reactive({
-  name: '',
-  currentGroupName: '',
+const renameGroupForm = reactive({
+  group_name: '',
+  group_name_new: '',
 })
-const showRenameDialog = ref(false)
-const confirmRename = () => {
-  if (!form.name) {
+const confirmRenameGroup = () => {
+  if (!renameGroupForm.group_name_new) {
     ElMessage({
       message: 'Please input new group name',
       type: 'error',
     })
   } else {
-    renameGroupConfirm(form.name, form.currentGroupName)
+    renameGroupConfirm()
   }
 }
 
 const renameGroupFn = (group_name) => {
-  form.currentGroupName = group_name
-  showRenameDialog.value = true
+  renameGroupForm.group_name = group_name
+  data.showRenameGroupDialog = true
 }
-const renameGroupConfirm = async (new_name, group_name) => {
-  let param = {
-    group_name: group_name,
-    group_name_new: new_name,
-  }
-  let res = await renameGroup(param)
+const renameGroupConfirm = async () => {
+  let res = await renameGroup(renameGroupForm)
   if (res && res.status === 1) {
     ElMessage({
       type: 'success',
       message: 'Rename completed',
     })
-    getList()
-    showRenameDialog.value = false
+    data.showRenameGroupDialog = false
+  } else {
+    ElMessage({
+      message: res && res.message ? res.message : 'rename error',
+      type: 'error',
+    })
+  }
+}
+
+const renameProjectForm = reactive({
+  group_name: '',
+  project_name: '',
+  project_name_new: '',
+})
+
+const openRenameProjectDialog = (group_name, project_name) => {
+  ;(renameProjectForm.group_name = group_name), (renameProjectForm.project_name = project_name)
+  data.showRenameProjectDialog = true
+}
+
+const confirmRenameProject = () => {
+  if (!renameProjectForm.project_name_new) {
+    ElMessage({
+      message: 'Please input new analysis name',
+      type: 'error',
+    })
+  } else {
+    renameProjectFn()
+  }
+}
+
+const renameProjectFn = async () => {
+  let res = await renameProject(renameProjectForm)
+  if (res && res.status === 1) {
+    ElMessage({
+      type: 'success',
+      message: 'Rename completed',
+    })
+    data.showRenameProjectDialog = false
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'rename error',
@@ -449,6 +490,7 @@ const renameGroupConfirm = async (new_name, group_name) => {
 
 const createProjectForm = reactive({
   group_name: '',
+  project_name: '',
   brand_name: '',
 })
 const createProjectFn = (group_name) => {
@@ -458,19 +500,23 @@ const createProjectFn = (group_name) => {
 }
 const confirmCreateProject = async () => {
   let param = {
-    group_name: createProjectForm.group_name,
-    brand_name: createProjectForm.brand_name,
-    time_period_id: dayjs().month(),
-    data_version_id: dayjs().format('YYYYMMDD'),
+    // brand_name: createProjectForm.brand_name,
+    // yyyymm_end: parseInt(dayjs().format('YYYYMM')) ,
+    // data_version_id: parseInt(dayjs().format('YYYYMMDD')),
+
+    project_name: createProjectForm.project_name,
+    brand_name: 'Benlysta',
+    yyyymm_end: 202505,
+    data_version_id: 20250501,
   }
-  let res = await createProject(param)
+  let res = await createProject(param, createProjectForm.group_name)
   if (res && res.status === 1) {
     ElMessage({
       message: 'create success',
       type: 'success',
     })
     data.showCreateProjectDialog = false
-    getList()
+    //getList()
   }
 }
 
@@ -489,6 +535,12 @@ const createAndUploadAnalysisFn = (groupName, operation) => {
   }
   if (operation === 'Upload') {
     uploadAnalysisFn(groupName)
+  }
+  if (operation === 'Rename') {
+    renameGroupFn(groupName)
+  }
+  if (operation === 'Delete') {
+    deleteGroupConfirm(groupName)
   }
 }
 
@@ -533,9 +585,9 @@ const openShareProjectDialog = (group_name, project_name) => {
 }
 
 const forkProjectForm = reactive({
-  group_name: '',
+  group_name_old: '',
   project_name: '',
-  group_name_new: '确认下是否跨group',
+  group_name: '',
   project_name_new: '',
 })
 
@@ -546,8 +598,9 @@ const forkProjectRuleFormRefRules = reactive({
 })
 
 const openForkProjectDialog = (group_name, project_name) => {
-  forkProjectForm.group_name = group_name
+  forkProjectForm.group_name_old = group_name
   forkProjectForm.project_name = project_name
+  data.groupListOptions = data.groupList.map((item) => item.group_name)
   data.showForkProjectDialog = true
 }
 
