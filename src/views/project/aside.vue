@@ -1,11 +1,11 @@
 <template>
   <div class="aside-page">
     <el-menu :default-active="data.currentProjectName" class="el-menu-vertical-demo">
-      <el-menu-item :index="groupName" @click="backGroup">
+      <el-menu-item :index="data.currentGroupName " @click="backGroup">
         <el-icon><Menu /></el-icon>
-        <template #title>{{ groupName }}</template>
+        <template #title>{{ data.currentGroupName }}</template>
       </el-menu-item>
-      <el-menu-item
+      <!-- <el-menu-item
         :index="item.project_name"
         v-for="(item, index) in data.projectList"
         :key="index"
@@ -27,31 +27,36 @@
             </template>
           </el-popover>
         </template>
-      </el-menu-item>
+      </el-menu-item> -->
     </el-menu>
   </div>
 </template>
 <script setup>
 import { defineProps, watch, reactive } from 'vue'
 
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 const emit = defineEmits(['selectProject'])
 
-const props = defineProps({
-  groupName: {
-    type: String,
-    required: true,
-  },
-  currentProjectName: {
-    type: String,
-    required: true,
-  },
-  projectList: {
-    type: Array,
-    required: true,
-  },
-})
+// const props = defineProps({
+//   groupName: {
+//     type: String,
+//     required: true,
+//   },
+//   currentProjectName: {
+//     type: String,
+//     required: true,
+//   },
+//   projectList: {
+//     type: Array,
+//     required: true,
+//   },
+// })
+console.log('router.params', router)
 const data = reactive({
-  currentProjectName: '',
+  currentProjectName: router.params.project,
+  currentGroupName: router.params.group,
   projectList: [],
 })
 
@@ -67,22 +72,6 @@ const backGroup = () => {
   window.location.href = '/group'
 }
 
-watch(
-  () => props.currentProjectName,
-  (value) => {
-    setCurrentProject(value)
-  },
-  { deep: true, immediate: true },
-)
-
-watch(
-  () => props.projectList,
-  (value) => {
-    console.log(value)
-    data.projectList = value
-  },
-  { deep: true, immediate: true },
-)
 </script>
 
 <style lang="less">

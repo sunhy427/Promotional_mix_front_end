@@ -52,10 +52,10 @@
                 </div>
                 <div class="publish">
                   <el-checkbox
-                    v-model="item.publish"
+                    v-model="itemProject.is_publish"
                     label="Publish"
                     size="small"
-                    @click.stop="publishProject(item)"
+                    @click.stop="publishProjectFn(item.group_name, itemProject.project_name)"
                   />
                 </div>
 
@@ -156,10 +156,37 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showCreateProjectDialog" title="Create New Analysis in Group">
-      <el-form :model="form" label-position="top">
-        <el-form-item label="Enter Analysis Name" :label-width="200">
+    <el-dialog v-model="data.showCreateProjectDialog" title="Create a New Analysis Project">
+      <el-form :model="createProjectForm" label-position="top">
+        <el-form-item label="Enter project name" :label-width="200">
           <el-input v-model="createProjectForm.project_name" />
+        </el-form-item>
+        <el-form-item label="Select brand" :label-width="200">
+          <el-select v-model="createProjectForm.brand_name" placeholder="Select">
+            <el-option
+              :label="item"
+              :value="item"
+              v-for="(item, index) in createOptions.brand_name_list"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Select the last month of the analysis time period" :label-width="200">
+          <el-select v-model="createProjectForm.time_period_id" placeholder="Select">
+            <el-option
+              :label="item"
+              :value="item"
+              v-for="(item, index) in createOptions.yyyymm_end_list"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Select the data version" :label-width="200">
+          <el-select v-model="createProjectForm.data_version_id" placeholder="Select">
+            <el-option
+              :label="item"
+              :value="item"
+              v-for="(item, index) in createOptions.data_version_list"
+            />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -219,7 +246,7 @@
         </el-form-item> -->
         <el-form-item label="New Group Name">
           <el-select v-model="forkProjectForm.group_name" placeholder="Select">
-            <el-option :label="item" :value="item" v-for="(item, index) in data.groupListOptions"/>
+            <el-option :label="item" :value="item" v-for="(item, index) in data.groupListOptions" />
           </el-select>
         </el-form-item>
         <el-form-item label="New Project Name">
@@ -230,6 +257,34 @@
         <div class="dialog-footer">
           <el-button @click="data.showForkProjectDialog = false">Cancel</el-button>
           <el-button type="primary" @click="forkProjectConfirm()"> Confirm </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="data.showUploadDialog" title="Upload a project file">
+      <el-form :model="uploadForm" label-width="200">
+        <el-form-item label="Enter a Project Name">
+          <el-input v-model="uploadForm.project_name" />
+        </el-form-item>
+        <el-form-item label="Select a project file(.JSON)">
+          <el-upload
+            ref="uploadRef"
+            class="upload-demo"
+            :action="data.uploadUrl"
+            :auto-upload="false"
+            name="content"
+            :data="uploadForm"
+          >
+            <template #trigger>
+              <el-button type="primary">Select File</el-button>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="data.showUploadDialog = false">Cancel</el-button>
+          <el-button type="primary" @click="uploadConfirm()"> Upload </el-button>
         </div>
       </template>
     </el-dialog>
@@ -249,7 +304,9 @@ import {
   forkProject,
   renameGroup,
   renameProject,
+  createMetaData,
 } from '../../api/api'
+import { basic } from '../../config'
 const props = defineProps({
   groupList: {
     type: Array,
@@ -265,7 +322,10 @@ const data = reactive({
   showForkProjectDialog: false,
   showRenameGroupDialog: false,
   showRenameProjectDialog: false,
+  showUploadDialog: false,
   groupListOptions: [],
+  uploadUrl: '',
+  // uploadUrl: `${basic.apiUrl}projects/${group_name}?action=import_json`,
   page: {
     total: 0,
     size: 10,
@@ -493,9 +553,21 @@ const createProjectForm = reactive({
   project_name: '',
   brand_name: '',
 })
-const createProjectFn = (group_name) => {
+const createOptions = reactive({
+  brand_name_list: [],
+  yyyymm_end_list: [],
+  data_version_list: [],
+})
+
+const createProjectFn = async (group_name) => {
   createProjectForm.group_name = group_name
   createProjectForm.brand_name = ''
+  let res = await createMetaData()
+  if (res) {
+    createOptions.brand_name_list = res.brand_name_list
+    createOptions.yyyymm_end_list = res.yyyymm_end_list
+    createOptions.data_version_list = res.data_version_list
+  }
   data.showCreateProjectDialog = true
 }
 const confirmCreateProject = async () => {
@@ -534,7 +606,7 @@ const createAndUploadAnalysisFn = (groupName, operation) => {
     createProjectFn(groupName)
   }
   if (operation === 'Upload') {
-    uploadAnalysisFn(groupName)
+    uploadFn(groupName)
   }
   if (operation === 'Rename') {
     renameGroupFn(groupName)
@@ -543,8 +615,18 @@ const createAndUploadAnalysisFn = (groupName, operation) => {
     deleteGroupConfirm(groupName)
   }
 }
+const uploadForm = reactive({
+  project_name: '',
+})
 
-const uploadAnalysisFn = async (groupName) => {}
+const uploadFn = (groupName) => {
+  data.uploadUrl = `${basic.apiUrl}projects/${groupName}?action=import_json`
+  data.showUploadDialog = true
+}
+const uploadRef = ref(null)
+const uploadConfirm = () => {
+  uploadRef.value.submit()
+}
 
 const shareProjectRuleFormRef = ref(null)
 
@@ -628,6 +710,29 @@ const forkProjectFn = async () => {
       type: 'error',
       message: res.message ? res.message : 'Error',
     })
+  }
+}
+
+const publishProjectFn = (group_name, project_name) => {
+  for (let i = 0; i < data.groupList.length; i++) {
+    const group = data.groupList[i]
+    if (group.group_name === group_name) {
+      for (let j = 0; j < group.project_list.length; j++) {
+        const project = group.project_list[j]
+        if (project.project_name === project_name) {
+          //console.log('project.is_publish', project.is_publish)
+          project.is_publish = true
+          console.log('project', project.is_publish)
+          //console.log('project.is_publish', project.is_publish)
+          //data.groupList[i].project_list.splice(j, 1, project)
+          //data.groupList[i].project_list[j].is_publish = true
+          data.groupList[i].project_list.splice(j, 1, project)
+          console.log(data.groupList[i].project_list[j])
+          return true
+        }
+      }
+      break
+    }
   }
 }
 </script>

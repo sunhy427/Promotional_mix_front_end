@@ -56,8 +56,8 @@
   </div>
 </template>
 <script setup>
-import { getGroupList, createGroup } from '../../api/api'
-import { ElMessage } from 'element-plus'
+import { getGroupList, createGroup, getPopup } from '../../api/api'
+import { ElMessage, ElNotification } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
 const showDialog = ref(false)
@@ -107,8 +107,22 @@ const getGroupFn = async () => {
   }
 }
 
+const getPopFn = async () => {
+  let res = await getPopup()
+  if (res && res.content && res.content.length > 0) {
+    for (let i = 0; i < res.content.length; i++) {
+      ElNotification({
+        title: 'Share Information',
+        message: res.content[i],
+        type: 'info',
+      })
+    }
+  }
+}
+
 onMounted(() => {
   getGroupFn()
+  getPopFn()
 })
 </script>
 

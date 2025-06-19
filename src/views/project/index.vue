@@ -1,10 +1,6 @@
 <template>
   <div class="project-page">
-    <Aside
-      :groupName="data.groupName"
-      :currentProjectName="data.currentProjectName"
-      :projectList="data.projectList"
-    ></Aside>
+    <Aside></Aside>
     <div class="content">
       <Analysis v-if="data.currentComponent === 'analysis'"></Analysis>
       <Output v-if="data.currentComponent === 'output'"></Output>
