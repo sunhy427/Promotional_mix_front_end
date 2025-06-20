@@ -7,14 +7,14 @@
       </el-breadcrumb>
     </div>
     <div class="table-wrap">
-      <div class="top-btn-wrap">
-        <el-button type="primary" class="add-btn" @click="addPermissionFn"
-          ><el-icon><CirclePlusFilled /></el-icon>Add Permission</el-button
-        >
+      <div class="top-btn-wrap" v-show="data.canAdd">
+        <el-button type="primary" class="add-btn" @click="data.showAddPermissionDialog = true">
+          <el-icon><CirclePlusFilled /></el-icon>
+          Add Permission
+        </el-button>
       </div>
-      <el-table :data="data.settingList" style="width: 100%">
-        <el-table-column prop="id" label="Id" />
-        <el-table-column prop="name" label="Name" />
+      <el-table :data="data.permissionsList" style="width: 100%">
+        <el-table-column prop="mudid" label="mudid" />
         <el-table-column prop="role" label="Role" />
         <el-table-column label="Activity">
           <template #default="scope">
@@ -22,7 +22,7 @@
               <span class="edit" @click="openEditDrawer(scope.row)"
                 ><el-icon><Edit /></el-icon
               ></span>
-              <span @click="deleteConfirm"
+              <span @click="deleteConfirm(scope.row.mudid)"
                 ><el-icon><Remove /></el-icon
               ></span>
             </p>
@@ -41,11 +41,10 @@
       <div class="detail">
         <p>Account</p>
         <div class="description">
-          <p>id12344</p>
-          <p>name1</p>
+          <p>{{ data.drawerDetail.id }}</p>
         </div>
         <p>Role</p>
-        <el-select v-model="data.selectRoleValue" placeholder="Select">
+        <el-select v-model="data.drawerDetail.role_new" placeholder="Select">
           <el-option
             v-for="item in data.drawerDetail.roleOptions"
             :key="item"
@@ -62,9 +61,12 @@
       </template>
     </el-drawer>
     <el-dialog v-model="data.showAddPermissionDialog" title="Add Permission" width="500">
-      <el-form :model="data.addPermissionForm">
+      <el-form :model="data.addPermissionForm" label-position="top">
         <el-form-item label="User Name">
-          <el-input v-model="data.addPermissionForm.name" />
+          <el-input v-model="data.addPermissionForm.user_name" />
+        </el-form-item>
+        <el-form-item label="User Id">
+          <el-input v-model="data.addPermissionForm.id" />
         </el-form-item>
         <el-form-item label="Role">
           <el-radio-group v-model="data.addPermissionForm.role">
@@ -76,59 +78,43 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showAddPermissionDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="data.showAddPermissionDialog = false">
-            Confirm
-          </el-button>
+          <el-button type="primary" @click="confirmAddPermission"> Confirm </el-button>
         </div>
       </template>
     </el-dialog>
   </div>
 </template>
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { drawerEmits, ElMessage, ElMessageBox } from 'element-plus'
-
+import { getPermissions, addPermission, removePermission, updatePermission } from '../../api/api'
 const data = reactive({
-  settingList: [
-    {
-      id: 12324022,
-      name: 'name1',
-      role: 'Maintainer',
-      activity: ['change', 'remove'],
-      roleOptions: ['Maintainer', 'Guest'] 
-    },
-    {
-      id: 12324023,
-      name: 'name2',
-      role: 'Owner',
-      activity: [],
-      roleOptions:[]
-    },
-    {
-      id: 12324024,
-      name: 'name3',
-      role: 'Guest',
-      activity: ['change', 'remove'],
-      roleOptions: ['Maintainer', 'Guest'],
-    },
-  ],
+  permissionsList: [],
+  canAdd: false,
   showDrawer: false,
   drawerDetail: {
     id: null,
-    name: '',
-    role: '',
-    activity: [],
+    role_new: '',
     roleOptions: [],
   },
   selectRoleValue: '',
   showAddPermissionDialog: false,
   addPermissionForm: {
-    name: '',
-    permission: '',
+    user_name: '',
+    id: '',
+    role: '',
   },
 })
 
-const deleteConfirm = () => {
+const getPermissionList = async () => {
+  let res = await getPermissions()
+  if (res) {
+    data.canAdd = res.Add
+    data.permissionsList = res.permissions_list
+  }
+}
+
+const deleteConfirm = (id) => {
   ElMessageBox.confirm(
     `This action will remove this user's access permission. Continue?`,
     'Warning',
@@ -138,24 +124,55 @@ const deleteConfirm = () => {
       type: 'warning',
     },
   )
+    .then(() => {
+      deletePermissionFn(id)
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled',
+      })
+    })
+}
+
+const deletePermissionFn = async (id) => {
+  let res = await removePermission(id)
+  if (res) {
+    ElMessage({
+      type: 'success',
+      message: 'Remove success',
+    })
+    getPermissionList()
+  }
 }
 
 const openEditDrawer = (row) => {
-  data.drawerDetail = row
-  data.selectRoleValue = data.drawerDetail.role
+  data.drawerDetail.id = row.mudid
+  data.drawerDetail.roleOptions = row.roleOptions
+  data.drawerDetail.role_new = row.role
   data.showDrawer = true
 }
-const confirmDrawer = () => {
-  data.showDrawer = false
-  ElMessage({
-    message: 'Congrats, Update role success .',
-    type: 'success',
-  })
+const confirmDrawer = async () => {
+  let res = await updatePermission(data.drawerDetail)
+  if (res) {
+    data.showDrawer = false
+    ElMessage({
+      message: 'Update role success .',
+      type: 'success',
+    })
+    getPermissionList()
+  }
 }
 
-const addPermissionFn = () => {
-  data.showAddPermissionDialog = true
+const confirmAddPermission = async () => {
+  let res = await addPermission(data.addPermissionForm)
+  if (res) {
+    data.showAddPermissionDialog = false
+  }
 }
+onMounted(() => {
+  getPermissionList()
+})
 </script>
 
 <style lang="less" scoped>

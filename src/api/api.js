@@ -43,7 +43,7 @@ export function createProject(params, group_name) {
 
 //meta_data
 export function createMetaData() {
-  return request.get(`${basic.apiUrl}contents/empty/meta_data`)
+  return request.get(`${basic.apiUrl}projects/empty/metadata`)
 }
 
 //get project list
@@ -82,7 +82,7 @@ export function shareProject(params) {
 //Fork project
 export function forkProject(params) {
   return request.post(
-    `${basic.apiUrl}projects/${params.group_name}/${params.project_name}/fork`,
+    `${basic.apiUrl}projects/${params.group_name_fork}/${params.project_name_fork}/copy`,
     params,
   )
 }
@@ -98,6 +98,30 @@ export function renameProject(params) {
 //Export excel project（download data）
 export function exportExportProject(params) {
   return request.get(`${basic.apiUrl}${params.group_name}/${params.project_name}`, { params })
+}
+
+// Permission
+export function getPermissions() {
+  return request.get(`${basic.apiUrl}permissions`)
+}
+
+export function addPermission(params) {
+  return request.post(
+    `${basic.apiUrl}permission/add`,
+    params,
+  )
+}
+//Remove permission user
+export function removePermission(id) {
+  return request.delete(`${basic.apiUrl}permission/${id}/remove`)
+}
+
+// Update permission user /api/permission/${id}/update
+export function updatePermission(params) {
+  return request.post(
+    `${basic.apiUrl}permission/${params.id}/update`,
+    params,
+  )
 }
 
 // Add simulation

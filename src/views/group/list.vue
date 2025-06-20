@@ -171,7 +171,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="Select the last month of the analysis time period" :label-width="200">
-          <el-select v-model="createProjectForm.time_period_id" placeholder="Select">
+          <el-select v-model="createProjectForm.yyyymm_end" placeholder="Select">
             <el-option
               :label="item"
               :value="item"
@@ -179,12 +179,13 @@
             />
           </el-select>
         </el-form-item>
+
         <el-form-item label="Select the data version" :label-width="200">
           <el-select v-model="createProjectForm.data_version_id" placeholder="Select">
             <el-option
               :label="item"
               :value="item"
-              v-for="(item, index) in createOptions.data_version_list"
+              v-for="(item, index) in createOptions.data_version_id_list"
             />
           </el-select>
         </el-form-item>
@@ -245,7 +246,7 @@
           <el-input v-model="forkProjectForm.project_name" :disabled="true" />
         </el-form-item> -->
         <el-form-item label="New Group Name">
-          <el-select v-model="forkProjectForm.group_name" placeholder="Select">
+          <el-select v-model="forkProjectForm.group_name_new" placeholder="Select">
             <el-option :label="item" :value="item" v-for="(item, index) in data.groupListOptions" />
           </el-select>
         </el-form-item>
@@ -556,7 +557,7 @@ const createProjectForm = reactive({
 const createOptions = reactive({
   brand_name_list: [],
   yyyymm_end_list: [],
-  data_version_list: [],
+  data_version_id_list: [],
 })
 
 const createProjectFn = async (group_name) => {
@@ -566,7 +567,7 @@ const createProjectFn = async (group_name) => {
   if (res) {
     createOptions.brand_name_list = res.brand_name_list
     createOptions.yyyymm_end_list = res.yyyymm_end_list
-    createOptions.data_version_list = res.data_version_list
+    createOptions.data_version_id_list = res.data_version_id_list
   }
   data.showCreateProjectDialog = true
 }
@@ -577,9 +578,9 @@ const confirmCreateProject = async () => {
     // data_version_id: parseInt(dayjs().format('YYYYMMDD')),
 
     project_name: createProjectForm.project_name,
-    brand_name: 'Benlysta',
-    yyyymm_end: 202505,
-    data_version_id: 20250501,
+    brand_name: createProjectForm.brand_name,
+    yyyymm_end: createProjectForm.yyyymm_end,
+    data_version_id: createProjectForm.data_version_id,
   }
   let res = await createProject(param, createProjectForm.group_name)
   if (res && res.status === 1) {
@@ -667,9 +668,9 @@ const openShareProjectDialog = (group_name, project_name) => {
 }
 
 const forkProjectForm = reactive({
-  group_name_old: '',
-  project_name: '',
-  group_name: '',
+  group_name_fork: '',
+  project_name_fork: '',
+  group_name_new: '',
   project_name_new: '',
 })
 
@@ -680,8 +681,8 @@ const forkProjectRuleFormRefRules = reactive({
 })
 
 const openForkProjectDialog = (group_name, project_name) => {
-  forkProjectForm.group_name_old = group_name
-  forkProjectForm.project_name = project_name
+  forkProjectForm.group_name_fork = group_name
+  forkProjectForm.project_name_fork = project_name
   data.groupListOptions = data.groupList.map((item) => item.group_name)
   data.showForkProjectDialog = true
 }
