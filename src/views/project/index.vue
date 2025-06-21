@@ -1,53 +1,59 @@
 <template>
   <div class="project-page">
-    <Aside></Aside>
+    <Aside :project_list="data.project_list"></Aside>
     <div class="content">
-      <Analysis v-if="data.currentComponent === 'analysis'"></Analysis>
-      <Output v-if="data.currentComponent === 'output'"></Output>
-      <Simulator v-if="data.currentComponent === 'simulator'"></Simulator>
+      <Analysis
+        v-if="pageParam.currentComponent === 'analysis'"
+        :project_status="data.project_status"
+      ></Analysis>
+      <Output
+        v-if="pageParam.currentComponent === 'output'"
+        :project_status="data.project_status"
+      ></Output>
+      <Simulator
+        v-if="pageParam.currentComponent === 'simulator'"
+        :project_status="data.project_status"
+      ></Simulator>
     </div>
   </div>
 </template>
 <script setup>
 import { onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import Aside from './aside.vue'
 import Analysis from './analysis.vue'
 import Output from './output.vue'
 import Simulator from './simulator.vue'
+import { useRoute } from 'vue-router'
+import { getProjectList } from '../../api/api'
 
-const router = useRouter()
+const route = useRoute()
+const pageParam = reactive({
+  group: route.params.group,
+  project: route.params.project,
+  currentComponent: route.name,
+})
 
 const data = reactive({
-  currentComponent: '',
-  groupName: router.currentRoute._value.params.group,
-  currentProjectName: router.currentRoute._value.params.project,
-  projectList: [],
+  project_status: '',
+  project_list: [],
 })
+
+const getProjectListFn = async (group_name) => {
+  let param = {
+    group_name: group_name,
+  }
+  let res = await getProjectList(param)
+  if (res && res.project_list[0].length > 0) {
+    data.project_list = res.project_list[0]
+    data.project_status = data.project_list.filter((item) => {
+      return item.project_name === pageParam.project
+    })[0].project_status
+  }
+}
 
 onMounted(() => {
-  data.currentComponent = router.currentRoute._value.name
-  getProjectList()
+  getProjectListFn(pageParam.group)
 })
-
-const getProjectList = async () => {
-  data.projectList = [
-    {
-      project_name: 'sulperzon_ge',
-      project_status: 'MODELING',
-      updated_datetime: '2023-02-07T07:35:10.862Z',
-      privileges: ['Enter', 'Copy', 'Share', 'Delete'],
-      simulations_list: ['simulation1', 'simulation2'],
-    },
-    {
-      project_name: 'sulperzon_hbu',
-      project_status: 'SIMULATION',
-      updated_datetime: '2023-01-09T00:00:00Z',
-      privileges: ['Enter', 'Copy', 'Share', 'Delete'],
-      simulations_list: ['simulation1', 'simulation2'],
-    },
-  ]
-}
 </script>
 <style lang="less" scoped>
 .content {

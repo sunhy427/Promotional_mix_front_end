@@ -1,11 +1,11 @@
 <template>
   <div class="aside-page">
     <el-menu :default-active="data.currentProjectName" class="el-menu-vertical-demo">
-      <el-menu-item :index="data.currentGroupName " @click="backGroup">
+      <el-menu-item :index="data.currentGroupName" @click="backGroup">
         <el-icon><Menu /></el-icon>
         <template #title>{{ data.currentGroupName }}</template>
       </el-menu-item>
-      <!-- <el-menu-item
+      <el-menu-item
         :index="item.project_name"
         v-for="(item, index) in data.projectList"
         :key="index"
@@ -27,49 +27,55 @@
             </template>
           </el-popover>
         </template>
-      </el-menu-item> -->
+      </el-menu-item>
     </el-menu>
   </div>
 </template>
 <script setup>
-import { defineProps, watch, reactive } from 'vue'
-
-import { useRouter } from 'vue-router'
+import { reactive, defineProps, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+const route = useRoute()
 const router = useRouter()
 
-const emit = defineEmits(['selectProject'])
-
-// const props = defineProps({
-//   groupName: {
-//     type: String,
-//     required: true,
-//   },
-//   currentProjectName: {
-//     type: String,
-//     required: true,
-//   },
-//   projectList: {
-//     type: Array,
-//     required: true,
-//   },
-// })
-console.log('router.params', router)
+const props = defineProps({
+  project_list: {
+    type: Array,
+    requred: true
+  }
+})
 const data = reactive({
-  currentProjectName: router.params.project,
-  currentGroupName: router.params.group,
+  currentProjectName: route.params.project,
+  currentGroupName: route.params.group,
   projectList: [],
 })
+watch(
+  () => props.project_list,
+  (value) => {
+    data.projectList = value
+  },
+  {deep: true, immediate: true}
+)
 
-const setCurrentProject = (name) => {
-  data.currentProjectName = name
-}
 
-const enter = (project) => {
-  emit('selectProject', project)
-}
+
+
 
 const backGroup = () => {
   window.location.href = '/group'
+}
+
+const enter = (item) => {
+  let name = ''
+  if (item.project_status === 'EMPTY') {
+    name = 'analysis'
+  }
+  if (item.project_status === 'MODELING') {
+    name = 'output'
+  }
+  if (item.project_status === 'SIMULATION') {
+    name = 'simulator'
+  }
+  router.push({ name: name, params: { group: data.currentGroupName, project: item.project_name } })
 }
 
 </script>

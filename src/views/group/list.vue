@@ -351,17 +351,21 @@ watch(
 )
 
 const goProject = (group, project, status) => {
+  // ["EMPTY","MODEL_RUNNING","MODEL","OUTPUT","SIMULATION_RUNNING""SIMULATION"]
   let name = ''
-  if (status === 'EMPTY') {
+  if (status === 'EMPTY' || status === 'MODEL_RUNNING') {
     name = 'analysis'
   }
-  if (status === 'MODELING') {
+  if (status === 'MODEL' || status === 'OUTPUT') {
     name = 'output'
   }
-  if (status === 'SIMULATION') {
+  if (status === 'SIMULATION_RUNNING' || status === 'SIMULATION') {
     name = 'simulator'
   }
-  router.push({ name: name, params: { group: group, project: project } })
+  router.push({
+    name: name,
+    params: { group: group, project: project},
+  })
 }
 
 const sliceData = () => {

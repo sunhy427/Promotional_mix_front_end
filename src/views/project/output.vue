@@ -6,18 +6,23 @@
     </div>
     <div class="overview">
       <el-descriptions title="" :column="4" direction="vertical">
-        <el-descriptions-item label="OutTime" :span="2" label-class-name="descriptions-label"
-          >2025-07-03</el-descriptions-item
-        >
+        <el-descriptions-item label="OutTime" :span="2" label-class-name="descriptions-label">{{
+          outputMetadata.Output_time
+        }}</el-descriptions-item>
         <el-descriptions-item
           label="Model time period"
           :span="2"
           label-class-name="descriptions-label"
-          >2023.01-2025.06</el-descriptions-item
+          >{{ outputMetadata.Model_time_period }}</el-descriptions-item
         >
         <el-descriptions-item label="Channels" label-class-name="descriptions-label">
-          <p>Number: 7</p>
-          <p>channels: F2F call, Hospital Talk, Digital-GSK</p>
+          <p>Number: {{ outputMetadata.aggregate_channel_list.length }}</p>
+          <p>
+            channels:
+            <span v-for="(item, index) in outputMetadata.aggregate_channel_list" :key="index"
+              >{{ item }}
+            </span>
+          </p>
         </el-descriptions-item>
       </el-descriptions>
       <el-descriptions title="" :column="4">
@@ -202,7 +207,46 @@
 </template>
 <script setup>
 import bar from '../../components/bar.vue'
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
+import { previewModelOutputMetadata } from '../../api/api'
+import { useRoute, useRouter } from 'vue-router'
+
+const props = defineProps({
+  project_status: {
+    type: String,
+    requred: true,
+  },
+})
+const route = useRoute()
+const router = useRouter()
+const pageParam = reactive({
+  group: route.params.group,
+  project: route.params.project,
+})
+
+const outputMetadata = reactive({
+  Output_time: '',
+  Model_time_period: '',
+  aggregate_channel_list: [],
+})
+
+const previewModelOutputMetadataFn = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+  }
+  let res = await previewModelOutputMetadata(param)
+  if (res) {
+    outputMetadata.Output_time = res.Output_time
+    outputMetadata.Model_time_period = res.Model_time_period
+    outputMetadata.aggregate_channel_list = res.aggregate_channel_list
+  }
+}
+
+onMounted(() => {
+  previewModelOutputMetadataFn()
+})
+
 const data = reactive({
   segmentOptions: ['Total Market', 'Segment1', 'Segment2'],
   segmentValue: '',
@@ -565,35 +609,11 @@ const responseCurveOptions = reactive({
 })
 const ModelMetricsTableData = reactive([{ mape: 8.41, R2: 0.623 }])
 
-const goContinue = () => {
-  
-}
-
-
+const goContinue = () => {}
 </script>
 <style lang="less" scoped>
 .output-page {
   padding: 15px;
-  // .card-title {
-  //   background-color: #e99d42;
-  //   display: inline-block;
-  //   color: #fff;
-  //   border-radius: 20px;
-  //   & > i {
-  //     display: inline-block;
-  //     width: 15px;
-  //     height: 15px;
-  //     text-align: center;
-  //     line-height: 15px;
-  //     background-color: #fff;
-  //     color: #000;
-  //     border: 2px solid #000;
-  //     border-radius: 10px;
-  //   }
-  //   & > span {
-  //     padding: 0 20px 0 5px;
-  //   }
-  // }
   .card-content {
     .title {
       border-left: 4px solid #000;

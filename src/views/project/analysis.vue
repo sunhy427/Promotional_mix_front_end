@@ -27,57 +27,12 @@
           <el-form-item label="" label-width="200px">
             <p class="importance">Promotion importance(0-100%)</p>
           </el-form-item>
-          <el-form-item label="F2F call">
-            <el-input-number v-model="data.F2F" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="HT">
-            <el-input-number v-model="data.HT" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="Digital - GSK">
-            <el-input-number v-model="data.GSK" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="Digital - 3rd party">
-            <el-input-number v-model="data.party" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="meeting - Standalone online">
-            <el-input-number v-model="data.standaloneOnline" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="meeting - Collaborative online">
-            <el-input-number v-model="data.collaborativeOnline" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="meeting - Standalone offline">
-            <el-input-number v-model="data.standaloneOffline" :min="0" :max="100" size="small">
-              <template #suffix>
-                <span>%</span>
-              </template>
-            </el-input-number>
-          </el-form-item>
-          <el-form-item label="meeting - Collaborative offline">
-            <el-input-number v-model="data.collaborativeOffline" :min="0" :max="100" size="small">
+          <el-form-item
+            :label="item.channel_name"
+            v-for="(item, index) in form.channel"
+            :key="index"
+          >
+            <el-input-number v-model="item.channel_prior" :min="0" :max="100" size="small">
               <template #suffix>
                 <span>%</span>
               </template>
@@ -98,20 +53,25 @@
             <el-radio-button value="customized">Customized </el-radio-button>
           </el-radio-group>
           <div class="channel-input">
-            <el-button type="primary" size="small">
+            <el-button
+              type="primary"
+              size="small"
+              v-if="data.channelNumber === 'customized'"
+              @click="createNewChannel"
+            >
               <el-icon><CirclePlus /></el-icon>
               Create new channel
             </el-button>
             <ul class="select-wrap">
-              <li>
+              <li v-for="(val, key) in form.agg_rule[data.channelNumber]">
                 <el-select
-                  v-model="data.selsectChannel"
+                  v-model="form.agg_rule[data.channelNumber][key].channels"
                   multiple
                   placeholder="Select"
                   style="width: 440px"
                 >
                   <el-option
-                    v-for="item in data.channelList"
+                    v-for="item in options.channelListOptions"
                     :key="item"
                     :label="item"
                     :value="item"
@@ -120,7 +80,11 @@
                 <span class="channel-p">
                   <el-icon><CaretRight /></el-icon>New channel name
                 </span>
-                <el-input v-model="input" style="width: 240px" placeholder="Please input"  />
+                <el-input
+                  v-model="form.agg_rule[data.channelNumber][key].new_column_name"
+                  style="width: 240px"
+                  placeholder="Please input"
+                />
               </li>
             </ul>
           </div>
@@ -128,9 +92,9 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="data.segmentationValue" placeholder="Select" style="width: 440px">
+            <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 440px">
               <el-option
-                v-for="item in data.segmentationOptions"
+                v-for="item in options.segmentOptions"
                 :key="item"
                 :label="item"
                 :value="item"
@@ -140,45 +104,271 @@
         </el-form>
       </div>
       <div class="foot-button">
-        <el-button type="primary" round size="small">Confirm</el-button>
-        <el-button type="info" round size="small">Cancel</el-button>
+        <el-button type="primary" round size="small" @click="runConfirm">Confirm</el-button>
+        <el-button type="info" round size="small" @click="runCancel">Cancel</el-button>
       </div>
+    </el-card>
+    <el-card v-if="progressForm.isPolling">
+      <el-progress :percentage="50" :stroke-width="15" striped striped-flow :duration="50" />
     </el-card>
   </div>
 </template>
 <script setup>
-import { reactive } from 'vue'
-const data = reactive({
-  labelPosition: true,
-  F2F: 76,
-  HT: 57,
-  GSK: 53,
-  party: 51,
-  standaloneOnline: 57,
-  collaborativeOnline: 57,
-  standaloneOffline: 75,
-  collaborativeOffline: 75,
-  channelNumber: 'customized',
-  channelList: [
-    'F2F call',
-    'HT',
-    'Digital - GSK',
-    'Digital - 3rd party',
-    'meeting - Standalone online',
-    'meeting - Collaborative online',
-    'meeting - Standalone offline',
-    'meeting - Collaborative offline',
-    'Select the number of channels',
-  ],
-  selsectChannel: [],
-  segmentationOptions: [
-    'Type1: Central, Region, Others',
-    'Type2: Core, Engine, Others',
-    'Type3: Lupus, Non-Lupus',
-    'Type4: Lupus Demonstration, Lupus Certification, Non-Lupus',
-  ],
-  segmentationValue: '',
+import { reactive, onMounted, defineProps, watch } from 'vue'
+import {
+  previewRawData,
+  runModeling,
+  revokeTask,
+  getCurrentModelTask,
+  previewModelOutputParameters,
+} from '../../api/api'
+import { useRoute, useRouter } from 'vue-router'
+const props = defineProps({
+  project_status: {
+    type: String,
+    requred: true,
+  },
 })
+const route = useRoute()
+const router = useRouter()
+const pageParam = reactive({
+  group: route.params.group,
+  project: route.params.project,
+})
+
+const data = reactive({
+  loading: false,
+  project_status: '',
+  labelPosition: true,
+  channelNumber: '7',
+  task_id: '',
+})
+
+const form = reactive({
+  channel: [],
+  agg_rule: {
+    7: [],
+    9: [],
+    customized: [],
+  },
+  segmentation_type: '',
+})
+
+const progressForm = reactive({
+  isPolling: false,
+  pollingTimer: null,
+  percentage: 0,
+  task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+})
+
+const options = reactive({
+  channelListOptions: [],
+  segmentOptions: [],
+})
+
+const init = () => {
+  if (data.project_status === 'EMPTY') {
+    getPreviewRawData()
+  }
+  if (data.project_status === 'MODEL_RUNNING') {
+    previewModelOutputParametersFn()
+    startPolling()
+  }
+}
+
+const getPreviewRawData = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+  }
+  let res = await previewRawData(param)
+  let tempRes = JSON.parse(res)
+  if (
+    tempRes &&
+    tempRes.default_channel_list &&
+    tempRes.default_channel_list.channel_name &&
+    tempRes.default_channel_list.channel_prior
+  ) {
+    options.channelListOptions = tempRes.default_channel_list.channel_name
+    for (let key in tempRes.default_segmentation_type_list) {
+      options.segmentOptions.push(key)
+    }
+    for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
+      form.channel.push({
+        channel_name: tempRes.default_channel_list.channel_name[i],
+        channel_prior: parseInt(tempRes.default_channel_list.channel_prior[i] * 100),
+      })
+    }
+    for (let key in tempRes.default_agg_rule['7']) {
+      form.agg_rule['7'].push({
+        new_column_name: key,
+        channels: tempRes.default_agg_rule['7'][key],
+      })
+    }
+    for (let key in tempRes.default_agg_rule['9']) {
+      form.agg_rule['9'].push({
+        new_column_name: key,
+        channels: tempRes.default_agg_rule['9'][key],
+      })
+    }
+  }
+}
+
+const createNewChannel = () => {
+  let channel = {
+    new_column_name: '',
+    channels: [],
+  }
+  form.agg_rule['customized'].push(channel)
+}
+
+const runConfirm = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+    channel_layout: data.channelNumber,
+    channel_agg_rule: {},
+    prior: {
+      channel_name: [],
+      channel_prior: [],
+    },
+    segmentation_type: form.segmentation_type,
+  }
+
+  for (let i = 0; i < form.agg_rule[data.channelNumber].length; i++) {
+    param.channel_agg_rule[form.agg_rule[data.channelNumber][i].new_column_name] =
+      form.agg_rule[data.channelNumber][i].channels
+  }
+  for (let i = 0; i < form.channel.length; i++) {
+    param.prior.channel_name.push(form.channel[i].channel_name)
+    param.prior.channel_prior.push(form.channel[i].channel_prior)
+  }
+
+  let res = await runModeling(param)
+  if (res && res.task_id) {
+    data.task_id = res.task_id
+    startPolling()
+  }
+}
+
+const runCancel = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+  }
+  let res = await revokeTask(param)
+  if (res && res.status) {
+    ElMessage({
+      type: 'success',
+      message: 'Task canceled',
+    })
+  }
+}
+
+//{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+const getCurrentModelTaskFn = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+  }
+  let res = await getCurrentModelTask(param)
+  if (res && res.task_status) {
+    progressForm.task_status = res.task_status
+    if (progressForm.task_status === 'FAILURE') {
+      ElMessage({
+        type: 'error',
+        message: 'FAILURE',
+      })
+      data.loading = false
+      stopPolling()
+    } else if (progressForm.task_status === 'REVOKED') {
+      ElMessage({
+        type: 'error',
+        message: 'REVOKED',
+      })
+      data.loading = false
+      stopPolling()
+    } else if (progressForm.task_status === 'SUCCESS') {
+      ElMessage({
+        type: 'success',
+        message: 'SUCCESS',
+      })
+      data.loading = false
+      stopPolling()
+      router.push({
+        name: 'output',
+        params: { group: pageParam.group_name, project: pageParam.project_name },
+      })
+    } else {
+      if (progressForm.percentage < 98) {
+        progressForm.percentage++
+      }
+    }
+  }
+}
+
+const startPolling = () => {
+  if (progressForm.isPolling) {
+    return
+  }
+  progressForm.isPolling = true
+  progressForm.percentage = 0
+  getCurrentModelTaskFn()
+  progressForm.pollingTimer = setInterval(getCurrentModelTaskFn, 2000)
+}
+
+const previewModelOutputParametersFn = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+  }
+  let res = await previewModelOutputParameters(param)
+  if (res) {
+    formatRes(res)
+  }
+}
+
+const formatRes = (res) => {
+  let tempRes = JSON.parse(res)
+  if (
+    tempRes &&
+    tempRes.default_channel_list &&
+    tempRes.default_channel_list.channel_name &&
+    tempRes.default_channel_list.channel_prior
+  ) {
+    options.channelListOptions = tempRes.default_channel_list.channel_name
+    for (let key in tempRes.default_segmentation_type_list) {
+      options.segmentOptions.push(key)
+    }
+    for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
+      form.channel.push({
+        channel_name: tempRes.default_channel_list.channel_name[i],
+        channel_prior: parseInt(tempRes.default_channel_list.channel_prior[i] * 100),
+      })
+    }
+    for (let key in tempRes.default_agg_rule['7']) {
+      form.agg_rule['7'].push({
+        new_column_name: key,
+        channels: tempRes.default_agg_rule['7'][key],
+      })
+    }
+    for (let key in tempRes.default_agg_rule['9']) {
+      form.agg_rule['9'].push({
+        new_column_name: key,
+        channels: tempRes.default_agg_rule['9'][key],
+      })
+    }
+  }
+}
+
+watch(
+  () => props.project_status,
+  (value) => {
+    data.project_status = value
+    init()
+  },
+  { deep: true, immediate: true },
+)
 </script>
 
 <style lang="less" scoped>

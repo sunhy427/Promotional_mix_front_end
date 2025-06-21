@@ -47,7 +47,7 @@ export function createMetaData() {
 }
 
 //get project list
-export function getProjectList() {
+export function getProjectList(params) {
   return request.get(`${basic.apiUrl}${params.group_name}/projects`)
 }
 
@@ -124,6 +124,8 @@ export function updatePermission(params) {
   )
 }
 
+
+
 // Add simulation
 export function addSimulation(params) {
   return request.put(
@@ -140,44 +142,53 @@ export function previewSimulationMetadata(params) {
   )
 }
 
-// // 获取group list
-// export function getGroupList(params) {
-//   return request.get(basic + 'groups', { params })
-// }
+// Contents API
+// Preview meta data for empty project
+export function previewRawData(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/metadata`,
+  )
+}
 
-// // 创建 group
-// export function createGroup(params) {
-//   return request.put(basic + 'groups/' + params.name)
-// }
+// ## Run modeling 
+// * POST ``/api/contents/${group_name}/${project_name}/modeling/run``
+export function runModeling(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/run`,
+    params,
+  )
+}
 
-// // 创建 project
-// export function createProject(params) {
-//   return request.put(`${basic}projects/${params.group_name}/${params.project_name}`)
-// }
+//## Revoke current model asnyc task
+//* DELETE ``/api/contents/${group_name}/${project_name}/modeling/current_task``
+export function revokeTask(params) {
+  return request.delete(`${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/current_task`)
+}
 
-// // 删除 group
-// export function deleteGroup(params) {
-//   return request.delete(`${basic}groups/${params.group_name}`)
-// }
+//## Get current model asnyc task
+//* GET ``/api/contents/${group_name}/${project_name}/modeling/current_task``
+export function getCurrentModelTask(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/current_task`,
+  )
+}
 
-// // rename group
-// export function renameGroup(params) {
-//   return request.post(`${basic}groups/${params.group_name}/rename`, params)
-// }
+//## Preview modeling output
+//* GET ``/api/contents/${group_name}/${project_name}/modeling/output/metadata|parameters|result?segmentation_type=Total Market``
+export function previewModelOutputMetadata(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/output/metadata`,
+  )
+}
 
-// // 获取指定 group 下的所有 project
-// export function getProjectList(params) {
-//   return request.get(`${basic}${params.group_name}/projects`)
-// }
+//## Preview modeling output
+//* GET ``/api/contents/${group_name}/${project_name}/modeling/output/metadata|parameters|result?segmentation_type=Total Market``
+export function previewModelOutputParameters(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/output/parameters`,
+  )
+}
 
-// // 删除 project
-// export function deleteProject(params) {
-//   return request.delete(`${basic}projects/${params.group_name}/${params.project_name}`)
-// }
-
-// export function forkProject(params) {
-//   return request.post(`${basic}projects/${params.group_name}/${params.project_name}/fork`, params)
-// }
 
 // // 流程 upload - Preview raw data
 // export function previewRawData(params) {

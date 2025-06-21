@@ -54,7 +54,6 @@ service.interceptors.response.use(
     }
 
     let res = response.data
-    console.log('res', res)
     if (res.status === 0) {
       if (res.message) {
         ElMessage.error(res.message)
