@@ -47,7 +47,6 @@ service.interceptors.request.use(
 //响应拦截
 service.interceptors.response.use(
   (response) => {
-    console.log('response', response.status, response.headers)
     if (response.status === 302 && response.headers.location) {
       window.location.href = response.headers.location // 跳转到重定向地址
       return new Promise(() => {}) // 中断当前请求链，避免后续处理

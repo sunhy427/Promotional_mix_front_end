@@ -44,6 +44,7 @@ const props = defineProps({
   }
 })
 const data = reactive({
+  pageName: route.name,
   currentProjectName: route.params.project,
   currentGroupName: route.params.group,
   projectList: [],

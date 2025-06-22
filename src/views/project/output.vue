@@ -7,19 +7,22 @@
     <div class="overview">
       <el-descriptions title="" :column="4" direction="vertical">
         <el-descriptions-item label="OutTime" :span="2" label-class-name="descriptions-label">{{
-          outputMetadata.Output_time
+          outputMetadata.output_time
         }}</el-descriptions-item>
         <el-descriptions-item
           label="Model time period"
           :span="2"
           label-class-name="descriptions-label"
-          >{{ outputMetadata.Model_time_period }}</el-descriptions-item
+          >{{ outputMetadata.model_time_period }}</el-descriptions-item
         >
         <el-descriptions-item label="Channels" label-class-name="descriptions-label">
           <p>Number: {{ outputMetadata.aggregate_channel_list.length }}</p>
           <p>
             channels:
-            <span v-for="(item, index) in outputMetadata.aggregate_channel_list" :key="index"
+            <span
+              v-for="(item, index) in outputMetadata.aggregate_channel_list"
+              :key="index"
+              style="margin: 0 5px"
               >{{ item }}
             </span>
           </p>
@@ -27,9 +30,9 @@
       </el-descriptions>
       <el-descriptions title="" :column="4">
         <el-descriptions-item label="Segment" :span="4" label-class-name="descriptions-label">
-          <el-select v-model="data.segmentValue" placeholder="Select" style="width: 240px">
+          <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 240px">
             <el-option
-              v-for="item in data.segmentOptions"
+              v-for="item in outputMetadata.segmentOptions"
               :key="item"
               :label="item"
               :value="item"
@@ -45,30 +48,30 @@
     <el-card>
       <div class="card-content">
         <el-row>
-          <el-col :span="8">
+          <el-col :span="8" v-if="outputData.total_cost.length > 0">
             <span class="title">Total Cost</span>
-            <span>1,456M</span>
+            <span>{{ outputData.total_cost[1] }}</span>
           </el-col>
-          <el-col :span="8">
+          <el-col :span="8" v-if="outputData.total_sales.length > 0">
             <span class="title">Total Sales</span>
-            <span>1,960M</span>
+            <span>{{ outputData.total_sales[1] }}</span>
           </el-col>
           <el-col :span="8">
             <span class="title">Total Cost/Total Sales</span>
-            <span>73%</span>
+            <span>{{ outputData.total_cost_vs_total_sales }}%</span>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="14">
             <span class="title">Cost Distribution</span>
-            <div class="chart-content">
+            <div class="chart-content" v-if="costDistributionOptions.series[0].data.length > 0">
               <bar :options="costDistributionOptions" chartId="costDistribution"></bar>
             </div>
           </el-col>
           <el-col :span="10">
             <span class="title">Current Unit Price</span>
             <div class="chart-content">
-              <el-table :data="tableData" border style="width: 100%">
+              <el-table :data="outputData.current_unit_price" border style="width: 100%">
                 <el-table-column prop="channel" label="Channel" align="center" />
                 <el-table-column prop="price" label="Unit Price(CNY per TP)" align="center" />
               </el-table>
@@ -79,13 +82,19 @@
           <el-col :span="24">
             <span class="title">Cost by Channel VS Total Sales Trend</span>
             <el-select
-              v-model="data.costByChannelValue"
+              v-model="outputData.cost_by_channel_vs_total_sales_trend_select"
               placeholder="Select"
               class="channel-select-input"
+              @change="changeCost_by_channel_vs_total_sales_trend"
             >
-              <el-option v-for="item in channeOptions" :key="item" :label="item" :value="item" />
+              <el-option
+                v-for="item in outputData.cost_by_channel_vs_total_sales_trend_options"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
             </el-select>
-            <div class="chart-content">
+            <div class="chart-content" v-if="outputData.show_cost_by_channel_vs_total_sales_trend">
               <bar :options="costByChannelOptions" chartId="costByChannel"></bar>
             </div>
           </el-col>
@@ -94,14 +103,24 @@
           <el-col :span="24">
             <span class="title">Touch Points by Channel VS Total Sales Trend</span>
             <el-select
-              v-model="data.touchByChannelValue"
+              v-model="outputData.torch_points_by_channel_vs_total_sales_trend_select"
               placeholder="Select"
               class="channel-select-input"
+              @change="changeTorch_points_by_channel_vs_total_sales_trend"
             >
-              <el-option v-for="item in channeOptions" :key="item" :label="item" :value="item" />
+              <el-option
+                v-for="item in outputData.torch_points_by_channel_vs_total_sales_trend_options"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
             </el-select>
             <div class="chart-content">
-              <bar :options="touchByChannelOptions" chartId="touchByChannel"></bar>
+              <bar
+                :options="touchByChannelOptions"
+                chartId="touchByChannel"
+                v-if="touchByChannelOptions.xAxis.data.length > 0"
+              ></bar>
             </div>
           </el-col>
         </el-row>
@@ -117,13 +136,21 @@
           <el-col :span="10">
             <span class="title">Promotion VS Non-promotion</span>
             <div class="chart-content">
-              <bar :options="promotionOptions" chartId="promotion"></bar>
+              <bar
+                :options="promotionOptions"
+                chartId="promotion"
+                v-if="promotionOptions.xAxis[0].data.length > 0"
+              ></bar>
             </div>
           </el-col>
           <el-col :span="14">
             <span class="title">Total promotion Contribution</span>
             <div class="chart-content">
-              <bar :options="totalPromotionOptions" chartId="totalPromotion"></bar>
+              <bar
+                :options="totalPromotionOptions"
+                chartId="totalPromotion"
+                v-if="totalPromotionOptions.series[0].data.length > 0"
+              ></bar>
             </div>
           </el-col>
         </el-row>
@@ -131,15 +158,30 @@
           <el-col :span="24">
             <span class="title">Promotion VS Non-promotion</span>
             <el-segmented v-model="data.ROItrigger" :options="['ROI', 'MROI']" />
-            <el-select
-              v-model="data.ROIChannelValue"
-              placeholder="Select"
-              class="channel-select-input"
-            >
-              <el-option v-for="item in ROIOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <div class="chart-content">
-              <bar :options="ROIChartOptions" chartId="ROIChart"></bar>
+            <div v-if="data.ROItrigger === 'ROI'">
+              <el-select
+                v-model="data.ROIChannelValue"
+                placeholder="Select"
+                class="channel-select-input"
+                @click="changeROI"
+              >
+                <el-option
+                  v-for="item in outputData.roi_options"
+                  :key="item"
+                  :label="item"
+                  :value="item"
+                />
+              </el-select>
+              <div class="chart-content">
+                <bar
+                  :options="ROIChartOptions"
+                  chartId="ROIChart"
+                  v-if="ROIChartOptions.xAxis.data.length > 0"
+                ></bar>
+              </div>
+            </div>
+            <div v-if="data.ROItrigger === 'MROI'">
+
             </div>
           </el-col>
         </el-row>
@@ -147,20 +189,20 @@
           <el-col :span="24">
             <span class="title">Response Curve</span>
             <el-select
-              v-model="data.responseCurveValue"
+              v-model="outputData.response_curve_select"
               placeholder="Select"
               class="channel-select-input"
             >
-              <el-option v-for="item in channeOptions" :key="item" :label="item" :value="item" />
+              <el-option v-for="item in outputData.response_curve_options" :key="item" :label="item" :value="item" />
             </el-select>
             <div class="chart-content">
-              <bar :options="responseCurveOptions" chartId="responseCurveChart"></bar>
+              <bar :options="responseCurveOptions" chartId="responseCurveChart" v-if="responseCurveOptions.xAxis.data.length > 0"></bar>
             </div>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="10">
-            <span class="title">Current Unit Price</span>
+            <span class="title">Model Metrics</span>
 
             <div class="chart-content">
               <el-table :data="ModelMetricsTableData" border style="width: 100%">
@@ -208,7 +250,7 @@
 <script setup>
 import bar from '../../components/bar.vue'
 import { reactive, onMounted } from 'vue'
-import { previewModelOutputMetadata } from '../../api/api'
+import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -219,15 +261,44 @@ const props = defineProps({
 })
 const route = useRoute()
 const router = useRouter()
+
 const pageParam = reactive({
   group: route.params.group,
   project: route.params.project,
 })
 
 const outputMetadata = reactive({
-  Output_time: '',
-  Model_time_period: '',
+  output_time: '',
+  model_time_period: '',
   aggregate_channel_list: [],
+  segmentOptions: [],
+  segmentOptions_select: ''
+})
+
+const form = reactive({
+  segmentation_type: '',
+})
+
+const outputData = reactive({
+  cost_by_channel_vs_total_sales_trend: {},
+  cost_by_channel_vs_total_sales_trend_options: [],
+  cost_by_channel_vs_total_sales_trend_select: '',
+  show_cost_by_channel_vs_total_sales_trend: false,
+  current_unit_price: [],
+  mroi: {},
+  promotion_vs_nonpromotion: {},
+  response_curve: {},
+  response_curve_options: [],
+  roi: {},
+  roi_options: ['cost', 'cost_direct'],
+  roi_select: '',
+  torch_points_by_channel_vs_total_sales_trend: {},
+  torch_points_by_channel_vs_total_sales_trend_options: [],
+  torch_points_by_channel_vs_total_sales_trend_select: '',
+  total_cost: [],
+  total_cost_vs_total_sales: {},
+  total_promotion_contribution: {},
+  total_sales: [],
 })
 
 const previewModelOutputMetadataFn = async () => {
@@ -237,34 +308,199 @@ const previewModelOutputMetadataFn = async () => {
   }
   let res = await previewModelOutputMetadata(param)
   if (res) {
-    outputMetadata.Output_time = res.Output_time
-    outputMetadata.Model_time_period = res.Model_time_period
+    outputMetadata.output_time = res.output_time
+    outputMetadata.model_time_period = res.model_time_period
     outputMetadata.aggregate_channel_list = res.aggregate_channel_list
+    outputMetadata.segmentOptions = res.segment_options
+    form.segmentation_type = outputMetadata.segmentOptions[0]
   }
 }
 
+const previewModelOutputResultFn = async () => {
+  let param = {
+    group_name: pageParam.group,
+    project_name: pageParam.project,
+    segmentation_type: 'Total_market',
+  }
+  let res = await previewModelOutputResult(param)
+  if (res) {
+    outputData.total_cost = res.total_cost
+    outputData.total_sales = res.total_sales
+    outputData.total_cost_vs_total_sales = parseInt(res.total_cost_vs_total_sales * 100)
+    for (let key in res.cost_distribution) {
+      let item = {
+        name: key,
+        value: res.cost_distribution[key],
+      }
+      costDistributionOptions.series[0].data.push(item)
+    }
+    //current_unit_price
+    for (let key in res.current_unit_price) {
+      let item = {
+        channel: key,
+        price: res.current_unit_price[key].toFixed(2),
+      }
+      outputData.current_unit_price.push(item)
+    }
+
+    outputData.cost_by_channel_vs_total_sales_trend_options = Object.keys(
+      res.cost_by_channel_vs_total_sales_trend,
+    )
+    outputData.cost_by_channel_vs_total_sales_trend_select =
+      outputData.cost_by_channel_vs_total_sales_trend_options[0]
+
+    outputData.cost_by_channel_vs_total_sales_trend = res.cost_by_channel_vs_total_sales_trend
+    changeCost_by_channel_vs_total_sales_trend()
+
+    outputData.torch_points_by_channel_vs_total_sales_trend =
+      res.torch_points_by_channel_vs_total_sales_trend
+    outputData.torch_points_by_channel_vs_total_sales_trend_options = Object.keys(
+      res.torch_points_by_channel_vs_total_sales_trend,
+    )
+    outputData.torch_points_by_channel_vs_total_sales_trend_select =
+      outputData.torch_points_by_channel_vs_total_sales_trend_options[0]
+    changeTorch_points_by_channel_vs_total_sales_trend()
+
+    promotionOptions.series[0].data = [res.promotion_vs_nonpromotion.y.promotion]
+    promotionOptions.series[1].data = [res.promotion_vs_nonpromotion.y.nonpromotion]
+    promotionOptions.xAxis[0].data = res.promotion_vs_nonpromotion.x
+
+    //totalPromotionOptions
+    for (let key in res.total_promotion_contribution) {
+      let item = {
+        name: key,
+        value: res.total_promotion_contribution[key],
+      }
+      totalPromotionOptions.series[0].data.push(item)
+    }
+    outputData.roi = res.roi
+    outputData.roi_select = outputData.roi_options[0]
+    changeROI()
+
+    outputData.response_curve = res.response_curve
+    outputData.response_curve_options = Object.keys(res.response_curve)
+    outputData.response_curve_select = outputData.response_curve_options[0]
+    changeResponse_curve()
+
+    let modelMetrics = {
+      mape: res.model_metrics.MAPE.toFixed(2),
+      R2: res.model_metrics.R_square.toFixed(2)
+    }
+    ModelMetricsTableData.push(modelMetrics)
+  }
+}
+
+const changeCost_by_channel_vs_total_sales_trend = () => {
+  costByChannelOptions.xAxis.data = []
+  costByChannelOptions.series = []
+  outputData.show_cost_by_channel_vs_total_sales_trend = false
+
+  console.log(
+    'outputData.cost_by_channel_vs_total_sales_trend_select',
+    outputData.cost_by_channel_vs_total_sales_trend_select,
+    outputData.cost_by_channel_vs_total_sales_trend[
+      outputData.cost_by_channel_vs_total_sales_trend_select
+    ]['cost']['y'],
+  )
+
+  costByChannelOptions.series.push({
+    name: 'Cost',
+    type: 'line',
+    data: outputData.cost_by_channel_vs_total_sales_trend[
+      outputData.cost_by_channel_vs_total_sales_trend_select
+    ]['cost']['y'],
+    markPoint: {
+      data: [
+        { type: 'max', name: 'Max' },
+        { type: 'min', name: 'Min' },
+      ],
+    },
+  })
+  costByChannelOptions.series.push({
+    name: 'Sales',
+    type: 'line',
+    data: outputData.cost_by_channel_vs_total_sales_trend[
+      outputData.cost_by_channel_vs_total_sales_trend_select
+    ]['sales']['y'],
+    markPoint: {
+      data: [
+        { type: 'max', name: 'Max' },
+        { type: 'min', name: 'Min' },
+      ],
+    },
+  })
+
+  costByChannelOptions.xAxis.data =
+    outputData.cost_by_channel_vs_total_sales_trend[
+      outputData.cost_by_channel_vs_total_sales_trend_select
+    ]['cost']['x']
+  outputData.show_cost_by_channel_vs_total_sales_trend = true
+}
+
+const changeTorch_points_by_channel_vs_total_sales_trend = () => {
+  touchByChannelOptions.xAxis.data = []
+  touchByChannelOptions.series = []
+
+  touchByChannelOptions.series.push({
+    name: 'Touch Points',
+    type: 'line',
+    data: outputData.torch_points_by_channel_vs_total_sales_trend[
+      outputData.torch_points_by_channel_vs_total_sales_trend_select
+    ]['tp']['y'],
+    markPoint: {
+      data: [
+        { type: 'max', name: 'Max' },
+        { type: 'min', name: 'Min' },
+      ],
+    },
+  })
+  touchByChannelOptions.series.push({
+    name: 'Total Sales',
+    type: 'line',
+    data: outputData.torch_points_by_channel_vs_total_sales_trend[
+      outputData.torch_points_by_channel_vs_total_sales_trend_select
+    ]['sales']['y'],
+    markPoint: {
+      data: [
+        { type: 'max', name: 'Max' },
+        { type: 'min', name: 'Min' },
+      ],
+    },
+  })
+
+  touchByChannelOptions.xAxis.data =
+    outputData.torch_points_by_channel_vs_total_sales_trend[
+      outputData.torch_points_by_channel_vs_total_sales_trend_select
+    ]['sales']['x']
+}
+
+const changeROI = () => {
+  ROIChartOptions.xAxis.data = []
+  ROIChartOptions.series[0].data = outputData.roi[outputData.roi_select].y
+  ROIChartOptions.xAxis.data = outputData.roi[outputData.roi_select].x
+  console.log('ROIChartOptions', ROIChartOptions)
+}
+
+const changeROItrigger = () => {}
+
+const changeResponse_curve = () => {
+  responseCurveOptions.xAxis.data = []
+  responseCurveOptions.series[0].data = outputData.response_curve[outputData.response_curve_select].y
+  responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
+}
 onMounted(() => {
   previewModelOutputMetadataFn()
+  previewModelOutputResultFn()
 })
 
 const data = reactive({
-  segmentOptions: ['Total Market', 'Segment1', 'Segment2'],
-  segmentValue: '',
   costByChannelValue: '',
   touchByChannelValue: '',
   ROItrigger: 'ROI',
   ROIChannelValue: 'cost',
   responseCurveValue: '',
 })
-const tableData = reactive([
-  { price: 1048, channel: 'F2F Call' },
-  { price: 735, channel: 'Hospital Talk' },
-  { price: 580, channel: 'Digital-GSK' },
-  { price: 484, channel: 'Digital-third party' },
-  { price: 300, channel: 'Meeting online' },
-  { price: 300, channel: 'Meeting offline' },
-  { price: 300, channel: 'Sponsorship' },
-])
+
 const costDistributionOptions = reactive({
   tooltip: {
     trigger: 'item',
@@ -291,22 +527,14 @@ const costDistributionOptions = reactive({
       label: {
         formatter: '{b}: {c}B',
       },
-      data: [
-        { value: 1048, name: 'F2F Call' },
-        { value: 735, name: 'Hospital Talk' },
-        { value: 580, name: 'Digital-GSK' },
-        { value: 484, name: 'Digital-third party' },
-        { value: 300, name: 'Meeting online' },
-        { value: 300, name: 'Meeting offline' },
-        { value: 300, name: 'Sponsorship' },
-      ],
+      data: [],
     },
   ],
 })
 const costByChannelOptions = reactive({
   xAxis: {
     type: 'category',
-    data: ['20-Nov', '20-Dec', '21-Jan', '21-Feb', '21-Mar', '21-Apr', '21-May'],
+    data: [],
   },
   yAxis: {
     type: 'value',
@@ -314,36 +542,7 @@ const costByChannelOptions = reactive({
       formatter: '{value}M',
     },
   },
-  series: [
-    {
-      name: 'Cost',
-      type: 'line',
-      data: [120, 132, 101, 134, 90, 230, 210],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' },
-        ],
-      },
-    },
-    {
-      name: 'Total Sales',
-      type: 'line',
-      data: [220, 182, 191, 234, 290, 330, 310],
-      markPoint: {
-        // label: {
-        //   show: true,
-        //   formatter:
-        //     'The peak F2F call cost occurred in Dec.2021,reaching 180M,\n 48% above the average of the analysis period.',
-        //   offset: [0, -10],
-        // },
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' },
-        ],
-      },
-    },
-  ],
+  series: [],
   tooltip: {
     trigger: 'axis',
   },
@@ -364,7 +563,7 @@ const costByChannelOptions = reactive({
 const touchByChannelOptions = reactive({
   xAxis: {
     type: 'category',
-    data: ['20-Nov', '20-Dec', '21-Jan', '21-Feb', '21-Mar', '21-Apr', '21-May'],
+    data: [],
   },
   yAxis: {
     type: 'value',
@@ -372,36 +571,7 @@ const touchByChannelOptions = reactive({
       formatter: '{value}M',
     },
   },
-  series: [
-    {
-      name: 'Touch Points',
-      type: 'line',
-      data: [120, 132, 101, 134, 90, 230, 210],
-      markPoint: {
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' },
-        ],
-      },
-    },
-    {
-      name: 'Total Sales',
-      type: 'line',
-      data: [220, 182, 191, 234, 290, 330, 310],
-      markPoint: {
-        // label: {
-        //   show: true,
-        //   formatter:
-        //     'The peak F2F call cost occurred in Dec.2021,reaching 180M,\n 48% above the average of the analysis period.',
-        //   offset: [0, -10],
-        // },
-        data: [
-          { type: 'max', name: 'Max' },
-          { type: 'min', name: 'Min' },
-        ],
-      },
-    },
-  ],
+  series: [],
   tooltip: {
     trigger: 'axis',
   },
@@ -445,7 +615,7 @@ const promotionOptions = reactive({
   xAxis: [
     {
       type: 'category',
-      data: ['Sales contribution'],
+      data: [],
     },
   ],
   yAxis: [
@@ -464,7 +634,7 @@ const promotionOptions = reactive({
       emphasis: {
         focus: 'series',
       },
-      data: [120],
+      data: [],
       label: {
         show: true,
         formatter: (params) => params.value + 'B',
@@ -480,7 +650,7 @@ const promotionOptions = reactive({
       emphasis: {
         focus: 'series',
       },
-      data: [22],
+      data: [],
       label: {
         show: true,
         formatter: (params) => params.value + 'B',
@@ -517,23 +687,15 @@ const totalPromotionOptions = reactive({
       label: {
         formatter: '{b}: {c}B',
       },
-      data: [
-        { value: 1048, name: 'F2F Call' },
-        { value: 735, name: 'Hospital Talk' },
-        { value: 580, name: 'Digital-GSK' },
-        { value: 484, name: 'Digital-third party' },
-        { value: 300, name: 'Meeting online' },
-        { value: 300, name: 'Meeting offline' },
-        { value: 300, name: 'Sponsorship' },
-      ],
+      data: [],
     },
   ],
 })
-const ROIOptions = reactive(['cost', 'cost-indirect cost'])
+
 const ROIChartOptions = reactive({
   xAxis: {
     type: 'category',
-    data: channeOptions,
+    data: [],
   },
   yAxis: {
     type: 'value',
@@ -543,7 +705,7 @@ const ROIChartOptions = reactive({
   },
   series: [
     {
-      data: [120, 200, 150, 80, 70, 110, 130],
+      data: [],
       type: 'bar',
       label: {
         show: true,
@@ -558,7 +720,7 @@ const ROIChartOptions = reactive({
 const responseCurveOptions = reactive({
   xAxis: {
     type: 'category',
-    data: ['0', '20', '40', '60', '80', '100', '120'],
+    data: [],
     // axisLabel: {
     //   formatter: '{value}%',
     // },
@@ -573,7 +735,7 @@ const responseCurveOptions = reactive({
     {
       name: 'Revenue',
       type: 'line',
-      data: [120, 132, 101, 134, 90, 230, 210],
+      data: [],
       markLine: {
         itemStyle: {
           //盒须图样式。
@@ -607,7 +769,7 @@ const responseCurveOptions = reactive({
   },
   legend: {},
 })
-const ModelMetricsTableData = reactive([{ mape: 8.41, R2: 0.623 }])
+const ModelMetricsTableData = reactive([])
 
 const goContinue = () => {}
 </script>

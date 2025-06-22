@@ -13,7 +13,7 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i> Adjust priors?</template>
-            <el-radio-group v-model="data.labelPosition" aria-label="label position" size="small">
+            <el-radio-group v-model="form.adjust_priors" aria-label="label position" size="small">
               <el-radio-button :value="true">True</el-radio-button>
               <el-radio-button :value="false">false</el-radio-button>
             </el-radio-group>
@@ -109,7 +109,7 @@
       </div>
     </el-card>
     <el-card v-if="progressForm.isPolling">
-      <el-progress :percentage="50" :stroke-width="15" striped striped-flow :duration="50" />
+      <el-progress :percentage="progressForm.percentage" :stroke-width="15" striped striped-flow :duration="50" />
     </el-card>
   </div>
 </template>
@@ -123,6 +123,8 @@ import {
   previewModelOutputParameters,
 } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+
 const props = defineProps({
   project_status: {
     type: String,
@@ -152,6 +154,7 @@ const form = reactive({
     customized: [],
   },
   segmentation_type: '',
+  adjust_priors: true,
 })
 
 const progressForm = reactive({
@@ -182,35 +185,8 @@ const getPreviewRawData = async () => {
     project_name: pageParam.project,
   }
   let res = await previewRawData(param)
-  let tempRes = JSON.parse(res)
-  if (
-    tempRes &&
-    tempRes.default_channel_list &&
-    tempRes.default_channel_list.channel_name &&
-    tempRes.default_channel_list.channel_prior
-  ) {
-    options.channelListOptions = tempRes.default_channel_list.channel_name
-    for (let key in tempRes.default_segmentation_type_list) {
-      options.segmentOptions.push(key)
-    }
-    for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
-      form.channel.push({
-        channel_name: tempRes.default_channel_list.channel_name[i],
-        channel_prior: parseInt(tempRes.default_channel_list.channel_prior[i] * 100),
-      })
-    }
-    for (let key in tempRes.default_agg_rule['7']) {
-      form.agg_rule['7'].push({
-        new_column_name: key,
-        channels: tempRes.default_agg_rule['7'][key],
-      })
-    }
-    for (let key in tempRes.default_agg_rule['9']) {
-      form.agg_rule['9'].push({
-        new_column_name: key,
-        channels: tempRes.default_agg_rule['9'][key],
-      })
-    }
+  if (res) {
+    formatRes(res)
   }
 }
 
@@ -228,20 +204,22 @@ const runConfirm = async () => {
     project_name: pageParam.project,
     channel_layout: data.channelNumber,
     channel_agg_rule: {},
-    prior: {
+    prior_info_input: {
       channel_name: [],
       channel_prior: [],
     },
     segmentation_type: form.segmentation_type,
+    adjust_priors: form.adjust_priors,
   }
 
   for (let i = 0; i < form.agg_rule[data.channelNumber].length; i++) {
     param.channel_agg_rule[form.agg_rule[data.channelNumber][i].new_column_name] =
       form.agg_rule[data.channelNumber][i].channels
   }
+  //adjust_priors
   for (let i = 0; i < form.channel.length; i++) {
-    param.prior.channel_name.push(form.channel[i].channel_name)
-    param.prior.channel_prior.push(form.channel[i].channel_prior)
+    param.prior_info_input.channel_name.push(form.channel[i].channel_name)
+    param.prior_info_input.channel_prior.push(form.channel[i].channel_prior / 100)
   }
 
   let res = await runModeling(param)
@@ -300,8 +278,8 @@ const getCurrentModelTaskFn = async () => {
         params: { group: pageParam.group_name, project: pageParam.project_name },
       })
     } else {
-      if (progressForm.percentage < 98) {
-        progressForm.percentage++
+      if (progressForm.percentage < 95) {
+        progressForm.percentage = progressForm.percentage + 5
       }
     }
   }
@@ -314,7 +292,12 @@ const startPolling = () => {
   progressForm.isPolling = true
   progressForm.percentage = 0
   getCurrentModelTaskFn()
-  progressForm.pollingTimer = setInterval(getCurrentModelTaskFn, 2000)
+  progressForm.pollingTimer = setInterval(getCurrentModelTaskFn, 10000)
+}
+
+const stopPolling = () => {
+  progressForm.isPolling = false
+  clearInterval(progressForm.pollingTimer)
 }
 
 const previewModelOutputParametersFn = async () => {
@@ -329,7 +312,7 @@ const previewModelOutputParametersFn = async () => {
 }
 
 const formatRes = (res) => {
-  let tempRes = JSON.parse(res)
+  let tempRes = res
   if (
     tempRes &&
     tempRes.default_channel_list &&
@@ -337,6 +320,17 @@ const formatRes = (res) => {
     tempRes.default_channel_list.channel_prior
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
+
+    // const sortedKeys = Object.keys(tempRes.default_segmentation_type_list).sort((a,b) => {
+    //   const numA = parseInt(a)
+    //   const numB = parseInt(b)
+    //   return numA - numB
+    // })
+    // const sortedObj = {}
+    // sortedKeys.forEach(key => {
+    //   sortedKeys[key] = tempRes.default_segmentation_type_list[key]
+    // })
+    // console.log('sortedKeys', sortedKeys)
     for (let key in tempRes.default_segmentation_type_list) {
       options.segmentOptions.push(key)
     }

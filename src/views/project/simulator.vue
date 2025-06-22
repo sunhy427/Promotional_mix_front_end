@@ -11,26 +11,29 @@
       </el-button>
     </div>
     <ul class="list-content">
-      <li>
+      <li v-for="(item, index) in data.simulationList" :key="index">
         <div class="card-title">
           <i>1</i>
-          <span>Simulation 1</span>
+          <span>{{ item.simulation_name }}</span>
         </div>
         <el-card>
-          <el-icon class="delete-btn"><Delete /></el-icon>
-          <el-form label-width="auto" label-position="left" :model="metadata" ref="metadataFormRef">
+          <el-icon class="delete-btn" @click="deleteConfirm(item.simulation_name)"
+            ><Delete
+          /></el-icon>
+          <el-icon class="delete-btn" @click="renameFn(item)"><EditPen /></el-icon>
+          <el-form label-width="auto" label-position="left" ref="metadataFormRef">
             <el-form-item label="Optimization Type" label-width="200px">
-              <span>{{ metadata.optimization_type }}</span>
+              <span>{{ item.optimization_type }}</span>
             </el-form-item>
             <el-form-item label="Time Period" prop="time_period">
-              <el-input-number v-model="metadata.time_period" :min="0" :max="100" size="small">
+              <el-input-number v-model="item.time_period" :min="0" :max="100" size="small">
                 <template #suffix>
                   <span>Month</span>
                 </template>
               </el-input-number>
             </el-form-item>
             <el-form-item label="Budget(of the time period)">
-              <el-input-number v-model="metadata.budget" :min="0" size="small" style="width: 250px">
+              <el-input-number v-model="item.budget" :min="0" size="small" style="width: 250px">
                 <template #suffix>
                   <span>CNY</span>
                 </template>
@@ -47,7 +50,8 @@
             <el-form-item>
               <p class="title">Unit Price Change</p>
               <el-table
-                :data="metadata.unit_price_and_constraints"
+                v-if="data.simulationList[index].unit_price_change"
+                :data="data.simulationList[index].unit_price_change"
                 border
                 style="width: 100%"
                 header-row-class-name="header-unit"
@@ -59,61 +63,108 @@
                     <el-segmented
                       v-model="scope.row.if_changes"
                       :options="['unchanged', 'up', 'down']"
-                      disabled
                     />
                   </template>
                 </el-table-column>
                 <el-table-column label="Change percentage(1~100%)">
                   <template #default="scope">
                     <span v-if="scope.row.if_changes === 'up' || scope.row.if_changes === 'down'">
-                      {{ scope.row.change_percentage }}%
+                      <el-input-number
+                        v-model="item.unit_price_change[scope.$index].change_percentage"
+                        :min="1"
+                        :max="100"
+                      >
+                        <template #suffix>
+                          <span>%</span>
+                        </template>
+                      </el-input-number>
                     </span>
                   </template>
                 </el-table-column>
               </el-table>
             </el-form-item>
-            <div class="constraint-wrap">
-              <p class="title">Constraints on Channels</p>
-              <el-row v-for="(item, index) in metadata.unit_price_and_constraints" :key="index">
+            <div class="constraint-wrap" v-if="item.constraints_on_channels_select">
+              <p class="title" style="margin-bottom: 30px">
+                Constraints on Channels
+                <span style="float: right">
+                  <span>AB proportion</span>
+                  <el-select
+                    v-model="item.constraints_on_channels_select"
+                    placeholder="Select"
+                    style="width: 150px; margin: 0 15px"
+                    size="small"
+                  >
+                    <el-option
+                      v-for="item in item.constraints_on_channels_options"
+                      :key="item"
+                      :label="item"
+                      :value="item"
+                    />
+                  </el-select>
+                </span>
+              </p>
+
+              <el-row
+                v-for="(unitValue, unitKey, unitIndex) in item.constraints_on_channels[
+                  item.constraints_on_channels_select
+                ]"
+                :key="unitIndex"
+              >
                 <el-col :span="4">
-                  <span class="title">{{ item.channel }}</span>
+                  <span class="title">{{ unitKey }}</span>
                 </el-col>
-                <el-col :span="7">
+
+                <el-col :span="6">
                   <span>Channel Constraint</span>
                   <el-segmented
-                    v-model="item.channel_contraint"
-                    :options="['Yes', 'No']"
+                    v-model="unitValue.constraint"
                     size="small"
-                  />
+                    :options="[true, false]"
+                  >
+                    <template #default="scope">
+                      <div class="flex flex-col items-center gap-2 p-2">
+                        <div>{{ scope.item }}</div>
+                      </div>
+                    </template>
+                  </el-segmented>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="5">
                   <span>Min Speed</span>
                   <el-input-number
-                    v-model="item.min_spend"
+                    v-model="unitValue.min_spend"
                     :controls="false"
                     size="small"
-                    :disabled="item.channel_contraint === 'No'"
+                    :disabled="unitValue.constraint === false"
                   />
                 </el-col>
                 <el-col :span="6">
                   <span>Max Speed</span>
                   <el-input-number
-                    v-model="item.max_spend"
+                    v-model="unitValue.max_spend"
                     :controls="false"
                     size="small"
-                    :disabled="item.channel_contraint === 'No'"
+                    :disabled="unitValue.constraint === false"
+                  />
+                </el-col>
+                <el-col :span="3" v-if="unitKey === 'ht' || unitKey === 'f2f'">
+                  <el-input-number
+                    v-model="unitValue.ab_proportion"
+                    :controls="false"
+                    size="small"
+                    :disabled="item.constraints_on_channels_select === 'no_weight'"
                   />
                 </el-col>
               </el-row>
             </div>
           </el-form>
           <div class="btn-wrap">
-            <el-button type="primary">Commit</el-button>
+            <el-button type="primary" @click="commitSimulation(index)" :loading="data.loading">Commit</el-button>
             <el-button type="info">Reset</el-button>
           </div>
-          <div class="output-wrap">
+          <!-- v-if="item.showOutput" -->
+          <div class="output-wrap" >
             <el-divider />
-            <Output></Output>
+            <Output :simulation="item.simulation_name"></Output>
           </div>
         </el-card>
       </li>
@@ -125,21 +176,23 @@
         </el-form-item>
         <el-form-item label="Optimization Type" prop="optimization_type">
           <el-segmented
-            v-model="simulationForm.optimization_type"
-            :options="['Fixed Budget', 'MCCP suggestion']"
+            v-model="simulationForm.Optimization_Type"
+            :options="['fixed_budget', 'mccp_suggestion']"
           />
         </el-form-item>
         <el-form-item
           label="Select the MCCP suggestion reference month "
-          v-if="simulationForm.optimization_type === 'MCCP suggestion'"
+          v-if="simulationForm.Optimization_Type === 'mccp_suggestion'"
           prop="MCCP_cycle"
         >
-          <el-date-picker
-            v-model="simulationForm.MCCP_cycle"
-            type="date"
-            placeholder="Pick a day"
-            value-format="YYYYMMDD"
-          />
+          <el-select v-model="simulationForm.MCCP_cycle" placeholder="Select" style="width: 440px">
+            <el-option
+              v-for="item in simulationForm.MCCP_cycle_options"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
         </el-form-item>
         <p class="tips">
           *NOTE: The MCCP reference month can be selected up to month T+1, if the analyzed period
@@ -153,20 +206,65 @@
         </div>
       </template>
     </el-dialog>
+    <el-dialog v-model="data.renameDialog" title="Rename Simulation">
+      <el-form ref="renameFormRef">
+        <el-form-item label="Enter a new name" prop="simulation_name">
+          <el-input v-model="data.renameForm.simulation_name" disabled />
+        </el-form-item>
+        <el-form-item label="Enter a new name" prop="simulation_name">
+          <el-input v-model="data.renameForm.simulation_name_new" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="data.dialogFormVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="renameComfirm"> Confirm </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
-import { reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { addSimulation, previewSimulationMetadata } from '../../api/api'
+import { onMounted, reactive, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  addSimulation,
+  previewModelSimulatingMetadata,
+  previewRawData,
+  simulationRename,
+  deleteSimulation,
+  runSimulation
+} from '../../api/api'
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
+
 const router = useRouter()
 
 const data = reactive({
+  loading: false,
   dialogFormVisible: false,
   group_name: router.currentRoute._value.params.group,
   project_name: router.currentRoute._value.params.project,
+  project_status: '',
+  simulationList: [],
+  simulationProps: [],
+  renameDialog: false,
+  renameForm: {
+    simulation_name: '',
+    simulation_name_new: '',
+  },
+  changesList: ['unchanged', 'up', 'down'],
+})
+
+const props = defineProps({
+  project_status: {
+    type: String,
+    requred: true,
+  },
+  simulation_list: {
+    type: Array,
+    required: true,
+  },
 })
 
 const simulationFormRules = reactive({
@@ -182,18 +280,31 @@ const simulationFormRules = reactive({
 
 const simulationForm = reactive({
   simulation_name: '',
-  optimization_type: 'Fixed Budget', // MCCP suggestion | Fixed Budget
+  Optimization_Type: 'fixed_budget', // MCCP suggestion | Fixed Budget
   MCCP_cycle: '', // 20250225
+  MCCP_cycle_options: [],
 })
 
 const addSimulationFn = () => {
   clearObject(simulationForm)
   data.dialogFormVisible = true
+  previewRawDataFn()
+}
+
+const previewRawDataFn = async () => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+  }
+  let res = await previewRawData(param)
+  if (res && res.mccp_yyyymm_list.length > 0) {
+    simulationForm.MCCP_cycle_options = res.mccp_yyyymm_list
+  }
 }
 
 const clearObject = (obj) => {
   simulationForm.simulation_name = ''
-  simulationForm.optimization_type = 'Fixed Budget'
+  simulationForm.Optimization_Type = 'fixed_budget'
   simulationForm.MCCP_cycle = ''
 }
 
@@ -207,53 +318,121 @@ const addConfirmFn = async () => {
         project_name: data.project_name,
         ...simulationForm,
       }
-      // let res = await addSimulation(param)
-      ElMessage({
-        message: 'Create success!',
-        type: 'success',
-      })
-      data.dialogFormVisible = false
+      let res = await addSimulation(param)
+      if (res) {
+        ElMessage({
+          message: 'Create success!',
+          type: 'success',
+        })
+        data.dialogFormVisible = false
+      }
     } else {
       ElMessage.error('The input is incomplete. Please fill in all the required fields.')
     }
   })
 }
 
-const metadata = reactive({
-  optimization_type: 'Fixed Budget', // "MCCP suggestion"|"Fixed Budget"
-  time_period: 6,
-  budget: 0,
-  unit_price_and_constraints: [
-    {
-      channel: 'F2F call',
-      unit_price: 3334412,
-      if_changes: 'unchanged',
-      change_percentage: 0,
-      channel_contraint: 'Yes',
-      min_spend: 100000,
-      max_spend: 200000,
-      field_configurable: ['Unit Price', 'Min Spend', 'Max Spend'],
-    },
-    {
-      channel: 'Hospital Talk',
-      unit_price: 33351,
-      if_changes: 'up',
-      change_percentage: 10,
-      channel_contraint: 'No',
-      min_spend: 100000,
-      max_spend: 200000,
-      field_configurable: ['Unit Price', 'Min Spend', 'Max Spend'],
-    },
-  ],
-})
-const getMetaData = async () => {
+const getMetaData = async (simulation_name) => {
   let param = {
     group_name: data.group_name,
     project_name: data.project_name,
+    simulation_name: simulation_name,
   }
-  let res = await previewSimulationMetadata(param)
+  let res = await previewModelSimulatingMetadata(param)
+  if (res) {
+    let index = data.simulationList.findIndex((item) => {
+      return item.simulation_name === simulation_name
+    })
+    if (index > -1) {
+      let simulation_item = {
+        showOutput: false,
+        optimization_type: res.optimization_type,
+        time_period: res.time_period,
+        budget: res.budget,
+        unit_price_change: [],
+        constraints_on_channels_options: Object.keys(res.constraints_on_channels),
+        constraints_on_channels_select: Object.keys(res.constraints_on_channels)[0],
+        constraints_on_channels: {},
+      }
+
+      for (let key in res.unit_price_change) {
+        let item = {
+          channel: key,
+          unit_price: res.unit_price_change[key].default_price,
+          if_changes: '',
+          change_percentage: res.unit_price_change[key].change_percentage,
+        }
+        for (let i = 0; i < res.unit_price_change[key].if_changes.length; i++) {
+          if (res.unit_price_change[key].if_changes[i] === 1) {
+            item.if_changes = data.changesList[i]
+            break
+          }
+        }
+        simulation_item.unit_price_change.push(item)
+      }
+      simulation_item.constraints_on_channels = res.constraints_on_channels
+      // 不能写死
+      //simulation_item.constraints_on_channels.no_weight.f2f =
+
+      data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+      console.log('data.simulationList[index]', data.simulationList[index])
+    }
+  }
 }
 
+const renameFn = (item) => {
+  data.renameForm.simulation_name = item.simulation_name
+  data.renameDialog = true
+}
+
+const renameComfirm = async () => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: data.renameForm.simulation_name,
+    simulation_name_new: data.renameForm.simulation_name_new,
+  }
+  let res = await simulationRename(param)
+  if (res) {
+    ElMessage({
+      message: 'Create success!',
+      type: 'success',
+    })
+    data.renameDialog = false
+  }
+}
+
+const deleteConfirm = (simulation_name) => {
+  ElMessageBox.confirm(`This action will remove simulation. Continue?`, 'Warning', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning',
+  })
+    .then(() => {
+      deleteSimulationFn(simulation_name)
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Delete canceled',
+      })
+    })
+}
+
+const deleteSimulationFn = async (simulation_name) => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: simulation_name,
+  }
+  let res = await deleteSimulation(param)
+  if (res) {
+    ElMessage({
+      type: 'success',
+      message: 'Delete success',
+    })
+  }
+}
 const floatFormat = (row, column, cellValue) => {
   if (cellValue) {
     return Number(cellValue)
@@ -264,6 +443,71 @@ const floatFormat = (row, column, cellValue) => {
       .replace(/\.$/, '')
   }
 }
+
+const commitSimulation = async (index) => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: data.simulationList[index].simulation_name,
+    Optimization_Type: data.simulationList[index].optimization_type,
+    Time_Period: data.simulationList[index].time_period,
+    Budget: data.simulationList[index].budget,
+    unit_price_pct: {},
+    constraints_on_channels: {},
+  }
+  for (let i = 0; i < data.simulationList[index].unit_price_change.length; i++) {
+    param.unit_price_pct[data.simulationList[index].unit_price_change[i].channel] = {
+      default_price: data.simulationList[index].unit_price_change[i].unit_price,
+      change_percentage: data.simulationList[index].unit_price_change[i].change_percentage,
+      if_changes: [0, 0, 0],
+    }
+    let changeItem = data.changesList.findIndex((item) => {
+      return data.simulationList[index].unit_price_change[i].if_changes === item
+    })
+    param.unit_price_pct[data.simulationList[index].unit_price_change[i].channel].if_changes[
+      index
+    ] = 1
+
+    param.constraints_on_channels = data.simulationList[index].constraints_on_channels
+  }
+  
+  console.log('param', param)
+  data.loading = true
+  let res = await runSimulation(param)
+  data.loading = false
+  if (res) {
+
+  }
+}
+
+const init = () => {
+  // ["EMPTY","MODEL_RUNNING","MODEL","OUTPUT","PRE_SIMULATION"，"SIMULATION_RUNNING","SIMULATION"]
+  // 重要！！！
+  for (let i = 0; i < data.simulationList.length; i++) {
+    getMetaData(data.simulationList[i].simulation_name)
+  }
+}
+
+const changeConstraint = (value) => {
+  console.log('value', value)
+}
+watch(
+  () => props.project_status,
+  (value) => {
+    data.project_status = value
+    //init()
+  },
+  { deep: true, immediate: true },
+)
+watch(
+  () => props.simulation_list,
+  (value) => {
+    data.simulationList = value
+
+    init()
+  },
+  { deep: false, immediate: true },
+)
 </script>
 <style lang="less" scoped>
 .simulator-page {
@@ -296,6 +540,7 @@ const floatFormat = (row, column, cellValue) => {
       .el-card {
         .delete-btn {
           float: right;
+          margin-right: 10px;
         }
         .el-form {
           .el-form-item {

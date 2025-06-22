@@ -13,6 +13,7 @@
       <Simulator
         v-if="pageParam.currentComponent === 'simulator'"
         :project_status="data.project_status"
+        :simulation_list="data.simulation_list"
       ></Simulator>
     </div>
   </div>
@@ -36,6 +37,7 @@ const pageParam = reactive({
 const data = reactive({
   project_status: '',
   project_list: [],
+  simulation_list: []
 })
 
 const getProjectListFn = async (group_name) => {
@@ -48,6 +50,9 @@ const getProjectListFn = async (group_name) => {
     data.project_status = data.project_list.filter((item) => {
       return item.project_name === pageParam.project
     })[0].project_status
+    data.simulation_list = data.project_list.filter((item) => {
+      return item.project_name === pageParam.project
+    })[0].simulation_list
   }
 }
 

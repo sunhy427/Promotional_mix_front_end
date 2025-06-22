@@ -106,10 +106,7 @@ export function getPermissions() {
 }
 
 export function addPermission(params) {
-  return request.post(
-    `${basic.apiUrl}permission/add`,
-    params,
-  )
+  return request.put(`${basic.apiUrl}permission/add`, params)
 }
 //Remove permission user
 export function removePermission(id) {
@@ -118,26 +115,22 @@ export function removePermission(id) {
 
 // Update permission user /api/permission/${id}/update
 export function updatePermission(params) {
-  return request.post(
-    `${basic.apiUrl}permission/${params.id}/update`,
-    params,
-  )
+  return request.post(`${basic.apiUrl}permission/${params.id}/update`, params)
 }
-
-
 
 // Add simulation
 export function addSimulation(params) {
   return request.put(
-    `${basic.apiUrl}${params.group_name}/${params.project_name}/simulation/add`,
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}`,
     params,
   )
 }
-
+//## Preview Simulation metadata 6
+//* GET ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/simulating``
 // Preview Simulation metadata
 export function previewSimulationMetadata(params) {
   return request.get(
-    `${basic.apiUrl}${params.group_name}/${params.project_name}/simulation/meta_data`,
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/simulating`,
     { params },
   )
 }
@@ -150,7 +143,7 @@ export function previewRawData(params) {
   )
 }
 
-// ## Run modeling 
+// ## Run modeling
 // * POST ``/api/contents/${group_name}/${project_name}/modeling/run``
 export function runModeling(params) {
   return request.post(
@@ -162,7 +155,9 @@ export function runModeling(params) {
 //## Revoke current model asnyc task
 //* DELETE ``/api/contents/${group_name}/${project_name}/modeling/current_task``
 export function revokeTask(params) {
-  return request.delete(`${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/current_task`)
+  return request.delete(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/current_task`,
+  )
 }
 
 //## Get current model asnyc task
@@ -188,241 +183,55 @@ export function previewModelOutputParameters(params) {
     `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/output/parameters`,
   )
 }
+//previewModelOutputResultFn
+export function previewModelOutputResult(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/output/result`,
+    { params },
+  )
+}
 
+// ## Preview Simulation metadata 6
+// * GET ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/metadata``
+export function previewModelSimulatingMetadata(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/metadata`,
+    { params },
+  )
+}
 
-// // 流程 upload - Preview raw data
-// export function previewRawData(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/rawdata/df_rawdata`,
-//   )
-// }
+//## simulation Rename
+//* POST /api/groups/${group_name}/${project_name}/${simulation_name}/rename
+export function simulationRename(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/rename`,
+    params,
+  )
+}
 
-// // upload -data selection options
-// export function selectionOptions(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/rawdata/df_rawdata/${params.type}`,
-//   )
-// }
+//## Delete simulation
+//* DELETE ``/api/contents/${group_name}/${project_name}/${simulation_name}``
+export function deleteSimulation(params) {
+  return request.delete(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}`,
+  )
+}
 
-// // upload data selection commit
-// export function dataSelectionCommit(params) {
-//   return request.post(`${basic}contents/${params.group_name}/${params.project_name}/handle`, params)
-// }
+// ## Run simulation
+// * POST ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/run``
+export function runSimulation(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/run`,
+    params,
+  )
+}
 
-// // upload preview handle data
-// export function previewHandleData(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/handle/parameters`,
-//   )
-// }
+//## Preview simulations
+//* GET ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/output``
+export function previewSimulations(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/output`,
+    { params },
+  )
+}
 
-// // upload channel options
-// export function channelOptions(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/handle/df_handle/promo_channels`,
-//   )
-// }
-
-// // upload channel preprocess
-// export function preprocessed(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/preprocessed`,
-//     params,
-//   )
-// }
-
-// // upload baseline output
-// export function baselineOutput(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/df_chnl`,
-//   )
-// }
-
-// export function getitem(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/df_chnl/getitem`,
-//     { params },
-//   )
-// }
-
-// export function preprocessedChannels(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/df_chnl/promo_channels`,
-//   )
-// }
-
-// export function preprocessedParameters(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/parameters`,
-//   )
-// }
-
-// export function preprocessed_type(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/${params.type}`,
-//   )
-// }
-
-// export function baseline(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/baseline`,
-//     params,
-//   )
-// }
-
-// export function baselineOutputPreview(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/baseline/${params.type}`,
-//   )
-// }
-
-// export function prior_mcmc(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/prior_mcmc`,
-//     params,
-//   )
-// }
-
-// export function previewPriorOutput(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/prior_mcmc/${params.type}`,
-//   )
-// }
-
-// export function bayes_mcmc(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/bayes_mcmc`,
-//     params,
-//   )
-// }
-
-// export function current_task(params) {
-//   return request.get(
-//     `${basic}contents/${params.group_name}/${params.project_name}/bayes_mcmc/current_task`,
-//   )
-// }
-
-// export function bayes_mcmc_output(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/bayes_mcmc/${params.type}`,
-//   )
-// }
-
-// export function postprocess(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/postprocess`,
-//     params,
-//   )
-// }
-
-// export function post_process_output(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/parameters`,
-//   )
-// }
-
-// export function post_process_output_type(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/${params.type}`,
-//   )
-// }
-
-// export function export_project(params) {
-//   return request.get(
-//     `${basic}projects/${params.group_name}/${params.project_name}`,
-//     { params },
-//     { responseType: 'stream' },
-//   )
-// }
-
-// export function import_project(params) {
-//   return request.post(`${basic}projects/${params.group_name}/${params.project_name}`, params)
-// }
-
-// export function aggregation(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/aggregation`,
-//     params,
-//   )
-// }
-
-// export function preview_aggregation(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/${params.type}`,
-//   )
-// }
-
-// export function simulation(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/simulation`,
-//     params,
-//   )
-// }
-
-// export function preview_simulation(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/simulation/optimization_output`,
-//   )
-// }
-
-// export function simulation_parameters(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/simulation/parameters`,
-//   )
-// }
-
-// export function cost_adjusted_flag(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/cost_adjusted_flag`,
-//   )
-// }
-
-// export function cost_adjusted(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/adjust_cost`,
-//     params,
-//   )
-// }
-
-// export function cost_adjusted_parameters(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/preprocessed/cost_adjusted_parameters`,
-//   )
-// }
-
-// export function aggregation_flag(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/aggregation_flag`,
-//   )
-// }
-
-// export function cst_window_flag(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/cst_window_flag`,
-//   )
-// }
-
-// export function cst_window(params) {
-//   return request.post(
-//     `${basic}contents/${params.group_name}/${params.project_name}/cst_window`,
-//     params,
-//   )
-// }
-
-// export function cst_parameters(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/cst_parameters`,
-//   )
-// }
-
-// export function cst_reference(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/cst_reference`,
-//   )
-// }
-
-// export function cst_channel_spending(params) {
-//   return request.get(
-//     `${basic}contents/get/${params.group_name}/${params.project_name}/postprocess/cst_chnl_spending`,
-//   )
-// }

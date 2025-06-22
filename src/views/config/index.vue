@@ -62,11 +62,8 @@
     </el-drawer>
     <el-dialog v-model="data.showAddPermissionDialog" title="Add Permission" width="500">
       <el-form :model="data.addPermissionForm" label-position="top">
-        <el-form-item label="User Name">
-          <el-input v-model="data.addPermissionForm.user_name" />
-        </el-form-item>
-        <el-form-item label="User Id">
-          <el-input v-model="data.addPermissionForm.id" />
+        <el-form-item label="User Mudid">
+          <el-input v-model="data.addPermissionForm.username" />
         </el-form-item>
         <el-form-item label="Role">
           <el-radio-group v-model="data.addPermissionForm.role">
@@ -100,8 +97,7 @@ const data = reactive({
   selectRoleValue: '',
   showAddPermissionDialog: false,
   addPermissionForm: {
-    user_name: '',
-    id: '',
+    username: '',
     role: '',
   },
 })
@@ -168,6 +164,11 @@ const confirmAddPermission = async () => {
   let res = await addPermission(data.addPermissionForm)
   if (res) {
     data.showAddPermissionDialog = false
+    ElMessage({
+      type: 'success',
+      message: 'Add success',
+    })
+    getPermissionList()
   }
 }
 onMounted(() => {
