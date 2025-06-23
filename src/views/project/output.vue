@@ -180,9 +180,7 @@
                 ></bar>
               </div>
             </div>
-            <div v-if="data.ROItrigger === 'MROI'">
-
-            </div>
+            <div v-if="data.ROItrigger === 'MROI'"></div>
           </el-col>
         </el-row>
         <el-row>
@@ -193,10 +191,19 @@
               placeholder="Select"
               class="channel-select-input"
             >
-              <el-option v-for="item in outputData.response_curve_options" :key="item" :label="item" :value="item" />
+              <el-option
+                v-for="item in outputData.response_curve_options"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
             </el-select>
             <div class="chart-content">
-              <bar :options="responseCurveOptions" chartId="responseCurveChart" v-if="responseCurveOptions.xAxis.data.length > 0"></bar>
+              <bar
+                :options="responseCurveOptions"
+                chartId="responseCurveChart"
+                v-if="responseCurveOptions.xAxis.data.length > 0"
+              ></bar>
             </div>
           </el-col>
         </el-row>
@@ -272,7 +279,7 @@ const outputMetadata = reactive({
   model_time_period: '',
   aggregate_channel_list: [],
   segmentOptions: [],
-  segmentOptions_select: ''
+  segmentOptions_select: '',
 })
 
 const form = reactive({
@@ -384,7 +391,7 @@ const previewModelOutputResultFn = async () => {
 
     let modelMetrics = {
       mape: res.model_metrics.MAPE.toFixed(2),
-      R2: res.model_metrics.R_square.toFixed(2)
+      R2: res.model_metrics.R_square.toFixed(2),
     }
     ModelMetricsTableData.push(modelMetrics)
   }
@@ -485,7 +492,8 @@ const changeROItrigger = () => {}
 
 const changeResponse_curve = () => {
   responseCurveOptions.xAxis.data = []
-  responseCurveOptions.series[0].data = outputData.response_curve[outputData.response_curve_select].y
+  responseCurveOptions.series[0].data =
+    outputData.response_curve[outputData.response_curve_select].y
   responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
 }
 onMounted(() => {
@@ -771,7 +779,9 @@ const responseCurveOptions = reactive({
 })
 const ModelMetricsTableData = reactive([])
 
-const goContinue = () => {}
+const goContinue = () => {
+  window.location.href = `/simulator/${pageParam.group}/${pageParam.project}`
+}
 </script>
 <style lang="less" scoped>
 .output-page {

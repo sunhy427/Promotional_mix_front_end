@@ -403,16 +403,19 @@ const enter = (groupName, projectName, page) => {
   })
 }
 
-const getProjectStatus = async (groupName, projectName) => {
+const getProjectListByGroup = async (groupName, projectName) => {
   let param = {
     group_name: groupName,
   }
   let res = await getProjectList(param)
   if (res) {
-    let current = res.projects_list.filter((item) => {
-      return item.project_name === projectName
-    })[0]
-    setState(groupName, projectName, current.project_status)
+    // let index = res.project_list.findIndex(item => {
+    //   return item
+    // })
+    // let current = res.projects_list.filter((item) => {
+    //   return item.project_name === projectName
+    // })[0]
+    // setState(groupName, projectName, current.project_status)
   }
 }
 

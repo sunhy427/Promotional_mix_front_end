@@ -43,12 +43,12 @@ export function createProject(params, group_name) {
 
 //meta_data
 export function createMetaData() {
-  return request.get(`${basic.apiUrl}projects/empty/metadata`)
+  return request.get(`${basic.apiUrl}projects/empty/create/metadata`)
 }
 
 //get project list
 export function getProjectList(params) {
-  return request.get(`${basic.apiUrl}${params.group_name}/projects`)
+  return request.get(`${basic.apiUrl}/projects/${params.group_name}/contents/list`)
 }
 
 //Publish project
@@ -234,4 +234,7 @@ export function previewSimulations(params) {
     { params },
   )
 }
+
+//## Export excel project（download data :respectively corresponding to output part/simulation1/simulation2）
+//* GET ``/api/projects/${group_name}/${project_name}?action=export_excel``
 

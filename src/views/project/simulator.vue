@@ -25,8 +25,8 @@
             <el-form-item label="Optimization Type" label-width="200px">
               <span>{{ item.optimization_type }}</span>
             </el-form-item>
-            <el-form-item label="Time Period" prop="time_period">
-              <el-input-number v-model="item.time_period" :min="0" :max="100" size="small">
+            <el-form-item label="Time Period" prop="n_time_periods">
+              <el-input-number v-model="item.n_time_periods" :min="0" :max="100" size="small">
                 <template #suffix>
                   <span>Month</span>
                 </template>
@@ -50,8 +50,8 @@
             <el-form-item>
               <p class="title">Unit Price Change</p>
               <el-table
-                v-if="data.simulationList[index].unit_price_change"
-                :data="data.simulationList[index].unit_price_change"
+                v-if="data.simulationList[index].unit_price_pct_input"
+                :data="data.simulationList[index].unit_price_pct_input"
                 border
                 style="width: 100%"
                 header-row-class-name="header-unit"
@@ -70,7 +70,7 @@
                   <template #default="scope">
                     <span v-if="scope.row.if_changes === 'up' || scope.row.if_changes === 'down'">
                       <el-input-number
-                        v-model="item.unit_price_change[scope.$index].change_percentage"
+                        v-model="item.unit_price_pct_input[scope.$index].change_percentage"
                         :min="1"
                         :max="100"
                       >
@@ -146,12 +146,12 @@
                     :disabled="unitValue.constraint === false"
                   />
                 </el-col>
-                <el-col :span="3" v-if="unitKey === 'ht' || unitKey === 'f2f'">
+                <el-col :span="3" v-if="'proportion' in unitValue ">
                   <el-input-number
-                    v-model="unitValue.ab_proportion"
+                    v-model="unitValue.proportion"
                     :controls="false"
                     size="small"
-                    :disabled="item.constraints_on_channels_select === 'no_weight'"
+                    :disabled="item.constraints_on_channels_select != 'customized'"
                   />
                 </el-col>
               </el-row>
@@ -162,13 +162,15 @@
             <el-button type="info">Reset</el-button>
           </div>
           <!-- v-if="item.showOutput" -->
+          
           <div class="output-wrap" >
             <el-divider />
-            <Output :simulation="item.simulation_name"></Output>
+            <Output :simulation="item.simulation_name" v-if="item.simulation_name"></Output>
           </div>
         </el-card>
       </li>
     </ul>
+    
     <el-dialog v-model="data.dialogFormVisible" title="Create a New Simulation">
       <el-form :model="simulationForm" ref="simulationFormRef" :rules="simulationFormRules">
         <el-form-item label="Enter a name" prop="simulation_name">
@@ -222,6 +224,16 @@
         </div>
       </template>
     </el-dialog>
+     <div class="foot-wrap">
+      <el-button type="primary" @click="downloadFn">
+        <el-icon><Download /></el-icon>
+        Download Data
+      </el-button>
+      <el-button type="success" @click="savePackageFn">
+        <el-icon><Download /></el-icon>
+        Save Package
+      </el-button>
+    </div>
   </div>
 </template>
 <script setup>
@@ -237,6 +249,7 @@ import {
 } from '../../api/api'
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
+import { basic } from '../../config'
 
 const router = useRouter()
 
@@ -325,6 +338,7 @@ const addConfirmFn = async () => {
           type: 'success',
         })
         data.dialogFormVisible = false
+        init()
       }
     } else {
       ElMessage.error('The input is incomplete. Please fill in all the required fields.')
@@ -347,32 +361,31 @@ const getMetaData = async (simulation_name) => {
       let simulation_item = {
         showOutput: false,
         optimization_type: res.optimization_type,
-        time_period: res.time_period,
+        n_time_periodss: res.n_time_periods,
         budget: res.budget,
-        unit_price_change: [],
+        unit_price_pct_input: [],
         constraints_on_channels_options: Object.keys(res.constraints_on_channels),
         constraints_on_channels_select: Object.keys(res.constraints_on_channels)[0],
         constraints_on_channels: {},
       }
 
-      for (let key in res.unit_price_change) {
+      for (let key in res.unit_price_pct_input) {
         let item = {
           channel: key,
-          unit_price: res.unit_price_change[key].default_price,
+          unit_price: res.unit_price_pct_input[key].default_price,
           if_changes: '',
-          change_percentage: res.unit_price_change[key].change_percentage,
+          change_percentage: res.unit_price_pct_input[key].change_percentage,
         }
-        for (let i = 0; i < res.unit_price_change[key].if_changes.length; i++) {
-          if (res.unit_price_change[key].if_changes[i] === 1) {
+        for (let i = 0; i < res.unit_price_pct_input[key].if_changes.length; i++) {
+          if (res.unit_price_pct_input[key].if_changes[i] === 1) {
             item.if_changes = data.changesList[i]
             break
           }
         }
-        simulation_item.unit_price_change.push(item)
+        simulation_item.unit_price_pct_input.push(item)
       }
       simulation_item.constraints_on_channels = res.constraints_on_channels
-      // 不能写死
-      //simulation_item.constraints_on_channels.no_weight.f2f =
+
 
       data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
       console.log('data.simulationList[index]', data.simulationList[index])
@@ -449,22 +462,20 @@ const commitSimulation = async (index) => {
     group_name: data.group_name,
     project_name: data.project_name,
     simulation_name: data.simulationList[index].simulation_name,
-    Optimization_Type: data.simulationList[index].optimization_type,
-    Time_Period: data.simulationList[index].time_period,
-    Budget: data.simulationList[index].budget,
+    optimization_type: data.simulationList[index].optimization_type,
+    n_time_periods: data.simulationList[index].n_time_periods,
+    budget: data.simulationList[index].budget,
     unit_price_pct: {},
     constraints_on_channels: {},
+    ab_proportion_type: data.simulationList[index].constraints_on_channels_select
   }
-  for (let i = 0; i < data.simulationList[index].unit_price_change.length; i++) {
-    param.unit_price_pct[data.simulationList[index].unit_price_change[i].channel] = {
-      default_price: data.simulationList[index].unit_price_change[i].unit_price,
-      change_percentage: data.simulationList[index].unit_price_change[i].change_percentage,
+  for (let i = 0; i < data.simulationList[index].unit_price_pct_input.length; i++) {
+    param.unit_price_pct[data.simulationList[index].unit_price_pct_input[i].channel] = {
+      default_price: data.simulationList[index].unit_price_pct_input[i].unit_price,
+      change_percentage: data.simulationList[index].unit_price_pct_input[i].change_percentage,
       if_changes: [0, 0, 0],
     }
-    let changeItem = data.changesList.findIndex((item) => {
-      return data.simulationList[index].unit_price_change[i].if_changes === item
-    })
-    param.unit_price_pct[data.simulationList[index].unit_price_change[i].channel].if_changes[
+    param.unit_price_pct[data.simulationList[index].unit_price_pct_input[i].channel].if_changes[
       index
     ] = 1
 
@@ -476,7 +487,7 @@ const commitSimulation = async (index) => {
   let res = await runSimulation(param)
   data.loading = false
   if (res) {
-
+    // task_id
   }
 }
 
@@ -488,9 +499,14 @@ const init = () => {
   }
 }
 
-const changeConstraint = (value) => {
-  console.log('value', value)
+const downloadFn = async() => {
+  window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_excel`
 }
+
+const savePackageFn  = async () => {
+   window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
+}
+
 watch(
   () => props.project_status,
   (value) => {
@@ -512,6 +528,9 @@ watch(
 <style lang="less" scoped>
 .simulator-page {
   padding: 15px;
+   .foot-wrap {
+    text-align: right;
+  }
   .top {
     padding: 0 0 10px 0;
     color: #e99d42;
