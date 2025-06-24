@@ -39,7 +39,7 @@
         /> -->
       </div>
     </div>
-    <group-list :groupList="groupIndex.group_list"></group-list>
+    <group-list ref="ComponentGroupList"></group-list>
     <el-dialog v-model="showDialog" title="Create a New Group">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Group Name" :label-width="200">
@@ -93,9 +93,10 @@ const create = async () => {
       message: 'create success',
       type: 'success',
     })
+    ComponentGroupList.value.getList()
     showDialog.value = false
     form.group_name = ''
-    getGroupFn()
+    
   }
 }
 

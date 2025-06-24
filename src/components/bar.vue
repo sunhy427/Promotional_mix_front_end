@@ -8,7 +8,7 @@
 
 <script setup>
 import * as echarts from "echarts";
-import { defineProps, onMounted } from "vue";
+import { defineProps, onMounted, reactive, watch } from "vue";
 
 const props = defineProps({
   chartId: {
@@ -28,14 +28,34 @@ const props = defineProps({
     type: String,
     default: "100%",
   },
+  resize: {
+    type: Boolean,
+    default: false
+  }
 });
+
+const data = reactive({
+  chart: null
+})
 const initEcharts = () => {
-  let chart = echarts.init(document.getElementById(props.chartId));
-  chart.setOption(props.options);
+  data.chart = echarts.init(document.getElementById(props.chartId));
+  data.chart.setOption(props.options);
+  
 };
 onMounted(() => {
   initEcharts();
 });
+
+watch(
+  () => props.resize,
+  (value) => {
+   if (value) {
+    data.chart.resize()
+   }
+  },
+  // { deep: false, immediate: true },
+)
+
 </script>
 
 <style lang="less" scoped>

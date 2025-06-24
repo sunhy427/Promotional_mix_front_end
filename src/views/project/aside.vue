@@ -1,33 +1,31 @@
 <template>
   <div class="aside-page">
-    <el-menu :default-active="data.currentProjectName" class="el-menu-vertical-demo">
+    <el-menu class="el-menu-vertical-demo" background-color="#e99d42">
       <el-menu-item :index="data.currentGroupName" @click="backGroup">
-        <el-icon><Menu /></el-icon>
-        <template #title>{{ data.currentGroupName }}</template>
+        <el-icon><House /></el-icon>
+        <span>{{ data.currentGroupName }}</span>
       </el-menu-item>
-      <el-menu-item
-        :index="item.project_name"
-        v-for="(item, index) in data.projectList"
-        :key="index"
-        @click="enter(item)"
-      >
-        <el-icon><CaretRight /></el-icon>
+    </el-menu>
+    <el-menu
+      :default-active="data.currentProjectName"
+      class="el-menu-vertical-demo"
+      background-color="#e99d42"
+      :unique-opened="true"
+      :default-openeds="data.openedIndexList"
+    >
+      <el-sub-menu :index="item.project_name" v-for="(item, index) in data.projectList" >
         <template #title>
-          <el-popover
-            placement="left-end"
-            :width="200"
-            trigger="hover"
-            :content="item.project_name"
-            effect="dark"
-          >
-            <template #reference>
-              <p class="item-p">
-                {{ item.project_name }}
-              </p>
-            </template>
-          </el-popover>
+          <span  @click="enter(item)">{{ item.project_name }}</span>
         </template>
-      </el-menu-item>
+        <el-menu-item-group v-if="item.simulation_list.length > 0 && item.project_name === data.currentProjectName">
+          <el-menu-item
+            v-for="simulationItem in item.simulation_list"
+            :index="simulationItem.simulation_name"
+            >{{ simulationItem.simulation_name }}
+            </el-menu-item
+          >
+        </el-menu-item-group>
+      </el-sub-menu>
     </el-menu>
   </div>
 </template>
@@ -40,45 +38,45 @@ const router = useRouter()
 const props = defineProps({
   project_list: {
     type: Array,
-    requred: true
-  }
+    requred: true,
+  },
 })
 const data = reactive({
   pageName: route.name,
   currentProjectName: route.params.project,
   currentGroupName: route.params.group,
   projectList: [],
+  openedIndexList: [],
 })
 watch(
   () => props.project_list,
   (value) => {
     data.projectList = value
+
+    data.openedIndexList.push(data.currentProjectName)
+
   },
-  {deep: true, immediate: true}
+  { deep: true, immediate: true },
 )
-
-
-
-
 
 const backGroup = () => {
   window.location.href = '/group'
 }
-
+//["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const enter = (item) => {
   let name = ''
-  if (item.project_status === 'EMPTY') {
+  if (item.project_status === 'EMPTY' || item.project_status === 'MODEL_RUNNING') {
     name = 'analysis'
   }
-  if (item.project_status === 'MODELING') {
+  if (item.project_status === 'MODEL_OUTPUT') {
     name = 'output'
   }
-  if (item.project_status === 'SIMULATION') {
+  if (item.project_status === 'SIMULATION' || item.project_status === 'SIMULATION_RUNNING') {
     name = 'simulator'
   }
-  router.push({ name: name, params: { group: data.currentGroupName, project: item.project_name } })
+  //router.push({ name: name, params: { group: data.currentGroupName, project: item.project_name } })
+  window.location.href = `/${name}/${data.currentGroupName}/${item.project_name}`
 }
-
 </script>
 
 <style lang="less">
@@ -90,36 +88,40 @@ const enter = (item) => {
   width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
-  .el-menu-vertical-demo {
-    li {
-      padding: 0 5px;
-      &:first-of-type {
-        padding: 0;
-      }
-    }
-    :not(:first-of-type) {
-      padding: 0 10px;
-      background-color: #e99d42;
 
-      & > i {
-        display: none;
-        position: absolute;
-        left: 0px;
-      }
-      &:hover {
-        background-color: #f9d5aa;
-      }
-      &.is-active {
-        & > i {
-          display: block;
-        }
-      }
-      & > .item-p {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
+  .el-menu-vertical-demo {
+    .el-sub-menu__title:hover {
+      background-color: #e99d42;
     }
+    // li {
+    //   padding: 0 5px;
+    //   &:first-of-type {
+    //     padding: 0;
+    //   }
+    // }
+    // :not(:first-of-type) {
+    //   padding: 0 10px;
+    //   background-color: #e99d42;
+
+    //   & > i {
+    //     display: none;
+    //     position: absolute;
+    //     left: 0px;
+    //   }
+    //   &:hover {
+    //     background-color: #f9d5aa;
+    //   }
+    //   &.is-active {
+    //     & > i {
+    //       display: block;
+    //     }
+    //   }
+    //   & > .item-p {
+    //     overflow: hidden;
+    //     white-space: nowrap;
+    //     text-overflow: ellipsis;
+    //   }
+    // }
   }
 
   .el-menu-item {

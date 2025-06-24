@@ -1,19 +1,70 @@
 <template>
   <div class="simulator-output-page">
-    <div class="content">
+    <div class="content" v-if="simulationOutput.optimal_channel_performance.length > 0">
       <p class="title">Optimal Channel Performance</p>
-      <el-table border style="width: 100%" header-row-class-name="header-unit">
-        <el-table-column prop="channel" label="Channel" />
+      <el-table
+        border
+        style="width: 100%"
+        header-row-class-name="header-unit"
+        :data="simulationOutput.optimal_channel_performance"
+      >
+        <el-table-column prop="decision_variable" label="decision_variable" />
+        <el-table-column
+          prop="gr_in_sales_simulated"
+          label="gr_in_sales_simulated"
+          :formatter="formatNumber"
+        />
+        <el-table-column
+          prop="gr_in_spending_simulated"
+          label="gr_in_spending_simulated"
+          :formatter="formatNumber"
+        />
+        <el-table-column prop="mroi_simmulated" label="mroi_simmulated" :formatter="formatNumber" />
+        <el-table-column prop="roi_simmulated" label="roi_simmulated" :formatter="formatNumber" />
+        <el-table-column
+          prop="sales_contribution_pct_simualted"
+          label="sales_contribution_pct_simualted"
+          :formatter="formatNumber"
+        />
+        <el-table-column
+          prop="sales_contribution_simualted"
+          label="sales_contribution_simualted"
+          :formatter="formatNumber"
+        />
+        <el-table-column
+          prop="spending_simulated"
+          label="spending_simulated"
+          :formatter="formatNumber"
+        />
+        <el-table-column prop="tp_simulated" label="tp_simulated" :formatter="formatNumber" />
       </el-table>
     </div>
     <div class="content">
       <p class="title">Current Channel Performance</p>
-      <el-table border style="width: 100%" header-row-class-name="header-unit">
-        <el-table-column prop="channel" label="Channel" />
+      <el-table
+        border
+        style="width: 100%"
+        header-row-class-name="header-unit"
+        :data="simulationOutput.current_channel_performance"
+      >
+        <el-table-column prop="channel" label="channel" />
+        <el-table-column prop="mroi" label="mroi" :formatter="formatNumber" />
+        <el-table-column prop="roi" label="roi" :formatter="formatNumber" />
+        <el-table-column
+          prop="sales_contribution"
+          label="sales_contribution"
+          :formatter="formatNumber"
+        />
+        <el-table-column
+          prop="sales_contribution_pct"
+          label="sales_contribution_pct"
+          :formatter="formatNumber"
+        />
+        <el-table-column prop="spending" label="spending" :formatter="formatNumber" />
       </el-table>
     </div>
-    <el-tabs type="border-card">
-      <el-tab-pane label="Simulated Performance">
+    <el-tabs type="border-card" v-model="data.tabValue">
+      <el-tab-pane label="Simulated Performance" name="Simulated">
         <div class="content-wrap">
           <el-row>
             <el-col :span="10">
@@ -53,7 +104,13 @@
                     ></bar>
                   </div>
                 </div>
-                <div v-if="data.ROItrigger === 'MROI'"></div>
+                <div v-if="data.ROItrigger === 'MROI'">
+                  <bar
+                    :options="MROIChartOptions"
+                    chartId="MROIChart"
+                    v-if="MROIChartOptions.xAxis.data.length > 0"
+                  ></bar>
+                </div>
               </div>
             </el-col>
           </el-row>
@@ -69,25 +126,129 @@
             <el-col :span="12">
               <div class="item">
                 <p class="title">Calculated Unit Price</p>
-                <div class="chart-content"></div>
+                <div class="chart-content">
+                  <el-table
+                    border
+                    style="width: 100%"
+                    header-row-class-name="header-unit"
+                    :data="simulationOutput.calculated_unit_price"
+                  >
+                    <el-table-column prop="channels" label="channels" />
+                    <el-table-column
+                      prop="tp_simulated"
+                      label="tp_simulated"
+                      :formatter="formatNumber"
+                    />
+                    <el-table-column
+                      prop="unit_price"
+                      label="unit_price"
+                      :formatter="formatNumber"
+                    />
+                  </el-table>
+                </div>
               </div>
             </el-col>
           </el-row>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Current Performance">
-        <div class="content-wrap"></div>
+      <el-tab-pane label="Current Performance" name="Current" :lazy="true">
+        <div class="content-wrap">
+          <el-row>
+            <el-col :span="14">
+              <div class="item">
+                <p class="title">Cost Distribution</p>
+                <bar
+                  :options="current_costDistributionOptions"
+                  chartId="current_costDistributionOptions"
+                  v-if="current_costDistributionOptions.series[0].data.length > 0"
+                  :resize="data.tabValue === 'Current'"
+                ></bar>
+              </div>
+            </el-col>
+            <el-col :span="10">
+              <div class="item">
+                <p class="title">Current Unit Price</p>
+                <el-table :data="Current_output.current_unit_price" border style="width: 100%">
+                  <el-table-column prop="channel" label="Channel" align="center" />
+                  <el-table-column
+                    prop="price"
+                    label="Unit Price(CNY per TP)"
+                    align="center"
+                    :formatter="formatNumber"
+                  />
+                </el-table>
+              </div>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="14">
+              <div class="item">
+                <p class="title">Promotion VS Non-promotion</p>
+                <bar
+                  :options="current_promotionOptions"
+                  chartId="current_promotionOptions"
+                  v-if="current_promotionOptions.series[0].data.length > 0"
+                ></bar>
+              </div>
+            </el-col>
+            <el-col :span="10">
+              <div class="item">
+                <p class="title">Total Promotion Contribution</p>
+                <bar
+                  :options="current_totalPromotionOptions"
+                  chartId="current_totalPromotionOptions"
+                  v-if="current_totalPromotionOptions.series[0].data.length > 0"
+                ></bar>
+              </div>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="24">
+              <span class="title">Promotion VS Non-promotion</span>
+              <el-segmented v-model="data.current_ROItrigger" :options="['ROI', 'MROI']" />
+              <div v-if="data.current_ROItrigger === 'ROI'">
+                <el-select
+                  v-model="data.current_ROIChannelValue"
+                  placeholder="Select"
+                  class="channel-select-input"
+                  @change="current_changeROI"
+                >
+                  <el-option
+                    v-for="item in Current_output.roi_options"
+                    :key="item"
+                    :label="item"
+                    :value="item"
+                  />
+                </el-select>
+                <div class="chart-content">
+                  <bar
+                    :options="current_ROIChartOptions"
+                    chartId="current_ROIChart"
+                    v-if="current_ROIChartOptions.xAxis.data.length > 0"
+                    :key="data.current_ROIChannelValue"
+                  ></bar>
+                </div>
+              </div>
+              <div v-if="data.current_ROItrigger === 'MROI'">
+                <bar
+                  :options="current_MROIChartOptions"
+                  chartId="MROIChart"
+                  v-if="current_MROIChartOptions.xAxis.data.length > 0"
+                ></bar>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
       </el-tab-pane>
     </el-tabs>
-   
   </div>
 </template>
 <script setup>
 import { useRouter } from 'vue-router'
-import { onMounted, reactive, watch } from 'vue'
+import { nextTick, onMounted, reactive, watch } from 'vue'
 import { previewSimulations } from '../../api/api'
 import bar from '../../components/bar.vue'
-
+import { formatter } from 'element-plus'
 
 const router = useRouter()
 const props = defineProps({
@@ -101,18 +262,35 @@ const data = reactive({
   group_name: router.currentRoute._value.params.group,
   project_name: router.currentRoute._value.params.project,
   ROItrigger: 'ROI',
+  tabValue: 'Simulated',
+  current_ROItrigger: 'ROI',
+  current_ROIChannelValue: '',
 })
 
 const simulationOutput = reactive({
-  calculated_unit_price: {},
+  calculated_unit_price: [],
   cost_distribution: {},
-  current_channel_performance: {},
+  current_channel_performance: [],
   mroi: {},
-  optimal_channel_performance: {},
+  optimal_channel_performance: [],
   promotion_vs_base: {},
   roi: {},
   total_promotion_contribution: {},
 })
+
+const Current_output = reactive({
+  current_unit_price: [],
+  mroi: {},
+  mroi_options: ['cost'],
+  mroi_select: 'cost',
+  roi: {},
+  roi_options: ['cost', 'cost_direct'],
+  roi_select: '',
+})
+
+const formatNumber = (row, column, cellValue) => {
+  return Number(cellValue).toFixed(2)
+}
 
 const previewSimulationsFn = async () => {
   let param = {
@@ -158,12 +336,62 @@ const previewSimulationsFn = async () => {
       costDistributionOptions.series[0].data.push(item)
     }
 
-    // ROIChartOptions.xAxis.data = []
-    // ROIChartOptions.series[0].data = res.Simulation_output.Total_market.roi.y
-    // ROIChartOptions.xAxis.data = res.Simulation_output.Total_market.roi.x
+    ROIChartOptions.xAxis.data = []
+    ROIChartOptions.series[0].data = res.Simulation_output.Total_market.roi.y
+    ROIChartOptions.xAxis.data = res.Simulation_output.Total_market.roi.x
+
+    MROIChartOptions.xAxis.data = []
+    MROIChartOptions.series[0].data = res.Simulation_output.Total_market.mroi.y
+    MROIChartOptions.xAxis.data = res.Simulation_output.Total_market.mroi.x
+
+    //
+    for (let key in res.Current_output.cost_distribution) {
+      let item = {
+        name: key,
+        value: res.Current_output.cost_distribution[key],
+      }
+      current_costDistributionOptions.series[0].data.push(item)
+    }
+
+    for (let key in res.Current_output.current_unit_price) {
+      let item = {
+        channel: key,
+        price: res.Current_output.current_unit_price[key].toFixed(2),
+      }
+      Current_output.current_unit_price.push(item)
+    }
+    for (let key in res.Current_output.total_promotion_contribution) {
+      let item = {
+        name: key,
+        value: res.Current_output.total_promotion_contribution[key],
+      }
+      current_totalPromotionOptions.series[0].data.push(item)
+    }
+    current_promotionOptions.series[0].data = [
+      res.Current_output.promotion_vs_nonpromotion.y.promotion,
+    ]
+    current_promotionOptions.series[1].data = [
+      res.Current_output.promotion_vs_nonpromotion.y.nonpromotion,
+    ]
+    current_promotionOptions.xAxis[0].data = res.Current_output.promotion_vs_nonpromotion.x
+
+    Current_output.roi = res.Current_output.roi
+    Current_output.roi_select = Current_output.roi_options[0]
+    current_changeROI()
+
+    Current_output.mroi = res.Current_output.mroi
+
+    current_MROIChartOptions.xAxis.data = []
+    current_MROIChartOptions.series[0].data = Current_output.mroi[Current_output.mroi_select].y
+    current_MROIChartOptions.xAxis.data = Current_output.mroi[Current_output.mroi_select].x
   }
 }
-
+const current_changeROI = () => {
+  console.log('Current_output', Current_output)
+  current_ROIChartOptions.xAxis.data = []
+  current_ROIChartOptions.series[0].data = Current_output.roi[Current_output.roi_select].y
+  current_ROIChartOptions.xAxis.data = Current_output.roi[Current_output.roi_select].x
+}
 const promotionOptions = reactive({
   tooltip: {
     trigger: 'axis',
@@ -285,6 +513,32 @@ const ROIChartOptions = reactive({
   ],
 })
 
+const MROIChartOptions = reactive({
+  xAxis: {
+    type: 'category',
+    data: [],
+  },
+  yAxis: {
+    type: 'value',
+  },
+  tooltip: {
+    trigger: 'axis',
+  },
+  series: [
+    {
+      data: [],
+      type: 'bar',
+      label: {
+        show: true,
+        formatter: (params) => params.value,
+      },
+      itemStyle: {
+        color: '#e99d42',
+      },
+    },
+  ],
+})
+
 const costDistributionOptions = reactive({
   tooltip: {
     trigger: 'item',
@@ -316,6 +570,183 @@ const costDistributionOptions = reactive({
   ],
 })
 
+const current_costDistributionOptions = reactive({
+  tooltip: {
+    trigger: 'item',
+  },
+  legend: {
+    type: 'scroll',
+    orient: 'vertical',
+    right: 10,
+    top: 20,
+    bottom: 20,
+  },
+  series: [
+    {
+      name: 'Access From',
+      type: 'pie',
+      center: ['35%', '45%'],
+      radius: ['10%', '60%'],
+      avoidLabelOverlap: false,
+      itemStyle: {
+        borderRadius: 10,
+        borderColor: '#fff',
+        borderWidth: 2,
+      },
+      label: {
+        formatter: '{b}: {c}B',
+      },
+      data: [],
+    },
+  ],
+})
+
+const current_promotionOptions = reactive({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow',
+    },
+  },
+  legend: {},
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true,
+  },
+  xAxis: [
+    {
+      type: 'category',
+      data: [],
+    },
+  ],
+  yAxis: [
+    {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value}B',
+      },
+    },
+  ],
+  series: [
+    {
+      name: 'Promotion',
+      type: 'bar',
+      stack: 'Ad',
+      emphasis: {
+        focus: 'series',
+      },
+      data: [],
+      label: {
+        show: true,
+        formatter: (params) => params.value + 'B',
+      },
+      itemStyle: {
+        color: '#e99d42',
+      },
+    },
+    {
+      name: 'Non-promotion',
+      type: 'bar',
+      stack: 'Ad',
+      emphasis: {
+        focus: 'series',
+      },
+      data: [],
+      label: {
+        show: true,
+        formatter: (params) => params.value + 'B',
+      },
+      itemStyle: {
+        color: '#f9d2a3',
+      },
+    },
+  ],
+})
+const current_totalPromotionOptions = reactive({
+  tooltip: {
+    trigger: 'item',
+  },
+  legend: {
+    type: 'scroll',
+    orient: 'vertical',
+    right: 10,
+    top: 20,
+    bottom: 20,
+  },
+  series: [
+    {
+      name: 'Access From',
+      type: 'pie',
+      center: ['45%', '45%'],
+      radius: ['10%', '60%'],
+      avoidLabelOverlap: false,
+      itemStyle: {
+        borderRadius: 10,
+        borderColor: '#fff',
+        borderWidth: 2,
+      },
+      label: {
+        formatter: '{b}: {c}B',
+      },
+      data: [],
+    },
+  ],
+})
+
+const current_ROIChartOptions = reactive({
+  xAxis: {
+    type: 'category',
+    data: [],
+  },
+  yAxis: {
+    type: 'value',
+  },
+  tooltip: {
+    trigger: 'axis',
+  },
+  series: [
+    {
+      data: [],
+      type: 'bar',
+      label: {
+        show: true,
+        formatter: (params) => params.value,
+      },
+      itemStyle: {
+        color: '#e99d42',
+      },
+    },
+  ],
+})
+const current_MROIChartOptions = reactive({
+  xAxis: {
+    type: 'category',
+    data: [],
+  },
+  yAxis: {
+    type: 'value',
+  },
+  tooltip: {
+    trigger: 'axis',
+  },
+  series: [
+    {
+      data: [],
+      type: 'bar',
+      label: {
+        show: true,
+        formatter: (params) => params.value,
+      },
+      itemStyle: {
+        color: '#e99d42',
+      },
+    },
+  ],
+})
+
+
 
 onMounted(() => {
   previewSimulationsFn()
@@ -323,7 +754,11 @@ onMounted(() => {
 </script>
 <style lang="less" scoped>
 .simulator-output-page {
- 
+  .channel-select-input {
+    width: 240px;
+    float: right;
+    margin-top: -40px;
+  }
   .content {
     .title {
       font-size: 16px;

@@ -235,6 +235,27 @@ export function previewSimulations(params) {
   )
 }
 
+//## Get current model asnyc task
+//* GET ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/current_task``
+export function getCurrentSimulatingTask(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/current_task`,
+    { params },
+  )
+}
+
+//## simulation Visibility
+//* POST ``/api/contents/${group_name}/${project_name}//${simulation_name}/visibility``
+export function simulationVisibility(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/visibility`,
+    params,
+  )
+}
+
+
+
+
 //## Export excel project（download data :respectively corresponding to output part/simulation1/simulation2）
 //* GET ``/api/projects/${group_name}/${project_name}?action=export_excel``
 

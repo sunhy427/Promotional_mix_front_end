@@ -19,7 +19,7 @@
   </div>
 </template>
 <script setup>
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, watch } from 'vue'
 import Aside from './aside.vue'
 import Analysis from './analysis.vue'
 import Output from './output.vue'
@@ -37,7 +37,7 @@ const pageParam = reactive({
 const data = reactive({
   project_status: '',
   project_list: [],
-  simulation_list: []
+  simulation_list: [],
 })
 
 const getProjectListFn = async (group_name) => {
@@ -59,6 +59,8 @@ const getProjectListFn = async (group_name) => {
 onMounted(() => {
   getProjectListFn(pageParam.group)
 })
+
+
 </script>
 <style lang="less" scoped>
 .content {

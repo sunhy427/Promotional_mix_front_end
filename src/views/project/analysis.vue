@@ -109,7 +109,13 @@
       </div>
     </el-card>
     <el-card v-if="progressForm.isPolling">
-      <el-progress :percentage="progressForm.percentage" :stroke-width="15" striped striped-flow :duration="50" />
+      <el-progress
+        :percentage="progressForm.percentage"
+        :stroke-width="15"
+        striped
+        striped-flow
+        :duration="50"
+      />
     </el-card>
   </div>
 </template>
@@ -169,6 +175,7 @@ const options = reactive({
   segmentOptions: [],
 })
 
+// ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const init = () => {
   if (data.project_status === 'EMPTY') {
     getPreviewRawData()
@@ -176,6 +183,13 @@ const init = () => {
   if (data.project_status === 'MODEL_RUNNING') {
     previewModelOutputParametersFn()
     startPolling()
+  }
+  if (
+    data.project_status === 'MODEL_OUTPUT' ||
+    data.project_status === 'SIMULATION' ||
+    data.project_status === 'SIMULATION_RUNNING'
+  ) {
+    previewModelOutputParametersFn()
   }
 }
 
@@ -277,6 +291,7 @@ const getCurrentModelTaskFn = async () => {
         name: 'output',
         params: { group: pageParam.group_name, project: pageParam.project_name },
       })
+      location.reload()
     } else {
       if (progressForm.percentage < 95) {
         progressForm.percentage = progressForm.percentage + 5
@@ -321,16 +336,6 @@ const formatRes = (res) => {
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
 
-    // const sortedKeys = Object.keys(tempRes.default_segmentation_type_list).sort((a,b) => {
-    //   const numA = parseInt(a)
-    //   const numB = parseInt(b)
-    //   return numA - numB
-    // })
-    // const sortedObj = {}
-    // sortedKeys.forEach(key => {
-    //   sortedKeys[key] = tempRes.default_segmentation_type_list[key]
-    // })
-    // console.log('sortedKeys', sortedKeys)
     for (let key in tempRes.default_segmentation_type_list) {
       options.segmentOptions.push(key)
     }
@@ -363,6 +368,7 @@ watch(
   },
   { deep: true, immediate: true },
 )
+
 </script>
 
 <style lang="less" scoped>

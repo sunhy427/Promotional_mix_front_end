@@ -21,6 +21,19 @@
             ><Delete
           /></el-icon>
           <el-icon class="delete-btn" @click="renameFn(item)"><EditPen /></el-icon>
+          <el-icon
+            class="delete-btn"
+            v-if="item.is_visible"
+            @click="simulationVisibilityFn(item.simulation_name, 0)"
+            ><View
+          /></el-icon>
+          <el-icon
+            class="delete-btn"
+            v-if="!item.is_visible"
+            @click="simulationVisibilityFn(item.simulation_name, 1)"
+            ><Hide
+          /></el-icon>
+
           <el-form label-width="auto" label-position="left" ref="metadataFormRef">
             <el-form-item label="Optimization Type" label-width="200px">
               <span>{{ item.optimization_type }}</span>
@@ -146,7 +159,7 @@
                     :disabled="unitValue.constraint === false"
                   />
                 </el-col>
-                <el-col :span="3" v-if="'proportion' in unitValue ">
+                <el-col :span="3" v-if="'proportion' in unitValue">
                   <el-input-number
                     v-model="unitValue.proportion"
                     :controls="false"
@@ -158,19 +171,19 @@
             </div>
           </el-form>
           <div class="btn-wrap">
-            <el-button type="primary" @click="commitSimulation(index)" :loading="data.loading">Commit</el-button>
+            <el-button type="primary" @click="commitSimulation(index)" :loading="data.loading"
+              >Commit</el-button
+            >
             <el-button type="info">Reset</el-button>
           </div>
-          <!-- v-if="item.showOutput" -->
-          
-          <div class="output-wrap" >
+          <div class="output-wrap" v-if="item.simulation_task_status === 'SIMULATION_OUTPUT'">
             <el-divider />
             <Output :simulation="item.simulation_name" v-if="item.simulation_name"></Output>
           </div>
         </el-card>
       </li>
     </ul>
-    
+
     <el-dialog v-model="data.dialogFormVisible" title="Create a New Simulation">
       <el-form :model="simulationForm" ref="simulationFormRef" :rules="simulationFormRules">
         <el-form-item label="Enter a name" prop="simulation_name">
@@ -224,7 +237,7 @@
         </div>
       </template>
     </el-dialog>
-     <div class="foot-wrap">
+    <div class="foot-wrap">
       <el-button type="primary" @click="downloadFn">
         <el-icon><Download /></el-icon>
         Download Data
@@ -245,11 +258,14 @@ import {
   previewRawData,
   simulationRename,
   deleteSimulation,
-  runSimulation
+  runSimulation,
+  previewSimulations,
+  simulationVisibility,
 } from '../../api/api'
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
 import { basic } from '../../config'
+import { optionEmits } from 'element-plus/es/components/select-v2/src/defaults'
 
 const router = useRouter()
 
@@ -337,8 +353,8 @@ const addConfirmFn = async () => {
           message: 'Create success!',
           type: 'success',
         })
+
         data.dialogFormVisible = false
-        init()
       }
     } else {
       ElMessage.error('The input is incomplete. Please fill in all the required fields.')
@@ -386,9 +402,7 @@ const getMetaData = async (simulation_name) => {
       }
       simulation_item.constraints_on_channels = res.constraints_on_channels
 
-
       data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
-      console.log('data.simulationList[index]', data.simulationList[index])
     }
   }
 }
@@ -467,7 +481,7 @@ const commitSimulation = async (index) => {
     budget: data.simulationList[index].budget,
     unit_price_pct: {},
     constraints_on_channels: {},
-    ab_proportion_type: data.simulationList[index].constraints_on_channels_select
+    ab_proportion_type: data.simulationList[index].constraints_on_channels_select,
   }
   for (let i = 0; i < data.simulationList[index].unit_price_pct_input.length; i++) {
     param.unit_price_pct[data.simulationList[index].unit_price_pct_input[i].channel] = {
@@ -481,11 +495,11 @@ const commitSimulation = async (index) => {
 
     param.constraints_on_channels = data.simulationList[index].constraints_on_channels
   }
-  
+
   console.log('param', param)
   data.loading = true
   let res = await runSimulation(param)
-  data.loading = false
+
   if (res) {
     // task_id
   }
@@ -495,16 +509,59 @@ const init = () => {
   // ["EMPTY","MODEL_RUNNING","MODEL","OUTPUT","PRE_SIMULATION"，"SIMULATION_RUNNING","SIMULATION"]
   // 重要！！！
   for (let i = 0; i < data.simulationList.length; i++) {
-    getMetaData(data.simulationList[i].simulation_name)
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
+      getMetaData(data.simulationList[i].simulation_name)
+    }
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_OUTPUT') {
+      // getMetaData(data.simulationList[i].simulation_name)
+      previewSimulationsFn(data.simulationList[i].simulation_name)
+    }
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
+      // getMetaData(data.simulationList[i].simulation_name)
+      // polling getCurrentSimulatingTask
+    }
   }
 }
 
-const downloadFn = async() => {
+const previewSimulationsFn = async (simulation) => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: simulation,
+  }
+  let res = await previewSimulations(param)
+  if (res && res.Simulation_output) {
+  }
+}
+
+const simulationVisibilityFn = async (simulation, visible) => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: simulation,
+    status: visible,
+  }
+  let res = await simulationVisibility(param)
+  if (res && res.status) {
+    ElMessage({
+      type: 'success',
+      message: 'Setting success',
+    })
+    let index = data.simulationList.findIndex((item) => {
+      return item.simulation_name === simulation
+    })
+    if (index > -1) {
+      data.simulationList[index].is_visible = !data.simulationList[index].is_visible
+    }
+  }
+}
+
+const downloadFn = async () => {
   window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_excel`
 }
 
-const savePackageFn  = async () => {
-   window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
+const savePackageFn = async () => {
+  window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
 }
 
 watch(
@@ -528,7 +585,7 @@ watch(
 <style lang="less" scoped>
 .simulator-page {
   padding: 15px;
-   .foot-wrap {
+  .foot-wrap {
     text-align: right;
   }
   .top {
@@ -559,7 +616,9 @@ watch(
       .el-card {
         .delete-btn {
           float: right;
-          margin-right: 10px;
+          margin-right: 20px;
+          font-weight: bold;
+          font-size: 18px;
         }
         .el-form {
           .el-form-item {

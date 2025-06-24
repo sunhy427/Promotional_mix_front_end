@@ -94,8 +94,13 @@
                 :value="item"
               />
             </el-select>
-            <div class="chart-content" v-if="outputData.show_cost_by_channel_vs_total_sales_trend">
-              <bar :options="costByChannelOptions" chartId="costByChannel"></bar>
+            <div class="chart-content">
+              <bar
+                :options="costByChannelOptions"
+                chartId="costByChannel"
+                v-if="costByChannelOptions.xAxis.data.length > 0"
+                :key="outputData.cost_by_channel_vs_total_sales_trend_select"
+              ></bar>
             </div>
           </el-col>
         </el-row>
@@ -120,6 +125,7 @@
                 :options="touchByChannelOptions"
                 chartId="touchByChannel"
                 v-if="touchByChannelOptions.xAxis.data.length > 0"
+                 :key="outputData.torch_points_by_channel_vs_total_sales_trend_select"
               ></bar>
             </div>
           </el-col>
@@ -163,7 +169,7 @@
                 v-model="data.ROIChannelValue"
                 placeholder="Select"
                 class="channel-select-input"
-                @click="changeROI"
+                @change="changeROI"
               >
                 <el-option
                   v-for="item in outputData.roi_options"
@@ -177,10 +183,17 @@
                   :options="ROIChartOptions"
                   chartId="ROIChart"
                   v-if="ROIChartOptions.xAxis.data.length > 0"
+                  :key="data.ROIChannelValue"
                 ></bar>
               </div>
             </div>
-            <div v-if="data.ROItrigger === 'MROI'"></div>
+            <div v-if="data.ROItrigger === 'MROI'">
+              <bar
+                :options="MROIChartOptions"
+                chartId="MROIChart"
+                v-if="MROIChartOptions.xAxis.data.length > 0"
+              ></bar>
+            </div>
           </el-col>
         </el-row>
         <el-row>
@@ -290,9 +303,10 @@ const outputData = reactive({
   cost_by_channel_vs_total_sales_trend: {},
   cost_by_channel_vs_total_sales_trend_options: [],
   cost_by_channel_vs_total_sales_trend_select: '',
-  show_cost_by_channel_vs_total_sales_trend: false,
   current_unit_price: [],
   mroi: {},
+  mroi_options: ['cost'],
+  mroi_select: 'cost',
   promotion_vs_nonpromotion: {},
   response_curve: {},
   response_curve_options: [],
@@ -384,6 +398,12 @@ const previewModelOutputResultFn = async () => {
     outputData.roi_select = outputData.roi_options[0]
     changeROI()
 
+    outputData.mroi = res.mroi
+
+    MROIChartOptions.xAxis.data = []
+    MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
+    MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
+
     outputData.response_curve = res.response_curve
     outputData.response_curve_options = Object.keys(res.response_curve)
     outputData.response_curve_select = outputData.response_curve_options[0]
@@ -400,7 +420,6 @@ const previewModelOutputResultFn = async () => {
 const changeCost_by_channel_vs_total_sales_trend = () => {
   costByChannelOptions.xAxis.data = []
   costByChannelOptions.series = []
-  outputData.show_cost_by_channel_vs_total_sales_trend = false
 
   console.log(
     'outputData.cost_by_channel_vs_total_sales_trend_select',
@@ -441,7 +460,8 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
     outputData.cost_by_channel_vs_total_sales_trend[
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['cost']['x']
-  outputData.show_cost_by_channel_vs_total_sales_trend = true
+
+    
 }
 
 const changeTorch_points_by_channel_vs_total_sales_trend = () => {
@@ -485,10 +505,7 @@ const changeROI = () => {
   ROIChartOptions.xAxis.data = []
   ROIChartOptions.series[0].data = outputData.roi[outputData.roi_select].y
   ROIChartOptions.xAxis.data = outputData.roi[outputData.roi_select].x
-  console.log('ROIChartOptions', ROIChartOptions)
 }
-
-const changeROItrigger = () => {}
 
 const changeResponse_curve = () => {
   responseCurveOptions.xAxis.data = []
@@ -507,6 +524,7 @@ const data = reactive({
   ROItrigger: 'ROI',
   ROIChannelValue: 'cost',
   responseCurveValue: '',
+  key: Date.now()
 })
 
 const costDistributionOptions = reactive({
@@ -725,6 +743,31 @@ const ROIChartOptions = reactive({
     },
   ],
 })
+const MROIChartOptions = reactive({
+  xAxis: {
+    type: 'category',
+    data: [],
+  },
+  yAxis: {
+    type: 'value',
+  },
+  tooltip: {
+    trigger: 'axis',
+  },
+  series: [
+    {
+      data: [],
+      type: 'bar',
+      label: {
+        show: true,
+        formatter: (params) => params.value,
+      },
+      itemStyle: {
+        color: '#e99d42',
+      },
+    },
+  ],
+})
 const responseCurveOptions = reactive({
   xAxis: {
     type: 'category',
@@ -747,10 +790,8 @@ const responseCurveOptions = reactive({
       markLine: {
         itemStyle: {
           //盒须图样式。
-          normal: {
-            label: {
-              formatter: 'Current\n Total ROI=1.82',
-            },
+          label: {
+            formatter: 'Current\n Total ROI=1.82',
           },
         },
         //name: '预警时间',

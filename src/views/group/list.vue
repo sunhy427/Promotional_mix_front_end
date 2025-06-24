@@ -294,8 +294,9 @@
 <script setup>
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { watch, ref, reactive, computed } from 'vue'
+import { watch, ref, reactive, computed, onMounted } from 'vue'
 import {
+  getGroupList,
   deleteGroup,
   createProject,
   publishProject,
@@ -308,12 +309,7 @@ import {
   createMetaData,
 } from '../../api/api'
 import { basic } from '../../config'
-const props = defineProps({
-  groupList: {
-    type: Array,
-    required: true,
-  },
-})
+
 
 const data = reactive({
   groupList: [],
@@ -342,21 +338,14 @@ const shareProjectForm = reactive({
   msg: '',
 })
 
-watch(
-  () => props.groupList,
-  (value) => {
-    data.groupList = value
-  },
-  { deep: true, immediate: true },
-)
 
 const goProject = (group, project, status) => {
-  // ["EMPTY","MODEL_RUNNING","MODEL","OUTPUT","SIMULATION_RUNNING""SIMULATION"]
+  // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
   let name = ''
   if (status === 'EMPTY' || status === 'MODEL_RUNNING') {
     name = 'analysis'
   }
-  if (status === 'MODEL' || status === 'OUTPUT') {
+  if (status === 'MODEL_OUTPUT') {
     name = 'output'
   }
   if (status === 'SIMULATION_RUNNING' || status === 'SIMULATION') {
@@ -376,15 +365,13 @@ const sliceData = () => {
   return currentList
 }
 
-// const getList = async () => {
-//   let res = await getGroupList()
-//   if (res && res.group_list) {
-//     data.groupList = res.group_list
-//     data.page.total = data.groupList.length
-//     data.page.currentPage = 0
-//     data.currentList = sliceData()
-//   }
-// }
+const getList = async () => {
+  let res = await getGroupList()
+  if (res && res.group_list) {
+    data.groupList = res.group_list
+   
+  }
+}
 
 const changePage = (value) => {
   data.page.currentPage = value - 1
@@ -475,6 +462,7 @@ const deleteGroupFn = async (group_name) => {
       type: 'success',
       message: 'Delete completed',
     })
+    getList()
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'delete error',
@@ -548,6 +536,7 @@ const renameProjectFn = async () => {
       message: 'Rename completed',
     })
     data.showRenameProjectDialog = false
+    getList()
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'rename error',
@@ -580,10 +569,6 @@ const createProjectFn = async (group_name) => {
 }
 const confirmCreateProject = async () => {
   let param = {
-    // brand_name: createProjectForm.brand_name,
-    // yyyymm_end: parseInt(dayjs().format('YYYYMM')) ,
-    // data_version_id: parseInt(dayjs().format('YYYYMMDD')),
-
     project_name: createProjectForm.project_name,
     brand_name: createProjectForm.brand_name,
     yyyymm_end: createProjectForm.yyyymm_end,
@@ -596,7 +581,7 @@ const confirmCreateProject = async () => {
       type: 'success',
     })
     data.showCreateProjectDialog = false
-    //getList()
+    getList()
   }
 }
 
@@ -605,9 +590,6 @@ const formatDate = computed(() => {
     return dayjs(value).format(' YYYY-MM-DD HH:mm:ss')
   }
 })
-//   defineExpose({
-//     getList,
-//   });
 
 const createAndUploadAnalysisFn = (groupName, operation) => {
   if (operation === 'Create New Analysis') {
@@ -743,6 +725,15 @@ const publishProjectFn = (group_name, project_name) => {
     }
   }
 }
+
+defineExpose({
+  getList
+})
+
+onMounted(() => {
+  getList()
+})
+
 </script>
 
 <style lang="less">
