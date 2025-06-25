@@ -9,7 +9,7 @@ import { ElMessage } from 'element-plus'
 // 创建一个axios实例
 const service = axios.create({
   // 请求超时时间
-  timeout: 60000,
+  timeout: 120000,
   withCredentials: true,
 })
 

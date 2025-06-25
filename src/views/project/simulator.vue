@@ -4,13 +4,13 @@
       <el-icon><Back /></el-icon>
       <span>Simulator</span>
     </div>
-    <div class="top-btn-wrap">
+    <div class="top-btn-wrap" v-if="data.showAddBtn">
       <el-button type="primary" @click="addSimulationFn">
         <el-icon><CirclePlus /></el-icon>
         Create new simulation
       </el-button>
     </div>
-    <ul class="list-content">
+    <ul class="list-content" v-if="data.simulationList.length > 0">
       <li v-for="(item, index) in data.simulationList" :key="index">
         <div class="card-title">
           <i>1</i>
@@ -237,7 +237,7 @@
         </div>
       </template>
     </el-dialog>
-    <div class="foot-wrap">
+    <div class="foot-wrap" v-if="data.simulationList.length > 0">
       <el-button type="primary" @click="downloadFn">
         <el-icon><Download /></el-icon>
         Download Data
@@ -261,6 +261,7 @@ import {
   runSimulation,
   previewSimulations,
   simulationVisibility,
+  getProjectList,
 } from '../../api/api'
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
@@ -274,7 +275,7 @@ const data = reactive({
   dialogFormVisible: false,
   group_name: router.currentRoute._value.params.group,
   project_name: router.currentRoute._value.params.project,
-  project_status: '',
+  // project_status: '',
   simulationList: [],
   simulationProps: [],
   renameDialog: false,
@@ -283,17 +284,19 @@ const data = reactive({
     simulation_name_new: '',
   },
   changesList: ['unchanged', 'up', 'down'],
+  currentProject: {},
+  showAddBtn: true,
 })
 
 const props = defineProps({
-  project_status: {
-    type: String,
+  project: {
+    type: Object,
     requred: true,
   },
-  simulation_list: {
-    type: Array,
-    required: true,
-  },
+  // simulation_list: {
+  //   type: Array,
+  //   required: true,
+  // },
 })
 
 const simulationFormRules = reactive({
@@ -355,11 +358,31 @@ const addConfirmFn = async () => {
         })
 
         data.dialogFormVisible = false
+        // init simulation
+        getProjectListFn()
       }
     } else {
       ElMessage.error('The input is incomplete. Please fill in all the required fields.')
     }
   })
+}
+
+const getProjectListFn = async () => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+  }
+  let res = await getProjectList(param)
+  if (res) {
+    let index = res.project_list.findIndex((item) => {
+      return item.project_name === data.currentProject.project_name
+    })
+
+    if (index > -1) {
+      data.currentProject = data.project_list[index]
+      initSimulation()
+    }
+  }
 }
 
 const getMetaData = async (simulation_name) => {
@@ -506,20 +529,32 @@ const commitSimulation = async (index) => {
 }
 
 const init = () => {
-  // ["EMPTY","MODEL_RUNNING","MODEL","OUTPUT","PRE_SIMULATION"，"SIMULATION_RUNNING","SIMULATION"]
-  // 重要！！！
+  // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
+
+  if (
+    data.currentProject.project_status === 'EMPTY' ||
+    data.currentProject.project_status === 'MODEL_RUNNING'
+  ) {
+    data.simulationList = []
+    data.showAddBtn = false
+  }
+  if (data.currentProject.project_status === 'MODEL_OUTPUT') {
+    data.simulationList = []
+  }
+  if (data.currentProject.project_status === 'SIMULATION') {
+    //请求参数
+    initSimulation()
+  }
+  if (data.currentProject.project_status === 'SIMULATION_RUNNING') {
+    //请求参数
+    //polling
+  }
+}
+
+const initSimulation = () => {
+  data.simulationList = data.currentProject.simulation_list
   for (let i = 0; i < data.simulationList.length; i++) {
-    if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
-      getMetaData(data.simulationList[i].simulation_name)
-    }
-    if (data.simulationList[i].simulation_task_status === 'SIMULATION_OUTPUT') {
-      // getMetaData(data.simulationList[i].simulation_name)
-      previewSimulationsFn(data.simulationList[i].simulation_name)
-    }
-    if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
-      // getMetaData(data.simulationList[i].simulation_name)
-      // polling getCurrentSimulatingTask
-    }
+    getMetaData(data.simulationList[i].simulation_name)
   }
 }
 
@@ -565,22 +600,26 @@ const savePackageFn = async () => {
 }
 
 watch(
-  () => props.project_status,
+  () => props.project,
   (value) => {
-    data.project_status = value
-    //init()
-  },
-  { deep: true, immediate: true },
-)
-watch(
-  () => props.simulation_list,
-  (value) => {
-    data.simulationList = value
-
-    init()
+    if (value && value.project_status) {
+      data.currentProject = value
+      init()
+    }
+    // data.project_status = value
+    // //init()
   },
   { deep: false, immediate: true },
 )
+// watch(
+//   () => props.simulation_list,
+//   (value) => {
+//     data.simulationList = value
+
+//     init()
+//   },
+//   { deep: false, immediate: true },
+// )
 </script>
 <style lang="less" scoped>
 .simulator-page {

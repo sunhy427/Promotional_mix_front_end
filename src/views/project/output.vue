@@ -30,7 +30,12 @@
       </el-descriptions>
       <el-descriptions title="" :column="4">
         <el-descriptions-item label="Segment" :span="4" label-class-name="descriptions-label">
-          <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 240px">
+          <el-select
+            v-model="form.segmentation_type"
+            placeholder="Select"
+            style="width: 240px"
+            @change="changeSegment"
+          >
             <el-option
               v-for="item in outputMetadata.segmentOptions"
               :key="item"
@@ -125,7 +130,7 @@
                 :options="touchByChannelOptions"
                 chartId="touchByChannel"
                 v-if="touchByChannelOptions.xAxis.data.length > 0"
-                 :key="outputData.torch_points_by_channel_vs_total_sales_trend_select"
+                :key="outputData.torch_points_by_channel_vs_total_sales_trend_select"
               ></bar>
             </div>
           </el-col>
@@ -334,14 +339,19 @@ const previewModelOutputMetadataFn = async () => {
     outputMetadata.aggregate_channel_list = res.aggregate_channel_list
     outputMetadata.segmentOptions = res.segment_options
     form.segmentation_type = outputMetadata.segmentOptions[0]
+    previewModelOutputResultFn()
   }
+}
+
+const changeSegment = () => {
+  previewModelOutputResultFn()
 }
 
 const previewModelOutputResultFn = async () => {
   let param = {
     group_name: pageParam.group,
     project_name: pageParam.project,
-    segmentation_type: 'Total_market',
+    segmentation_type: form.segmentation_type,
   }
   let res = await previewModelOutputResult(param)
   if (res) {
@@ -429,6 +439,12 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
     ]['cost']['y'],
   )
 
+  console.log(
+    outputData.cost_by_channel_vs_total_sales_trend[
+      outputData.cost_by_channel_vs_total_sales_trend_select
+    ]['date_marked'][0],
+  )
+
   costByChannelOptions.series.push({
     name: 'Cost',
     type: 'line',
@@ -436,10 +452,7 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['cost']['y'],
     markPoint: {
-      data: [
-        { type: 'max', name: 'Max' },
-        { type: 'min', name: 'Min' },
-      ],
+      data: [{}],
     },
   })
   costByChannelOptions.series.push({
@@ -448,20 +461,12 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
     data: outputData.cost_by_channel_vs_total_sales_trend[
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['sales']['y'],
-    markPoint: {
-      data: [
-        { type: 'max', name: 'Max' },
-        { type: 'min', name: 'Min' },
-      ],
-    },
   })
 
   costByChannelOptions.xAxis.data =
     outputData.cost_by_channel_vs_total_sales_trend[
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['cost']['x']
-
-    
 }
 
 const changeTorch_points_by_channel_vs_total_sales_trend = () => {
@@ -515,7 +520,6 @@ const changeResponse_curve = () => {
 }
 onMounted(() => {
   previewModelOutputMetadataFn()
-  previewModelOutputResultFn()
 })
 
 const data = reactive({
@@ -524,7 +528,7 @@ const data = reactive({
   ROItrigger: 'ROI',
   ROIChannelValue: 'cost',
   responseCurveValue: '',
-  key: Date.now()
+  key: Date.now(),
 })
 
 const costDistributionOptions = reactive({
@@ -542,7 +546,7 @@ const costDistributionOptions = reactive({
     {
       name: 'Access From',
       type: 'pie',
-      center: ['35%', '45%'],
+      center: ['45%', '45%'],
       radius: ['10%', '60%'],
       avoidLabelOverlap: false,
       itemStyle: {

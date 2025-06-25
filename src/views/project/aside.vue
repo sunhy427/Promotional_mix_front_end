@@ -1,6 +1,6 @@
 <template>
   <div class="aside-page">
-    <el-menu class="el-menu-vertical-demo" background-color="#e99d42">
+    <el-menu class="el-menu-vertical-demo" background-color="#e99d42" >
       <el-menu-item :index="data.currentGroupName" @click="backGroup">
         <el-icon><House /></el-icon>
         <span>{{ data.currentGroupName }}</span>
@@ -12,18 +12,26 @@
       background-color="#e99d42"
       :unique-opened="true"
       :default-openeds="data.openedIndexList"
+      v-if="data.projectList.length > 0"
+      
     >
-      <el-sub-menu :index="item.project_name" v-for="(item, index) in data.projectList" >
+      
+      <el-sub-menu :index="item.project_name" v-for="(item, index) in data.projectList" :key="item.project_name">
         <template #title>
-          <span  @click="enter(item)">{{ item.project_name }}</span>
+          <span @click="enter(item)">{{ item.project_name }}</span>
         </template>
-        <el-menu-item-group v-if="item.simulation_list.length > 0 && item.project_name === data.currentProjectName">
+        <el-menu-item-group
+          v-if="
+            item.simulation_list &&
+            item.simulation_list.length > 0 &&
+            item.project_name === data.currentProjectName
+          "
+        >
           <el-menu-item
             v-for="simulationItem in item.simulation_list"
             :index="simulationItem.simulation_name"
             >{{ simulationItem.simulation_name }}
-            </el-menu-item
-          >
+          </el-menu-item>
         </el-menu-item-group>
       </el-sub-menu>
     </el-menu>
@@ -51,10 +59,10 @@ const data = reactive({
 watch(
   () => props.project_list,
   (value) => {
-    data.projectList = value
-
-    data.openedIndexList.push(data.currentProjectName)
-
+    if (value && value.length > 0) {
+      data.projectList = value
+      data.openedIndexList.push(data.currentProjectName)
+    }
   },
   { deep: true, immediate: true },
 )
@@ -80,6 +88,9 @@ const enter = (item) => {
 </script>
 
 <style lang="less">
+:root {
+  --el-menu-active-color: #555555;
+}
 .aside-page {
   height: calc(100vh - 80px);
   background-color: #e99d42;
@@ -91,8 +102,9 @@ const enter = (item) => {
 
   .el-menu-vertical-demo {
     .el-sub-menu__title:hover {
-      background-color: #e99d42;
+      background-color: #f0b266;
     }
+    
     // li {
     //   padding: 0 5px;
     //   &:first-of-type {

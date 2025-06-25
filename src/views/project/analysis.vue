@@ -108,14 +108,14 @@
         <el-button type="info" round size="small" @click="runCancel">Cancel</el-button>
       </div>
     </el-card>
-    <el-card v-if="progressForm.isPolling">
-      <el-progress
+    <el-card v-if="progressForm.isPolling" style="width: 100%; height: 200px;" v-loading="progressForm.isPolling">
+      <!-- <el-progress
         :percentage="progressForm.percentage"
         :stroke-width="15"
         striped
         striped-flow
         :duration="50"
-      />
+      /> -->
     </el-card>
   </div>
 </template>
@@ -132,8 +132,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
-  project_status: {
-    type: String,
+  project: {
+    type: Object,
     requred: true,
   },
 })
@@ -146,7 +146,7 @@ const pageParam = reactive({
 
 const data = reactive({
   loading: false,
-  project_status: '',
+  currentProject: {},
   labelPosition: true,
   channelNumber: '7',
   task_id: '',
@@ -177,17 +177,18 @@ const options = reactive({
 
 // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const init = () => {
-  if (data.project_status === 'EMPTY') {
+  console.log('data.currentProject.project_status', data.currentProject.project_status)
+  if (data.currentProject.project_status === 'EMPTY') {
     getPreviewRawData()
   }
-  if (data.project_status === 'MODEL_RUNNING') {
+  if (data.currentProject.project_status === 'MODEL_RUNNING') {
     previewModelOutputParametersFn()
     startPolling()
   }
   if (
-    data.project_status === 'MODEL_OUTPUT' ||
-    data.project_status === 'SIMULATION' ||
-    data.project_status === 'SIMULATION_RUNNING'
+    data.currentProject.project_status === 'MODEL_OUTPUT' ||
+    data.currentProject.project_status === 'SIMULATION' ||
+    data.currentProject.project_status === 'SIMULATION_RUNNING'
   ) {
     previewModelOutputParametersFn()
   }
@@ -322,12 +323,37 @@ const previewModelOutputParametersFn = async () => {
   }
   let res = await previewModelOutputParameters(param)
   if (res) {
-    formatRes(res)
+    formatResParam(res)
   }
+}
+
+const formatResParam = (res) => {
+  let tempRes = res
+  form.adjust_priors = tempRes.adjust_priors
+
+  options.channelListOptions = Object.keys(tempRes.prior_info_input)
+  for (let key in tempRes.prior_info_input) {
+    form.channel.push({
+      channel_name: key,
+      channel_prior: parseInt(tempRes.prior_info_input[key] * 100),
+    })
+  }
+  data.channelNumber = tempRes.channel_layout
+
+  for (let key in tempRes.channel_agg_rule_input) {
+      form.agg_rule[data.channelNumber].push({
+        new_column_name: key,
+        channels: tempRes.channel_agg_rule_input[key],
+      })
+    }
+
+    form.segmentation_type = tempRes.segmentation_type_input
+  
 }
 
 const formatRes = (res) => {
   let tempRes = res
+  form.adjust_priors = tempRes.adjust_priors
   if (
     tempRes &&
     tempRes.default_channel_list &&
@@ -361,14 +387,15 @@ const formatRes = (res) => {
 }
 
 watch(
-  () => props.project_status,
+  () => props.project,
   (value) => {
-    data.project_status = value
-    init()
+    if (value && value.project_status) {
+      data.currentProject = value
+      init()
+    }
   },
   { deep: true, immediate: true },
 )
-
 </script>
 
 <style lang="less" scoped>

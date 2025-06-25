@@ -1,25 +1,24 @@
 <template>
   <div class="project-page">
+   
     <Aside :project_list="data.project_list"></Aside>
     <div class="content">
       <Analysis
+        :project="data.currentProject"
         v-if="pageParam.currentComponent === 'analysis'"
-        :project_status="data.project_status"
       ></Analysis>
       <Output
         v-if="pageParam.currentComponent === 'output'"
-        :project_status="data.project_status"
       ></Output>
       <Simulator
+      :project="data.currentProject"
         v-if="pageParam.currentComponent === 'simulator'"
-        :project_status="data.project_status"
-        :simulation_list="data.simulation_list"
       ></Simulator>
     </div>
   </div>
 </template>
 <script setup>
-import { onMounted, reactive, watch } from 'vue'
+import { onMounted, reactive } from 'vue'
 import Aside from './aside.vue'
 import Analysis from './analysis.vue'
 import Output from './output.vue'
@@ -32,12 +31,12 @@ const pageParam = reactive({
   group: route.params.group,
   project: route.params.project,
   currentComponent: route.name,
+  
 })
 
 const data = reactive({
-  project_status: '',
   project_list: [],
-  simulation_list: [],
+  currentProject: {},
 })
 
 const getProjectListFn = async (group_name) => {
@@ -45,22 +44,23 @@ const getProjectListFn = async (group_name) => {
     group_name: group_name,
   }
   let res = await getProjectList(param)
-  if (res && res.project_list[0].length > 0) {
-    data.project_list = res.project_list[0]
-    data.project_status = data.project_list.filter((item) => {
+  if (res) {
+     data.project_list = res.project_list
+
+     let index = data.project_list.findIndex(item => {
       return item.project_name === pageParam.project
-    })[0].project_status
-    data.simulation_list = data.project_list.filter((item) => {
-      return item.project_name === pageParam.project
-    })[0].simulation_list
+     })
+    
+     if (index > -1) {
+      data.currentProject = data.project_list[index]
+     }
   }
+
 }
 
 onMounted(() => {
   getProjectListFn(pageParam.group)
 })
-
-
 </script>
 <style lang="less" scoped>
 .content {
