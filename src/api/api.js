@@ -230,7 +230,14 @@ export function runSimulation(params) {
 //* GET ``/api/contents/${group_name}/${project_name}/${simulation_name}/simulating/output``
 export function previewSimulations(params) {
   return request.get(
-    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/output`,
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/output/result`,
+    { params },
+  )
+}
+
+export function getSimulationsParam(params) {
+  return request.get(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/output/parameters`,
     { params },
   )
 }

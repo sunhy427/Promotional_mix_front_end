@@ -431,6 +431,7 @@ const deleteProjectFn = async (group_name, project_name) => {
       type: 'success',
     })
     // 请求
+    
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'delete error',

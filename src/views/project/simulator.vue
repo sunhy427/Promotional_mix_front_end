@@ -79,13 +79,12 @@
                     />
                   </template>
                 </el-table-column>
-                <el-table-column label="Change percentage(1~100%)">
+                <el-table-column label="Change percentage">
                   <template #default="scope">
                     <span v-if="scope.row.if_changes === 'up' || scope.row.if_changes === 'down'">
                       <el-input-number
                         v-model="item.unit_price_pct_input[scope.$index].change_percentage"
                         :min="1"
-                        :max="100"
                       >
                         <template #suffix>
                           <span>%</span>
@@ -142,7 +141,7 @@
                   </el-segmented>
                 </el-col>
                 <el-col :span="5">
-                  <span>Min Speed</span>
+                  <span>Min Spend</span>
                   <el-input-number
                     v-model="unitValue.min_spend"
                     :controls="false"
@@ -151,7 +150,7 @@
                   />
                 </el-col>
                 <el-col :span="6">
-                  <span>Max Speed</span>
+                  <span>Max Spend</span>
                   <el-input-number
                     v-model="unitValue.max_spend"
                     :controls="false"
@@ -171,7 +170,7 @@
             </div>
           </el-form>
           <div class="btn-wrap">
-            <el-button type="primary" @click="commitSimulation(index)" :loading="data.loading"
+            <el-button type="primary" @click="commitSimulation(index)" :loading="progressForm.isPolling"
               >Commit</el-button
             >
             <el-button type="info">Reset</el-button>
@@ -250,7 +249,7 @@
   </div>
 </template>
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addSimulation,
@@ -262,6 +261,8 @@ import {
   previewSimulations,
   simulationVisibility,
   getProjectList,
+  getCurrentSimulatingTask,
+  getSimulationsParam,
 } from '../../api/api'
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
@@ -374,6 +375,8 @@ const getProjectListFn = async () => {
   }
   let res = await getProjectList(param)
   if (res) {
+    data.project_list = res.project_list
+
     let index = res.project_list.findIndex((item) => {
       return item.project_name === data.currentProject.project_name
     })
@@ -476,12 +479,12 @@ const deleteSimulationFn = async (simulation_name) => {
     simulation_name: simulation_name,
   }
   let res = await deleteSimulation(param)
-  if (res) {
+  if (res && res.status === 1) {
     ElMessage({
       type: 'success',
       message: 'Delete success',
     })
-  }
+  } 
 }
 const floatFormat = (row, column, cellValue) => {
   if (cellValue) {
@@ -525,6 +528,8 @@ const commitSimulation = async (index) => {
 
   if (res) {
     // task_id
+    //getSimulationsParamFn(param.simulation_name)
+    startPolling(param.simulation_name)
   }
 }
 
@@ -543,29 +548,131 @@ const init = () => {
   }
   if (data.currentProject.project_status === 'SIMULATION') {
     //请求参数
+    // empty output
     initSimulation()
   }
   if (data.currentProject.project_status === 'SIMULATION_RUNNING') {
     //请求参数
     //polling
+    initSimulationRunning()
+  }
+}
+const progressForm = reactive({
+  isPolling: false,
+  pollingTimer: null,
+  task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+})
+
+const startPolling = (simulation) => {
+  if (progressForm.isPolling) {
+    return
+  }
+  progressForm.isPolling = true
+  getCurrentSimulatingTaskFn(simulation)
+  progressForm.pollingTimer = setInterval(getCurrentSimulatingTaskFn, 30000, simulation)
+}
+
+const stopPolling = () => {
+  progressForm.isPolling = false
+  clearInterval(progressForm.pollingTimer)
+}
+
+const getCurrentSimulatingTaskFn = async (simulation) => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+    simulation_name: simulation,
+  }
+  let res = await getCurrentSimulatingTask(param)
+  if (res) {
+    progressForm.task_status = res.task_status
+    if (progressForm.task_status === 'FAILURE') {
+      ElMessage({
+        type: 'error',
+        message: 'FAILURE',
+      })
+      data.loading = false
+      stopPolling()
+    } else if (progressForm.task_status === 'REVOKED') {
+      ElMessage({
+        type: 'error',
+        message: 'REVOKED',
+      })
+      data.loading = false
+      stopPolling()
+    } else if (progressForm.task_status === 'SUCCESS') {
+      ElMessage({
+        type: 'success',
+        message: 'SUCCESS',
+      })
+      data.loading = false
+      stopPolling()
+      getProjectListFn()
+    }
+  }
+}
+//
+const initSimulationRunning = () => {
+  data.simulationList = data.currentProject.simulation_list
+  for (let i = 0; i < data.simulationList.length; i++) {
+    getSimulationsParamFn(data.simulationList[i].simulation_name)
+    startPolling(data.simulationList[i].simulation_name)
   }
 }
 
 const initSimulation = () => {
   data.simulationList = data.currentProject.simulation_list
   for (let i = 0; i < data.simulationList.length; i++) {
-    getMetaData(data.simulationList[i].simulation_name)
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_OUTPUT') {
+      getSimulationsParamFn(data.simulationList[i].simulation_name)
+    }
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
+      getMetaData(data.simulationList[i].simulation_name)
+    }
   }
 }
 
-const previewSimulationsFn = async (simulation) => {
+const getSimulationsParamFn = async (simulation) => {
   let param = {
     group_name: data.group_name,
     project_name: data.project_name,
     simulation_name: simulation,
   }
-  let res = await previewSimulations(param)
-  if (res && res.Simulation_output) {
+  let res = await getSimulationsParam(param)
+  if (res && res.simulation_parameters) {
+    let index = data.simulationList.findIndex((item) => {
+      return item.simulation_name === simulation
+    })
+    if (index > -1) {
+      let simulation_item = {
+        showOutput: false,
+        optimization_type: res.simulation_parameters.optimization_type,
+        n_time_periodss: res.simulation_parameters.n_time_periods,
+        budget: res.simulation_parameters.budget,
+        unit_price_pct_input: [],
+        constraints_on_channels_options: Object.keys(res.simulation_parameters.constraints_on_channels),
+        constraints_on_channels_select: Object.keys(res.simulation_parameters.constraints_on_channels)[0],
+        constraints_on_channels: {},
+      }
+      // for (let key in res.simulation_parameters.unit_price_pct_input) {
+      //   let item = {
+      //     channel: key,
+      //     unit_price: res.simulation_parameters.unit_price_pct_input[key].default_price,
+      //     if_changes: '',
+      //     change_percentage: res.simulation_parameters.unit_price_pct_input[key].change_percentage,
+      //   }
+      //   for (let i = 0; i < res.simulation_parameters.unit_price_pct_input[key].if_changes.length; i++) {
+      //     if (res.simulation_parameters.unit_price_pct_input[key].if_changes[i] === 1) {
+      //       item.if_changes = data.changesList[i]
+      //       break
+      //     }
+      //   }
+      //   simulation_item.unit_price_pct_input.push(item)
+      // }
+      // simulation_item.constraints_on_channels = res.constraints_on_channels
+
+      // data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+    }
   }
 }
 
@@ -620,6 +727,12 @@ watch(
 //   },
 //   { deep: false, immediate: true },
 // )
+
+onUnmounted(() => {
+  if (progressForm.pollingTimer) {
+    stopPolling()
+  }
+})
 </script>
 <style lang="less" scoped>
 .simulator-page {

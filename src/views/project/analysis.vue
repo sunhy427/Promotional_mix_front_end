@@ -92,12 +92,12 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 440px">
+            <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 100%">
               <el-option
                 v-for="item in options.segmentOptions"
-                :key="item"
-                :label="item"
-                :value="item"
+                :key="item.segment_type"
+                :label="item.description"
+                :value="item.segment_type"
               />
             </el-select>
           </el-form-item>
@@ -108,7 +108,11 @@
         <el-button type="info" round size="small" @click="runCancel">Cancel</el-button>
       </div>
     </el-card>
-    <el-card v-if="progressForm.isPolling" style="width: 100%; height: 200px;" v-loading="progressForm.isPolling">
+    <el-card
+      v-if="progressForm.isPolling"
+      style="width: 100%; height: 200px"
+      v-loading="progressForm.isPolling"
+    >
       <!-- <el-progress
         :percentage="progressForm.percentage"
         :stroke-width="15"
@@ -227,11 +231,19 @@ const runConfirm = async () => {
     adjust_priors: form.adjust_priors,
   }
 
-  for (let i = 0; i < form.agg_rule[data.channelNumber].length; i++) {
-    param.channel_agg_rule[form.agg_rule[data.channelNumber][i].new_column_name] =
-      form.agg_rule[data.channelNumber][i].channels
+  for (let key in form.agg_rule) {
+    param.channel_agg_rule[key] = {}
+    for (let i = 0; i < form.agg_rule[key].length; i++) {
+      param.channel_agg_rule[key][form.agg_rule[key][i].new_column_name] =
+        form.agg_rule[key][i].channels
+    }
   }
-  //adjust_priors
+
+  // for (let i = 0; i < form.agg_rule[data.channelNumber].length; i++) {
+  //   param.channel_agg_rule[form.agg_rule[data.channelNumber][i].new_column_name] =
+  //     form.agg_rule[data.channelNumber][i].channels
+  // }
+
   for (let i = 0; i < form.channel.length; i++) {
     param.prior_info_input.channel_name.push(form.channel[i].channel_name)
     param.prior_info_input.channel_prior.push(form.channel[i].channel_prior / 100)
@@ -308,7 +320,7 @@ const startPolling = () => {
   progressForm.isPolling = true
   progressForm.percentage = 0
   getCurrentModelTaskFn()
-  progressForm.pollingTimer = setInterval(getCurrentModelTaskFn, 10000)
+  progressForm.pollingTimer = setInterval(getCurrentModelTaskFn, 30000)
 }
 
 const stopPolling = () => {
@@ -341,14 +353,22 @@ const formatResParam = (res) => {
   data.channelNumber = tempRes.channel_layout
 
   for (let key in tempRes.channel_agg_rule_input) {
-      form.agg_rule[data.channelNumber].push({
-        new_column_name: key,
-        channels: tempRes.channel_agg_rule_input[key],
+    form.agg_rule[key] = []
+    for (let keyChannel in tempRes.channel_agg_rule_input[key]) {
+      form.agg_rule[key].push({
+        new_column_name: keyChannel,
+        channels: tempRes.channel_agg_rule_input[key][keyChannel],
       })
     }
-
-    form.segmentation_type = tempRes.segmentation_type_input
-  
+    // form.agg_rule[key].push({
+    //   new_column_name: tempRes.channel_agg_rule_input[key],
+    //   channels: tempRes.channel_agg_rule_input[key],
+    // })
+  }
+  for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
+    options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
+  }
+  form.segmentation_type = tempRes.segmentation_type_input
 }
 
 const formatRes = (res) => {
@@ -362,9 +382,14 @@ const formatRes = (res) => {
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
 
-    for (let key in tempRes.default_segmentation_type_list) {
-      options.segmentOptions.push(key)
+    for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
+      options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
     }
+    // for (let key in tempRes.default_segmentation_type_list) {
+    //   options.segmentOptions.push({
+
+    //   })
+    // }
     for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
       form.channel.push({
         channel_name: tempRes.default_channel_list.channel_name[i],
@@ -381,6 +406,12 @@ const formatRes = (res) => {
       form.agg_rule['9'].push({
         new_column_name: key,
         channels: tempRes.default_agg_rule['9'][key],
+      })
+    }
+    for (let key in tempRes.default_agg_rule['customized']) {
+      form.agg_rule['customized'].push({
+        new_column_name: key,
+        channels: tempRes.default_agg_rule['customized'][key],
       })
     }
   }
