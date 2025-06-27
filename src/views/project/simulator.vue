@@ -3,6 +3,34 @@
     <div class="top">
       <el-icon><Back /></el-icon>
       <span>Simulator</span>
+      <el-dropdown>
+        <el-button type="primary">
+          Navigation Bar<el-icon class="el-icon--right"><arrow-down /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="goPage('analysis')">Channel Analysis</el-dropdown-item>
+            <el-dropdown-item
+              @click="goPage('output')"
+              v-if="
+                data.currentProject.project_status === 'MODEL_OUTPUT' ||
+                data.currentProject.project_status === 'SIMULATION' ||
+                data.currentProject.project_status === 'SIMULATION_RUNNING'
+              "
+              >Channel Analysis Output</el-dropdown-item
+            >
+            <el-dropdown-item
+              @click="goPage('simulator')"
+              v-if="
+                data.currentProject.project_status === 'MODEL_OUTPUT' ||
+                data.currentProject.project_status === 'SIMULATION' ||
+                data.currentProject.project_status === 'SIMULATION_RUNNING'
+              "
+              >Simulation</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
     <div class="top-btn-wrap" v-if="data.showAddBtn">
       <el-button type="primary" @click="addSimulationFn">
@@ -95,7 +123,12 @@
                 </el-table-column>
               </el-table>
             </el-form-item>
-            <div class="constraint-wrap" v-if="item.constraints_on_channels_select">
+            <div
+              class="constraint-wrap"
+              v-if="
+                item.optimization_type === 'fixed_budget' && item.constraints_on_channels_select
+              "
+            >
               <p class="title" style="margin-bottom: 30px">
                 Constraints on Channels
                 <span style="float: right">
@@ -158,6 +191,7 @@
                     :disabled="unitValue.constraint === false"
                   />
                 </el-col>
+
                 <el-col :span="3" v-if="'proportion' in unitValue">
                   <el-input-number
                     v-model="unitValue.proportion"
@@ -168,10 +202,36 @@
                 </el-col>
               </el-row>
             </div>
+            <div
+              class="constraint-wrap"
+              v-if="
+                item.optimization_type === 'mccp_suggestion' && item.constraints_on_channels_select
+              "
+            >
+              <p class="title" style="margin-bottom: 30px">
+                Constraints on MCCP Suggested Channels
+              </p>
+
+              <el-row
+                v-for="(unitValue, unitKey, unitIndex) in item.constraints_on_channels"
+                :key="unitIndex"
+              >
+                <el-col :span="4">
+                  <span class="title">{{ unitKey }}</span>
+                </el-col>
+                <el-col :span="5">
+                  <span>TP</span>
+                  <span>{{ unitValue.TP }}</span>
+                </el-col>
+              </el-row>
+            </div>
           </el-form>
           <div class="btn-wrap">
-            <el-button type="primary" @click="commitSimulation(index)" :loading="progressForm.isPolling"
-              >Commit</el-button
+            <el-button
+              type="primary"
+              @click="commitSimulation(index)"
+              :loading="progressForm.isPolling"
+              >Comfirm</el-button
             >
             <el-button type="info">Reset</el-button>
           </div>
@@ -359,7 +419,6 @@ const addConfirmFn = async () => {
         })
 
         data.dialogFormVisible = false
-        // init simulation
         getProjectListFn()
       }
     } else {
@@ -452,6 +511,7 @@ const renameComfirm = async () => {
       type: 'success',
     })
     data.renameDialog = false
+    getProjectListFn()
   }
 }
 
@@ -484,7 +544,8 @@ const deleteSimulationFn = async (simulation_name) => {
       type: 'success',
       message: 'Delete success',
     })
-  } 
+    getProjectListFn()
+  }
 }
 const floatFormat = (row, column, cellValue) => {
   if (cellValue) {
@@ -498,6 +559,20 @@ const floatFormat = (row, column, cellValue) => {
 }
 
 const commitSimulation = async (index) => {
+  if (!data.simulationList[index].n_time_periods) {
+    ElMessage({
+      type: 'error',
+      message: 'Please input Time Period',
+    })
+    return
+  }
+  if (!data.simulationList[index].budget) {
+    ElMessage({
+      type: 'error',
+      message: 'Please input Budget(of the time period)',
+    })
+    return
+  }
   let param = {
     group_name: data.group_name,
     project_name: data.project_name,
@@ -506,9 +581,14 @@ const commitSimulation = async (index) => {
     n_time_periods: data.simulationList[index].n_time_periods,
     budget: data.simulationList[index].budget,
     unit_price_pct: {},
+
     constraints_on_channels: {},
-    ab_proportion_type: data.simulationList[index].constraints_on_channels_select,
+    ab_proportion_type:
+      data.simulationList[index].optimization_type === 'fixed_budget'
+        ? data.simulationList[index].constraints_on_channels_select
+        : '',
   }
+
   for (let i = 0; i < data.simulationList[index].unit_price_pct_input.length; i++) {
     param.unit_price_pct[data.simulationList[index].unit_price_pct_input[i].channel] = {
       default_price: data.simulationList[index].unit_price_pct_input[i].unit_price,
@@ -522,7 +602,6 @@ const commitSimulation = async (index) => {
     param.constraints_on_channels = data.simulationList[index].constraints_on_channels
   }
 
-  console.log('param', param)
   data.loading = true
   let res = await runSimulation(param)
 
@@ -547,13 +626,12 @@ const init = () => {
     data.simulationList = []
   }
   if (data.currentProject.project_status === 'SIMULATION') {
-    //请求参数
-    // empty output
+    
+    // empty output 
     initSimulation()
   }
   if (data.currentProject.project_status === 'SIMULATION_RUNNING') {
-    //请求参数
-    //polling
+    // running
     initSimulationRunning()
   }
 }
@@ -593,6 +671,7 @@ const getCurrentSimulatingTaskFn = async (simulation) => {
       })
       data.loading = false
       stopPolling()
+      
     } else if (progressForm.task_status === 'REVOKED') {
       ElMessage({
         type: 'error',
@@ -647,31 +726,43 @@ const getSimulationsParamFn = async (simulation) => {
       let simulation_item = {
         showOutput: false,
         optimization_type: res.simulation_parameters.optimization_type,
-        n_time_periodss: res.simulation_parameters.n_time_periods,
+        n_time_periods: res.simulation_parameters.n_time_periods,
         budget: res.simulation_parameters.budget,
         unit_price_pct_input: [],
-        constraints_on_channels_options: Object.keys(res.simulation_parameters.constraints_on_channels),
-        constraints_on_channels_select: Object.keys(res.simulation_parameters.constraints_on_channels)[0],
+        constraints_on_channels_options: Object.keys(
+          res.simulation_parameters.constraints_on_channels,
+        ),
+        constraints_on_channels_select: Object.keys(
+          res.simulation_parameters.constraints_on_channels,
+        )[0],
         constraints_on_channels: {},
       }
-      // for (let key in res.simulation_parameters.unit_price_pct_input) {
-      //   let item = {
-      //     channel: key,
-      //     unit_price: res.simulation_parameters.unit_price_pct_input[key].default_price,
-      //     if_changes: '',
-      //     change_percentage: res.simulation_parameters.unit_price_pct_input[key].change_percentage,
-      //   }
-      //   for (let i = 0; i < res.simulation_parameters.unit_price_pct_input[key].if_changes.length; i++) {
-      //     if (res.simulation_parameters.unit_price_pct_input[key].if_changes[i] === 1) {
-      //       item.if_changes = data.changesList[i]
-      //       break
-      //     }
-      //   }
-      //   simulation_item.unit_price_pct_input.push(item)
-      // }
-      // simulation_item.constraints_on_channels = res.constraints_on_channels
+      for (let key in res.simulation_parameters.unit_price_pct_input) {
+        let item = {
+          channel: key,
+          unit_price: res.simulation_parameters.unit_price_pct_input[key].default_price,
+          if_changes: '',
+          change_percentage: res.simulation_parameters.unit_price_pct_input[key].change_percentage,
+        }
+        for (
+          let i = 0;
+          i < res.simulation_parameters.unit_price_pct_input[key].if_changes.length;
+          i++
+        ) {
+          if (res.simulation_parameters.unit_price_pct_input[key].if_changes[i] === 1) {
+            item.if_changes = data.changesList[i]
+            break
+          }
+        }
+        simulation_item.unit_price_pct_input.push(item)
+      }
 
-      // data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+      simulation_item.constraints_on_channels = res.simulation_parameters.constraints_on_channels
+
+      console.log('data.simulationList[index]', data.simulationList[index])
+      console.log('simulation_item', simulation_item)
+
+      data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
   }
 }
@@ -706,6 +797,9 @@ const savePackageFn = async () => {
   window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
 }
 
+const goPage = (name) => {
+  window.location.href = `/${name}/${data.group_name}/${data.project_name}`
+}
 watch(
   () => props.project,
   (value) => {
@@ -713,20 +807,11 @@ watch(
       data.currentProject = value
       init()
     }
-    // data.project_status = value
-    // //init()
+    
   },
   { deep: false, immediate: true },
 )
-// watch(
-//   () => props.simulation_list,
-//   (value) => {
-//     data.simulationList = value
 
-//     init()
-//   },
-//   { deep: false, immediate: true },
-// )
 
 onUnmounted(() => {
   if (progressForm.pollingTimer) {
@@ -751,6 +836,9 @@ onUnmounted(() => {
     }
     & > i {
       cursor: pointer;
+    }
+    .el-dropdown {
+      float: right;
     }
   }
   .top-btn-wrap {

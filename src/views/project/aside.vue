@@ -1,6 +1,6 @@
 <template>
   <div class="aside-page">
-    <el-menu class="el-menu-vertical-demo" background-color="#e99d42" >
+    <el-menu class="el-menu-vertical-demo" background-color="#e99d42">
       <el-menu-item :index="data.currentGroupName" @click="backGroup">
         <el-icon><House /></el-icon>
         <span>{{ data.currentGroupName }}</span>
@@ -13,10 +13,12 @@
       :unique-opened="true"
       :default-openeds="data.openedIndexList"
       v-if="data.projectList.length > 0"
-      
     >
-      
-      <el-sub-menu :index="item.project_name" v-for="(item, index) in data.projectList" :key="item.project_name">
+      <el-sub-menu
+        :index="item.project_name"
+        v-for="(item, index) in data.projectList"
+        :key="item.project_name"
+      >
         <template #title>
           <span @click="enter(item)">{{ item.project_name }}</span>
         </template>
@@ -104,40 +106,20 @@ const enter = (item) => {
     .el-sub-menu__title:hover {
       background-color: #f0b266;
     }
-    
-    // li {
-    //   padding: 0 5px;
-    //   &:first-of-type {
-    //     padding: 0;
-    //   }
-    // }
-    // :not(:first-of-type) {
-    //   padding: 0 10px;
-    //   background-color: #e99d42;
-
-    //   & > i {
-    //     display: none;
-    //     position: absolute;
-    //     left: 0px;
-    //   }
-    //   &:hover {
-    //     background-color: #f9d5aa;
-    //   }
-    //   &.is-active {
-    //     & > i {
-    //       display: block;
-    //     }
-    //   }
-    //   & > .item-p {
-    //     overflow: hidden;
-    //     white-space: nowrap;
-    //     text-overflow: ellipsis;
-    //   }
-    // }
   }
 
   .el-menu-item {
-    background-color: #f58b0b;
+    background-color: #f0b36b;
+    color: #fff;
+  }
+  .is-opened {
+    background-color: #f0b36b;
+    color: #fff;
+  }
+  .el-menu-item-group {
+    background-color: #f0b36b;
+  }
+  .el-sub-menu__title {
     color: #fff;
   }
 }

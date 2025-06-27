@@ -3,6 +3,34 @@
     <div class="top">
       <el-icon><HomeFilled /></el-icon>
       <span>Channel Analysis</span>
+      <el-dropdown>
+        <el-button type="primary">
+          Navigation Bar<el-icon class="el-icon--right"><arrow-down /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="goPage('analysis')">Channel Analysis</el-dropdown-item>
+            <el-dropdown-item
+              @click="goPage('output')"
+              v-if="
+                data.currentProject.project_status === 'MODEL_OUTPUT' ||
+                data.currentProject.project_status === 'SIMULATION' ||
+                data.currentProject.project_status === 'SIMULATION_RUNNING'
+              "
+              >Channel Analysis Output</el-dropdown-item
+            >
+            <el-dropdown-item
+              @click="goPage('simulator')"
+              v-if="
+                data.currentProject.project_status === 'MODEL_OUTPUT' ||
+                data.currentProject.project_status === 'SIMULATION' ||
+                data.currentProject.project_status === 'SIMULATION_RUNNING'
+              "
+              >Simulation</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
     <div class="card-title">
       <i>1</i>
@@ -17,7 +45,7 @@
               <el-radio-button :value="true">True</el-radio-button>
               <el-radio-button :value="false">false</el-radio-button>
             </el-radio-group>
-            <el-button type="info" size="small" class="reset-button">Reset to Default</el-button>
+            <!-- <el-button type="info" size="small" class="reset-button">Reset to Default</el-button> -->
             <span class="reset-tips"
               >*Note: Dafault values come from IQVIA industry experience</span
             >
@@ -32,7 +60,13 @@
             v-for="(item, index) in form.channel"
             :key="index"
           >
-            <el-input-number v-model="item.channel_prior" :min="0" :max="100" size="small">
+            <el-input-number
+              v-model="item.channel_prior"
+              :min="0"
+              :max="100"
+              size="small"
+              :disabled="!form.adjust_priors"
+            >
               <template #suffix>
                 <span>%</span>
               </template>
@@ -69,13 +103,10 @@
                   multiple
                   placeholder="Select"
                   style="width: 440px"
+                  :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
+                  @focus="initChannelOptions(key)"
                 >
-                  <el-option
-                    v-for="item in options.channelListOptions"
-                    :key="item"
-                    :label="item"
-                    :value="item"
-                  />
+                  <el-option v-for="item in val.options" :key="item" :label="item" :value="item" />
                 </el-select>
                 <span class="channel-p">
                   <el-icon><CaretRight /></el-icon>New channel name
@@ -84,6 +115,7 @@
                   v-model="form.agg_rule[data.channelNumber][key].new_column_name"
                   style="width: 240px"
                   placeholder="Please input"
+                  :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
                 />
               </li>
             </ul>
@@ -105,7 +137,7 @@
       </div>
       <div class="foot-button">
         <el-button type="primary" round size="small" @click="runConfirm">Confirm</el-button>
-        <el-button type="info" round size="small" @click="runCancel">Cancel</el-button>
+        <!-- <el-button type="info" round size="small" @click="runCancel">Cancel</el-button> -->
       </div>
     </el-card>
     <el-card
@@ -113,13 +145,6 @@
       style="width: 100%; height: 200px"
       v-loading="progressForm.isPolling"
     >
-      <!-- <el-progress
-        :percentage="progressForm.percentage"
-        :stroke-width="15"
-        striped
-        striped-flow
-        :duration="50"
-      /> -->
     </el-card>
   </div>
 </template>
@@ -165,6 +190,7 @@ const form = reactive({
   },
   segmentation_type: '',
   adjust_priors: true,
+  cannotAdd: false,
 })
 
 const progressForm = reactive({
@@ -210,9 +236,11 @@ const getPreviewRawData = async () => {
 }
 
 const createNewChannel = () => {
+  
   let channel = {
     new_column_name: '',
     channels: [],
+    options: options.channelListOptions,
   }
   form.agg_rule['customized'].push(channel)
 }
@@ -238,11 +266,6 @@ const runConfirm = async () => {
         form.agg_rule[key][i].channels
     }
   }
-
-  // for (let i = 0; i < form.agg_rule[data.channelNumber].length; i++) {
-  //   param.channel_agg_rule[form.agg_rule[data.channelNumber][i].new_column_name] =
-  //     form.agg_rule[data.channelNumber][i].channels
-  // }
 
   for (let i = 0; i < form.channel.length; i++) {
     param.prior_info_input.channel_name.push(form.channel[i].channel_name)
@@ -300,11 +323,7 @@ const getCurrentModelTaskFn = async () => {
       })
       data.loading = false
       stopPolling()
-      router.push({
-        name: 'output',
-        params: { group: pageParam.group_name, project: pageParam.project_name },
-      })
-      location.reload()
+      window.location.href = `/output/${pageParam.group}/${pageParam.project}`
     } else {
       if (progressForm.percentage < 95) {
         progressForm.percentage = progressForm.percentage + 5
@@ -360,10 +379,6 @@ const formatResParam = (res) => {
         channels: tempRes.channel_agg_rule_input[key][keyChannel],
       })
     }
-    // form.agg_rule[key].push({
-    //   new_column_name: tempRes.channel_agg_rule_input[key],
-    //   channels: tempRes.channel_agg_rule_input[key],
-    // })
   }
   for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
     options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
@@ -385,11 +400,7 @@ const formatRes = (res) => {
     for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
       options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
     }
-    // for (let key in tempRes.default_segmentation_type_list) {
-    //   options.segmentOptions.push({
 
-    //   })
-    // }
     for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
       form.channel.push({
         channel_name: tempRes.default_channel_list.channel_name[i],
@@ -417,6 +428,22 @@ const formatRes = (res) => {
   }
 }
 
+const goPage = (name) => {
+  window.location.href = `/${name}/${pageParam.group}/${pageParam.project}`
+}
+
+const initChannelOptions = (index) => {
+  let selectedFrom = []
+  form.agg_rule['customized'].forEach((item) => {
+    selectedFrom = [...selectedFrom, ...item.channels]
+  })
+
+  form.agg_rule['customized'][index]['options'] = options.channelListOptions.filter((item) => {
+    return selectedFrom.indexOf(item) === -1
+  })
+  
+}
+
 watch(
   () => props.project,
   (value) => {
@@ -432,6 +459,14 @@ watch(
 <style lang="less" scoped>
 .analysis-page {
   padding: 15px;
+  .el-dropdown {
+    float: right;
+  }
+  .select-wrap {
+    li {
+      margin-bottom: 10px;
+    }
+  }
   .card-title {
     background-color: #e99d42;
     display: inline-block;
@@ -467,6 +502,7 @@ watch(
       color: #000;
       color: #ad0202;
       font-size: 12px;
+      margin: 0 15px;
     }
     .importance-form {
       .importance {

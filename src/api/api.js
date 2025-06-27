@@ -54,7 +54,7 @@ export function getProjectList(params) {
 //Publish project
 export function publishProject(params) {
   return request.post(
-    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/publish`,
+    `${basic.apiUrl}projects/${params.group_name}/${params.project_name}/publish`,
     params,
   )
 }
@@ -260,9 +260,19 @@ export function simulationVisibility(params) {
   )
 }
 
-
-
-
 //## Export excel project（download data :respectively corresponding to output part/simulation1/simulation2）
 //* GET ``/api/projects/${group_name}/${project_name}?action=export_excel``
 
+export function simulatingFailure(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/${params.simulation_name}/simulating/run/failure`,
+    params,
+  )
+}
+
+export function modelingFailure(params) {
+  return request.post(
+    `${basic.apiUrl}contents/${params.group_name}/${params.project_name}/modeling/run/failure`,
+    params,
+  )
+}

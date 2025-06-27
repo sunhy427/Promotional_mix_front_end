@@ -1,6 +1,5 @@
 <template>
   <div class="project-page">
-   
     <Aside :project_list="data.project_list"></Aside>
     <div class="content">
       <Analysis
@@ -8,10 +7,11 @@
         v-if="pageParam.currentComponent === 'analysis'"
       ></Analysis>
       <Output
+        :project="data.currentProject"
         v-if="pageParam.currentComponent === 'output'"
       ></Output>
       <Simulator
-      :project="data.currentProject"
+        :project="data.currentProject"
         v-if="pageParam.currentComponent === 'simulator'"
       ></Simulator>
     </div>
@@ -31,7 +31,6 @@ const pageParam = reactive({
   group: route.params.group,
   project: route.params.project,
   currentComponent: route.name,
-  
 })
 
 const data = reactive({
@@ -45,17 +44,16 @@ const getProjectListFn = async (group_name) => {
   }
   let res = await getProjectList(param)
   if (res) {
-     data.project_list = res.project_list
+    data.project_list = res.project_list
 
-     let index = data.project_list.findIndex(item => {
+    let index = data.project_list.findIndex((item) => {
       return item.project_name === pageParam.project
-     })
-    
-     if (index > -1) {
-      data.currentProject = data.project_list[index]
-     }
-  }
+    })
 
+    if (index > -1) {
+      data.currentProject = data.project_list[index]
+    }
+  }
 }
 
 onMounted(() => {

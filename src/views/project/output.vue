@@ -3,6 +3,34 @@
     <div class="top">
       <el-icon><HomeFilled /></el-icon>
       <span>Channel Analysis Output</span>
+      <el-dropdown>
+        <el-button type="primary">
+          Navigation Bar<el-icon class="el-icon--right"><arrow-down /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item @click="goPage('analysis')">Channel Analysis</el-dropdown-item>
+            <el-dropdown-item
+              @click="goPage('output')"
+              v-if="
+                props.project.project_status === 'MODEL_OUTPUT' ||
+                props.project.project_status === 'SIMULATION' ||
+                props.project.project_status === 'SIMULATION_RUNNING'
+              "
+              >Channel Analysis Output</el-dropdown-item
+            >
+            <el-dropdown-item
+              @click="goPage('simulator')"
+              v-if="
+                props.project.project_status === 'MODEL_OUTPUT' ||
+                props.project.project_status === 'SIMULATION' ||
+                props.project.project_status === 'SIMULATION_RUNNING'
+              "
+              >Simulation</el-dropdown-item
+            >
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
     <div class="overview">
       <el-descriptions title="" :column="4" direction="vertical">
@@ -102,7 +130,7 @@
             <div class="chart-content">
               <bar
                 :options="costByChannelOptions"
-                chartId="costByChannel"
+                :chartId="outputData.cost_by_channel_vs_total_sales_trend_select + 'costByChannel'"
                 v-if="costByChannelOptions.xAxis.data.length > 0"
                 :key="outputData.cost_by_channel_vs_total_sales_trend_select"
               ></bar>
@@ -128,7 +156,9 @@
             <div class="chart-content">
               <bar
                 :options="touchByChannelOptions"
-                chartId="touchByChannel"
+                :chartId="
+                  outputData.torch_points_by_channel_vs_total_sales_trend_select + 'touchByChannel'
+                "
                 v-if="touchByChannelOptions.xAxis.data.length > 0"
                 :key="outputData.torch_points_by_channel_vs_total_sales_trend_select"
               ></bar>
@@ -204,10 +234,12 @@
         <el-row>
           <el-col :span="24">
             <span class="title">Response Curve</span>
+
             <el-select
               v-model="outputData.response_curve_select"
               placeholder="Select"
               class="channel-select-input"
+              @change="changeResponse_curve"
             >
               <el-option
                 v-for="item in outputData.response_curve_options"
@@ -219,8 +251,9 @@
             <div class="chart-content">
               <bar
                 :options="responseCurveOptions"
-                chartId="responseCurveChart"
+                :chartId="outputData.response_curve_select + 'responseCurveChart'"
                 v-if="responseCurveOptions.xAxis.data.length > 0"
+                :Key="outputData.response_curve_select"
               ></bar>
             </div>
           </el-col>
@@ -274,13 +307,18 @@
 </template>
 <script setup>
 import bar from '../../components/bar.vue'
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, defineProps } from 'vue'
 import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
+import { color } from 'echarts'
 
 const props = defineProps({
   project_status: {
     type: String,
+    requred: true,
+  },
+  project: {
+    type: Object,
     requred: true,
   },
 })
@@ -431,33 +469,64 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
   costByChannelOptions.xAxis.data = []
   costByChannelOptions.series = []
 
-  console.log(
-    'outputData.cost_by_channel_vs_total_sales_trend_select',
-    outputData.cost_by_channel_vs_total_sales_trend_select,
-    outputData.cost_by_channel_vs_total_sales_trend[
-      outputData.cost_by_channel_vs_total_sales_trend_select
-    ]['cost']['y'],
-  )
-
-  console.log(
-    outputData.cost_by_channel_vs_total_sales_trend[
-      outputData.cost_by_channel_vs_total_sales_trend_select
-    ]['date_marked'][0],
-  )
-
   costByChannelOptions.series.push({
     name: 'Cost',
     type: 'line',
+    yAxisIndex: 0,
+    color: '#f4ce98',
     data: outputData.cost_by_channel_vs_total_sales_trend[
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['cost']['y'],
     markPoint: {
-      data: [{}],
+      data: [
+        {
+          name: outputData.cost_by_channel_vs_total_sales_trend[
+            outputData.cost_by_channel_vs_total_sales_trend_select
+          ]['desc_marked'][0],
+          value: '',
+          xAxis:
+            outputData.cost_by_channel_vs_total_sales_trend[
+              outputData.cost_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['max'][0],
+          yAxis:
+            outputData.cost_by_channel_vs_total_sales_trend[
+              outputData.cost_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['max'][1],
+        },
+        {
+          name: outputData.cost_by_channel_vs_total_sales_trend[
+            outputData.cost_by_channel_vs_total_sales_trend_select
+          ]['desc_marked'][1],
+          value: '',
+          xAxis:
+            outputData.cost_by_channel_vs_total_sales_trend[
+              outputData.cost_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['min'][0],
+          yAxis:
+            outputData.cost_by_channel_vs_total_sales_trend[
+              outputData.cost_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['min'][1],
+        },
+      ],
+      label: {
+        formatter: (param) => {
+          const text = param.name
+          const maxLength = 50
+          let result = ''
+          for (let i = 0; i < text.length; i += maxLength) {
+            result += text.substring(i, i + maxLength) + '\n'
+          }
+          return result + param.value
+        },
+        color: '#000',
+      },
     },
   })
   costByChannelOptions.series.push({
     name: 'Sales',
     type: 'line',
+
+    yAxisIndex: 1,
     data: outputData.cost_by_channel_vs_total_sales_trend[
       outputData.cost_by_channel_vs_total_sales_trend_select
     ]['sales']['y'],
@@ -476,28 +545,63 @@ const changeTorch_points_by_channel_vs_total_sales_trend = () => {
   touchByChannelOptions.series.push({
     name: 'Touch Points',
     type: 'line',
+    color: '#f4ce98',
+    yAxisIndex: 0,
     data: outputData.torch_points_by_channel_vs_total_sales_trend[
       outputData.torch_points_by_channel_vs_total_sales_trend_select
     ]['tp']['y'],
     markPoint: {
       data: [
-        { type: 'max', name: 'Max' },
-        { type: 'min', name: 'Min' },
+        {
+          name: outputData.torch_points_by_channel_vs_total_sales_trend[
+            outputData.torch_points_by_channel_vs_total_sales_trend_select
+          ]['desc_marked'][0],
+          value: '',
+          xAxis:
+            outputData.torch_points_by_channel_vs_total_sales_trend[
+              outputData.torch_points_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['max'][0],
+          yAxis:
+            outputData.torch_points_by_channel_vs_total_sales_trend[
+              outputData.torch_points_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['max'][1],
+        },
+        {
+          name: outputData.torch_points_by_channel_vs_total_sales_trend[
+            outputData.torch_points_by_channel_vs_total_sales_trend_select
+          ]['desc_marked'][1],
+          value: '',
+          xAxis:
+            outputData.torch_points_by_channel_vs_total_sales_trend[
+              outputData.torch_points_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['min'][0],
+          yAxis:
+            outputData.torch_points_by_channel_vs_total_sales_trend[
+              outputData.torch_points_by_channel_vs_total_sales_trend_select
+            ]['date_marked']['min'][1],
+        },
       ],
+      label: {
+        formatter: (param) => {
+          const text = param.name
+          const maxLength = 50
+          let result = ''
+          for (let i = 0; i < text.length; i += maxLength) {
+            result += text.substring(i, i + maxLength) + '\n'
+          }
+          return result + param.value
+        },
+        color: '#000',
+      },
     },
   })
   touchByChannelOptions.series.push({
     name: 'Total Sales',
     type: 'line',
+    yAxisIndex: 1,
     data: outputData.torch_points_by_channel_vs_total_sales_trend[
       outputData.torch_points_by_channel_vs_total_sales_trend_select
     ]['sales']['y'],
-    markPoint: {
-      data: [
-        { type: 'max', name: 'Max' },
-        { type: 'min', name: 'Min' },
-      ],
-    },
   })
 
   touchByChannelOptions.xAxis.data =
@@ -517,6 +621,15 @@ const changeResponse_curve = () => {
   responseCurveOptions.series[0].data =
     outputData.response_curve[outputData.response_curve_select].y
   responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
+  responseCurveOptions.series[0].markLine.data.push({
+    name: '',
+    xAxis:
+      outputData.response_curve[
+        outputData.response_curve_select
+      ].current_spending_marked[0].toString(),
+  })
+  responseCurveOptions.series[0].markLine.label.formatter =
+    outputData.response_curve[outputData.response_curve_select].current_roi[0]
 }
 onMounted(() => {
   previewModelOutputMetadataFn()
@@ -555,7 +668,16 @@ const costDistributionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -566,41 +688,50 @@ const costByChannelOptions = reactive({
     type: 'category',
     data: [],
   },
-  yAxis: {
-    type: 'value',
-    axisLabel: {
-      formatter: '{value}M',
+  yAxis: [
+    {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value}',
+      },
     },
-  },
+    {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value}',
+      },
+    },
+  ],
+
   series: [],
   tooltip: {
+    show: true,
     trigger: 'axis',
   },
-  toolbox: {
-    show: false,
-    feature: {
-      dataZoom: {
-        yAxisIndex: 'none',
-      },
-      dataView: { readOnly: false },
-      magicType: { type: ['line', 'bar'] },
-      restore: {},
-      saveAsImage: {},
-    },
+
+  legend: {
+    data: ['Cost', 'Sales'],
   },
-  legend: {},
 })
 const touchByChannelOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
   },
-  yAxis: {
-    type: 'value',
-    axisLabel: {
-      formatter: '{value}M',
+  yAxis: [
+    {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value}',
+      },
     },
-  },
+    {
+      type: 'value',
+      axisLabel: {
+        formatter: '{value}',
+      },
+    },
+  ],
   series: [],
   tooltip: {
     trigger: 'axis',
@@ -739,7 +870,7 @@ const ROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -764,7 +895,7 @@ const MROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -776,9 +907,11 @@ const responseCurveOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
-    // axisLabel: {
-    //   formatter: '{value}%',
-    // },
+    axisLabel: {
+      formatter: (params) => {
+        return Number(params).toFixed(0)
+      },
+    },
   },
   yAxis: {
     type: 'value',
@@ -792,16 +925,16 @@ const responseCurveOptions = reactive({
       type: 'line',
       data: [],
       markLine: {
-        itemStyle: {
-          //盒须图样式。
-          label: {
-            formatter: 'Current\n Total ROI=1.82',
-          },
+        //盒须图样式。
+        label: {
+          show: true,
+          formatter: '',
         },
         //name: '预警时间',
         //yAxisIndex: 0,
         symbol: 'none', //去掉箭头
-        data: [[{ coord: ['100', 0] }, { coord: ['100', 'max'] }]],
+
+        data: [],
       },
     },
   ],
@@ -824,13 +957,22 @@ const responseCurveOptions = reactive({
 })
 const ModelMetricsTableData = reactive([])
 
+const change_response_curve_select = () => {}
+
 const goContinue = () => {
   window.location.href = `/simulator/${pageParam.group}/${pageParam.project}`
+}
+
+const goPage = (name) => {
+  window.location.href = `/${name}/${pageParam.group}/${pageParam.project}`
 }
 </script>
 <style lang="less" scoped>
 .output-page {
   padding: 15px;
+  .el-dropdown {
+    float: right;
+  }
   .card-content {
     .title {
       border-left: 4px solid #000;

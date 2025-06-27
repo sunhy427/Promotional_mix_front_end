@@ -15,10 +15,10 @@ const go = () => {
 </script>
 <style lang="less" scoped>
 .header-nav {
-  height: 109px;
+  height: 89px;
   line-height: 109px;
 
-  background: url(../assets/images/top-1.png); 
+  background: url(../assets/images/top-2.png);
   background-size: cover;
   background-origin: content-box;
   position: relative;
@@ -27,6 +27,7 @@ const go = () => {
   position: fixed;
   width: 100%;
   z-index: 99;
+
   .logo {
     width: 106px;
     height: 34px;

@@ -8,35 +8,35 @@
         header-row-class-name="header-unit"
         :data="simulationOutput.optimal_channel_performance"
       >
-        <el-table-column prop="decision_variable" label="decision_variable" />
+        <el-table-column prop="channel" label="Decision Variable" />
         <el-table-column
           prop="gr_in_sales_simulated"
-          label="gr_in_sales_simulated"
+          label="GR in Sales(simulated)"
           :formatter="formatNumber"
         />
         <el-table-column
           prop="gr_in_spending_simulated"
-          label="gr_in_spending_simulated"
+          label="GR in Spending(simulated)"
           :formatter="formatNumber"
         />
-        <el-table-column prop="mroi_simmulated" label="mroi_simmulated" :formatter="formatNumber" />
-        <el-table-column prop="roi_simmulated" label="roi_simmulated" :formatter="formatNumber" />
+        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="formatNumber" />
+        <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="formatNumber" />
         <el-table-column
-          prop="sales_contribution_pct_simualted"
-          label="sales_contribution_pct_simualted"
+          prop="sales_contribution_pct_simulated"
+          label="Sales % Contribution(simulated)"
           :formatter="formatNumber"
         />
         <el-table-column
-          prop="sales_contribution_simualted"
-          label="sales_contribution_simualted"
-          :formatter="formatNumber"
+          prop="sales_contribution_simulated"
+          label="Sales Contribution(simulated)"
+          :formatter="formatNumberto0"
         />
         <el-table-column
           prop="spending_simulated"
-          label="spending_simulated"
-          :formatter="formatNumber"
+          label="Spending(simulated)"
+          :formatter="formatNumberto0"
         />
-        <el-table-column prop="tp_simulated" label="tp_simulated" :formatter="formatNumber" />
+        <el-table-column prop="tp_simulated" label="TP(simulated)" :formatter="formatNumberto0" />
       </el-table>
     </div>
     <div class="content">
@@ -47,42 +47,42 @@
         header-row-class-name="header-unit"
         :data="simulationOutput.current_channel_performance"
       >
-        <el-table-column prop="channel" label="channel" />
-        <el-table-column prop="mroi" label="mroi" :formatter="formatNumber" />
-        <el-table-column prop="roi" label="roi" :formatter="formatNumber" />
+        <el-table-column prop="channel" label="Channel" />
+        <el-table-column prop="mroi" label="MROI" :formatter="formatNumber" />
+        <el-table-column prop="roi" label="ROI" :formatter="formatNumber" />
         <el-table-column
           prop="sales_contribution"
-          label="sales_contribution"
-          :formatter="formatNumber"
+          label="Sales Contribution"
+          :formatter="formatNumberto0"
         />
         <el-table-column
           prop="sales_contribution_pct"
-          label="sales_contribution_pct"
-          :formatter="formatNumber"
+          label="Sales % Contribution"
+          :formatter="formatNumberFG"
         />
-        <el-table-column prop="spending" label="spending" :formatter="formatNumber" />
+        <el-table-column prop="spending" label="Spending" :formatter="formatNumberto0" />
       </el-table>
     </div>
     <el-tabs type="border-card" v-model="data.tabValue">
       <el-tab-pane label="Simulated Performance" name="Simulated">
         <div class="content-wrap">
           <el-row>
-            <el-col :span="10">
+            <el-col :span="8">
               <div class="item">
                 <p class="title">Promotion VS Non-promotion</p>
                 <bar
                   :options="promotionOptions"
-                  chartId="promotion"
+                  :chartId="props.simulation + 'promotion'"
                   v-if="promotionOptions.xAxis[0].data.length > 0"
                 ></bar>
               </div>
             </el-col>
-            <el-col :span="14">
+            <el-col :span="16">
               <div class="item">
                 <p class="title">Total promotion Contribution</p>
                 <bar
                   :options="totalPromotionOptions"
-                  chartId="totalPromotion"
+                  :chartId="props.simulation + '_totalPromotion'"
                   v-if="totalPromotionOptions.series[0].data.length > 0"
                 ></bar>
               </div>
@@ -92,14 +92,15 @@
             <el-col :span="24">
               <div class="item">
                 <p class="title">
-                  ROI/MROI<el-segmented v-model="data.ROItrigger" :options="['ROI', 'MROI']" />
+                  ROI/MROI
+                  <el-segmented v-model="data.ROItrigger" :options="['ROI', 'MROI']" />
                 </p>
 
                 <div v-if="data.ROItrigger === 'ROI'">
                   <div class="chart-content">
                     <bar
                       :options="ROIChartOptions"
-                      chartId="ROIChart"
+                      :chartId="props.simulation + '_ROIChart'"
                       v-if="ROIChartOptions.xAxis.data.length > 0"
                     ></bar>
                   </div>
@@ -107,7 +108,7 @@
                 <div v-if="data.ROItrigger === 'MROI'">
                   <bar
                     :options="MROIChartOptions"
-                    chartId="MROIChart"
+                    :chartId="props.simulation + '_MROIChart'"
                     v-if="MROIChartOptions.xAxis.data.length > 0"
                   ></bar>
                 </div>
@@ -115,15 +116,18 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="12">
+            <el-col :span="14">
               <div class="item">
                 <p class="title">Cost Distribution</p>
                 <div class="chart-content" v-if="costDistributionOptions.series[0].data.length > 0">
-                  <bar :options="costDistributionOptions" chartId="costDistribution"></bar>
+                  <bar
+                    :options="costDistributionOptions"
+                    :chartId="props.simulation + '_costDistribution'"
+                  ></bar>
                 </div>
               </div>
             </el-col>
-            <el-col :span="12">
+            <el-col :span="10">
               <div class="item">
                 <p class="title">Calculated Unit Price</p>
                 <div class="chart-content">
@@ -137,7 +141,7 @@
                     <el-table-column
                       prop="tp_simulated"
                       label="tp_simulated"
-                      :formatter="formatNumber"
+                      :formatter="formatNumberto0"
                     />
                     <el-table-column
                       prop="unit_price"
@@ -159,7 +163,7 @@
                 <p class="title">Cost Distribution</p>
                 <bar
                   :options="current_costDistributionOptions"
-                  chartId="current_costDistributionOptions"
+                  :chartId="props.simulation + '_current_costDistributionOptions'"
                   v-if="current_costDistributionOptions.series[0].data.length > 0"
                   :resize="data.tabValue === 'Current'"
                 ></bar>
@@ -204,7 +208,8 @@
           </el-row>
           <el-row>
             <el-col :span="24">
-              <span class="title">Promotion VS Non-promotion</span>
+              <span class="title">ROI/MROI</span>
+
               <el-segmented v-model="data.current_ROItrigger" :options="['ROI', 'MROI']" />
               <div v-if="data.current_ROItrigger === 'ROI'">
                 <el-select
@@ -223,17 +228,18 @@
                 <div class="chart-content">
                   <bar
                     :options="current_ROIChartOptions"
-                    chartId="current_ROIChart"
+                    :chartId="props.simulation + '_current_ROIChart'"
                     v-if="current_ROIChartOptions.xAxis.data.length > 0"
-                    :key="data.current_ROIChannelValue"
+                    :key="props.simulation + '_' + data.current_ROIChannelValue"
                   ></bar>
                 </div>
               </div>
               <div v-if="data.current_ROItrigger === 'MROI'">
                 <bar
                   :options="current_MROIChartOptions"
-                  chartId="MROIChart"
+                  :chartId="props.simulation + '_MROIChart'"
                   v-if="current_MROIChartOptions.xAxis.data.length > 0"
+                  :key="props.simulation + '_' + data.current_ROIChannelValue"
                 ></bar>
               </div>
             </el-col>
@@ -292,6 +298,12 @@ const formatNumber = (row, column, cellValue) => {
   return Number(cellValue).toFixed(2)
 }
 
+const formatNumberto0 = (row, column, cellValue) => {
+  return Number(cellValue).toFixed(0)
+}
+const formatNumberFG = (row, column, cellValue) => {
+  return Number(cellValue * 100).toFixed(2) + '%'
+}
 const previewSimulationsFn = async () => {
   let param = {
     group_name: data.group_name,
@@ -387,7 +399,6 @@ const previewSimulationsFn = async () => {
   }
 }
 const current_changeROI = () => {
-  console.log('Current_output', Current_output)
   current_ROIChartOptions.xAxis.data = []
   current_ROIChartOptions.series[0].data = Current_output.roi[Current_output.roi_select].y
   current_ROIChartOptions.xAxis.data = Current_output.roi[Current_output.roi_select].x
@@ -416,7 +427,7 @@ const promotionOptions = reactive({
     {
       type: 'value',
       axisLabel: {
-        formatter: '{value}B',
+        formatter: '{value}',
       },
     },
   ],
@@ -431,7 +442,16 @@ const promotionOptions = reactive({
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#e99d42',
@@ -447,7 +467,16 @@ const promotionOptions = reactive({
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#f9d2a3',
@@ -472,7 +501,7 @@ const totalPromotionOptions = reactive({
       name: 'Access From',
       type: 'pie',
       center: ['45%', '45%'],
-      radius: ['10%', '60%'],
+      radius: ['10%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -480,7 +509,16 @@ const totalPromotionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -504,7 +542,7 @@ const ROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -530,7 +568,7 @@ const MROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -563,7 +601,16 @@ const costDistributionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -594,7 +641,16 @@ const current_costDistributionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -625,7 +681,7 @@ const current_promotionOptions = reactive({
     {
       type: 'value',
       axisLabel: {
-        formatter: '{value}B',
+        formatter: '{value}',
       },
     },
   ],
@@ -640,7 +696,16 @@ const current_promotionOptions = reactive({
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#e99d42',
@@ -656,7 +721,16 @@ const current_promotionOptions = reactive({
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#f9d2a3',
@@ -688,7 +762,16 @@ const current_totalPromotionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -712,7 +795,7 @@ const current_ROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -737,7 +820,7 @@ const current_MROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value,
+        formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
         color: '#e99d42',
@@ -745,8 +828,6 @@ const current_MROIChartOptions = reactive({
     },
   ],
 })
-
-
 
 onMounted(() => {
   previewSimulationsFn()

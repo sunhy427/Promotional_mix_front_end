@@ -55,7 +55,13 @@
                     v-model="itemProject.is_publish"
                     label="Publish"
                     size="small"
-                    @click.stop="publishProjectFn(item.group_name, itemProject.project_name)"
+                    @click.stop="
+                      publishProjectFn(
+                        item.group_name,
+                        itemProject.project_name,
+                        itemProject.is_publish,
+                      )
+                    "
                   />
                 </div>
 
@@ -193,7 +199,13 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="data.showCreateProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmCreateProject"> Confirm </el-button>
+          <el-button
+            type="primary"
+            @click="confirmCreateProject"
+            :loading="createProjectForm.loading"
+          >
+            Confirm
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -239,12 +251,6 @@
         ref="forkProjectRuleFormRef"
         :rules="forkProjectRuleFormRefRules"
       >
-        <!-- <el-form-item label="Group Name">
-          <el-input v-model="forkProjectForm.group_name_old" :disabled="true" />
-        </el-form-item>
-        <el-form-item label="Project Name">
-          <el-input v-model="forkProjectForm.project_name" :disabled="true" />
-        </el-form-item> -->
         <el-form-item label="New Group Name">
           <el-select v-model="forkProjectForm.group_name_new" placeholder="Select">
             <el-option :label="item" :value="item" v-for="(item, index) in data.groupListOptions" />
@@ -257,7 +263,13 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showForkProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="forkProjectConfirm()"> Confirm </el-button>
+          <el-button
+            type="primary"
+            @click="forkProjectConfirm()"
+            :loading="forkProjectForm.loading"
+          >
+            Confirm
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -310,7 +322,6 @@ import {
 } from '../../api/api'
 import { basic } from '../../config'
 
-
 const data = reactive({
   groupList: [],
   currentList: [],
@@ -338,7 +349,6 @@ const shareProjectForm = reactive({
   msg: '',
 })
 
-
 const goProject = (group, project, status) => {
   // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
   let name = ''
@@ -353,7 +363,7 @@ const goProject = (group, project, status) => {
   }
   router.push({
     name: name,
-    params: { group: group, project: project},
+    params: { group: group, project: project },
   })
 }
 
@@ -369,7 +379,6 @@ const getList = async () => {
   let res = await getGroupList()
   if (res && res.group_list) {
     data.groupList = res.group_list
-   
   }
 }
 
@@ -396,6 +405,9 @@ const getProjectListByGroup = async (groupName, projectName) => {
   }
   let res = await getProjectList(param)
   if (res) {
+    if (res.status === 1) {
+      ElMessage()
+    }
     // let index = res.project_list.findIndex(item => {
     //   return item
     // })
@@ -431,7 +443,7 @@ const deleteProjectFn = async (group_name, project_name) => {
       type: 'success',
     })
     // 请求
-    
+    getList()
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'delete error',
@@ -499,6 +511,7 @@ const renameGroupConfirm = async () => {
       message: 'Rename completed',
     })
     data.showRenameGroupDialog = false
+    getList()
   } else {
     ElMessage({
       message: res && res.message ? res.message : 'rename error',
@@ -550,6 +563,7 @@ const createProjectForm = reactive({
   group_name: '',
   project_name: '',
   brand_name: '',
+  loading: false,
 })
 const createOptions = reactive({
   brand_name_list: [],
@@ -560,13 +574,13 @@ const createOptions = reactive({
 const createProjectFn = async (group_name) => {
   createProjectForm.group_name = group_name
   createProjectForm.brand_name = ''
+  data.showCreateProjectDialog = true
   let res = await createMetaData()
   if (res) {
     createOptions.brand_name_list = res.brand_name_list
     createOptions.yyyymm_end_list = res.yyyymm_end_list
     createOptions.data_version_id_list = res.data_version_id_list
   }
-  data.showCreateProjectDialog = true
 }
 const confirmCreateProject = async () => {
   let param = {
@@ -575,7 +589,9 @@ const confirmCreateProject = async () => {
     yyyymm_end: createProjectForm.yyyymm_end,
     data_version_id: createProjectForm.data_version_id,
   }
+  createProjectForm.loading = true
   let res = await createProject(param, createProjectForm.group_name)
+  createProjectForm.loading = false
   if (res && res.status === 1) {
     ElMessage({
       message: 'create success',
@@ -662,6 +678,7 @@ const forkProjectForm = reactive({
   project_name_fork: '',
   group_name_new: '',
   project_name_new: '',
+  loading: false,
 })
 
 const forkProjectRuleFormRef = ref(null)
@@ -689,13 +706,16 @@ const forkProjectConfirm = () => {
 }
 
 const forkProjectFn = async () => {
+  forkProjectForm.loading = true
   let res = await forkProject(forkProjectForm)
+  forkProjectForm.loading = false
   if (res && res.status === 1) {
     ElMessage({
       type: 'success',
       message: 'Copy Success',
     })
     data.showForkProjectDialog = false
+    getList()
   } else {
     ElMessage({
       type: 'error',
@@ -704,37 +724,29 @@ const forkProjectFn = async () => {
   }
 }
 
-const publishProjectFn = (group_name, project_name) => {
-  for (let i = 0; i < data.groupList.length; i++) {
-    const group = data.groupList[i]
-    if (group.group_name === group_name) {
-      for (let j = 0; j < group.project_list.length; j++) {
-        const project = group.project_list[j]
-        if (project.project_name === project_name) {
-          //console.log('project.is_publish', project.is_publish)
-          project.is_publish = true
-          console.log('project', project.is_publish)
-          //console.log('project.is_publish', project.is_publish)
-          //data.groupList[i].project_list.splice(j, 1, project)
-          //data.groupList[i].project_list[j].is_publish = true
-          data.groupList[i].project_list.splice(j, 1, project)
-          console.log(data.groupList[i].project_list[j])
-          return true
-        }
-      }
-      break
-    }
+const publishProjectFn = async (group_name, project_name, is_publish) => {
+  let param = {
+    group_name: group_name,
+    project_name: project_name,
+    status: is_publish === true ? 0 : 1,
+  }
+  let res = await publishProject(param)
+  if (res.status === 1) {
+    ElMessage({
+      message: 'Publish success',
+      type: 'success',
+    })
+    getList()
   }
 }
 
 defineExpose({
-  getList
+  getList,
 })
 
 onMounted(() => {
   getList()
 })
-
 </script>
 
 <style lang="less">
