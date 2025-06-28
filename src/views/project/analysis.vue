@@ -45,7 +45,9 @@
               <el-radio-button :value="true">True</el-radio-button>
               <el-radio-button :value="false">false</el-radio-button>
             </el-radio-group>
-            <!-- <el-button type="info" size="small" class="reset-button">Reset to Default</el-button> -->
+            <el-button type="info" size="small" class="reset-button" @click="resetFn"
+              >Reset to Default</el-button
+            >
             <span class="reset-tips"
               >*Note: Dafault values come from IQVIA industry experience</span
             >
@@ -207,7 +209,6 @@ const options = reactive({
 
 // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const init = () => {
-  console.log('data.currentProject.project_status', data.currentProject.project_status)
   if (data.currentProject.project_status === 'EMPTY') {
     getPreviewRawData()
   }
@@ -236,7 +237,18 @@ const getPreviewRawData = async () => {
 }
 
 const createNewChannel = () => {
-  
+ console.log('form.agg_rule', form.agg_rule['customized'])
+ let total = []
+ for (let i = 0; i < form.agg_rule['customized'].length; i++) {
+  total = [...total, ...form.agg_rule['customized'][i].channels]
+ }
+ if (total.length === options.channelListOptions.length) {
+  ElMessage({
+    type: 'error',
+     message: 'No channel options',
+  })
+  return
+ }
   let channel = {
     new_column_name: '',
     channels: [],
@@ -397,16 +409,23 @@ const formatRes = (res) => {
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
 
+    form.segmentation_type = ''
+    options.segmentOptions = []
     for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
       options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
     }
 
+    form.channel = []
     for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
       form.channel.push({
         channel_name: tempRes.default_channel_list.channel_name[i],
         channel_prior: parseInt(tempRes.default_channel_list.channel_prior[i] * 100),
       })
     }
+
+    form.agg_rule['7'] = []
+    form.agg_rule['9'] = []
+    form.agg_rule['customized'] = []
     for (let key in tempRes.default_agg_rule['7']) {
       form.agg_rule['7'].push({
         new_column_name: key,
@@ -441,7 +460,10 @@ const initChannelOptions = (index) => {
   form.agg_rule['customized'][index]['options'] = options.channelListOptions.filter((item) => {
     return selectedFrom.indexOf(item) === -1
   })
-  
+}
+
+const resetFn = () => {
+  getPreviewRawData()
 }
 
 watch(

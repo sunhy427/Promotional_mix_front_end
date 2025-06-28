@@ -41,7 +41,7 @@
     <ul class="list-content" v-if="data.simulationList.length > 0">
       <li v-for="(item, index) in data.simulationList" :key="index">
         <div class="card-title">
-          <i>1</i>
+          <i>{{ index }}</i>
           <span>{{ item.simulation_name }}</span>
         </div>
         <el-card>
@@ -62,7 +62,7 @@
             ><Hide
           /></el-icon>
 
-          <el-form label-width="auto" label-position="left" ref="metadataFormRef">
+          <el-form label-position="left" ref="metadataFormRef">
             <el-form-item label="Optimization Type" label-width="200px">
               <span>{{ item.optimization_type }}</span>
             </el-form-item>
@@ -230,10 +230,10 @@
             <el-button
               type="primary"
               @click="commitSimulation(index)"
-              :loading="progressForm.isPolling"
+              :loading="item.progressForm && item.progressForm.isPolling"
               >Comfirm</el-button
             >
-            <el-button type="info">Reset</el-button>
+            <el-button type="info" @click="resetFn(index)">Reset</el-button>
           </div>
           <div class="output-wrap" v-if="item.simulation_task_status === 'SIMULATION_OUTPUT'">
             <el-divider />
@@ -309,7 +309,7 @@
   </div>
 </template>
 <script setup>
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch, defineEmits } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addSimulation,
@@ -327,8 +327,8 @@ import {
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
 import { basic } from '../../config'
-import { optionEmits } from 'element-plus/es/components/select-v2/src/defaults'
 
+const emits = defineEmits(['setProject'])
 const router = useRouter()
 
 const data = reactive({
@@ -442,6 +442,8 @@ const getProjectListFn = async () => {
 
     if (index > -1) {
       data.currentProject = data.project_list[index]
+      data.simulationList = data.currentProject.simulation_list
+      emits('setProject', data.currentProject)
       initSimulation()
     }
   }
@@ -595,20 +597,24 @@ const commitSimulation = async (index) => {
       change_percentage: data.simulationList[index].unit_price_pct_input[i].change_percentage,
       if_changes: [0, 0, 0],
     }
+
+    let changeIndex = data.changesList.findIndex((changeItem) => {
+      return changeItem === data.simulationList[index].unit_price_pct_input[i].if_changes
+    })
+
     param.unit_price_pct[data.simulationList[index].unit_price_pct_input[i].channel].if_changes[
-      index
+      changeIndex
     ] = 1
 
     param.constraints_on_channels = data.simulationList[index].constraints_on_channels
   }
-
   data.loading = true
   let res = await runSimulation(param)
 
   if (res) {
     // task_id
     //getSimulationsParamFn(param.simulation_name)
-    startPolling(param.simulation_name)
+    startPolling(param.simulation_name, index)
   }
 }
 
@@ -626,13 +632,13 @@ const init = () => {
     data.simulationList = []
   }
   if (data.currentProject.project_status === 'SIMULATION') {
-    
-    // empty output 
+    // empty output
     initSimulation()
   }
   if (data.currentProject.project_status === 'SIMULATION_RUNNING') {
     // running
-    initSimulationRunning()
+    //initSimulationRunning()
+    initSimulation()
   }
 }
 const progressForm = reactive({
@@ -641,21 +647,26 @@ const progressForm = reactive({
   task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
 })
 
-const startPolling = (simulation) => {
-  if (progressForm.isPolling) {
+const startPolling = (simulation, index) => {
+  if (data.simulationList[index].progressForm.isPolling) {
     return
   }
-  progressForm.isPolling = true
-  getCurrentSimulatingTaskFn(simulation)
-  progressForm.pollingTimer = setInterval(getCurrentSimulatingTaskFn, 30000, simulation)
+  data.simulationList[index].progressForm.isPolling = true
+
+  getCurrentSimulatingTaskFn(simulation, index)
+
+  data.simulationList[index].progressForm.pollingTimer = setInterval(() => {
+    getCurrentSimulatingTaskFn(simulation, index)
+  }, 30000)
 }
 
-const stopPolling = () => {
-  progressForm.isPolling = false
-  clearInterval(progressForm.pollingTimer)
+const stopPolling = (index) => {
+  data.simulationList[index].progressForm.isPolling = false
+  console.log('stop', data.simulationList[index].progressForm.isPolling)
+  clearInterval(data.simulationList[index].progressForm.pollingTimer)
 }
 
-const getCurrentSimulatingTaskFn = async (simulation) => {
+const getCurrentSimulatingTaskFn = async (simulation, index) => {
   let param = {
     group_name: data.group_name,
     project_name: data.project_name,
@@ -663,29 +674,28 @@ const getCurrentSimulatingTaskFn = async (simulation) => {
   }
   let res = await getCurrentSimulatingTask(param)
   if (res) {
-    progressForm.task_status = res.task_status
-    if (progressForm.task_status === 'FAILURE') {
+    data.simulationList[index].progressForm.task_status = res.task_status
+    if (data.simulationList[index].progressForm.task_status === 'FAILURE') {
       ElMessage({
         type: 'error',
         message: 'FAILURE',
       })
       data.loading = false
-      stopPolling()
-      
-    } else if (progressForm.task_status === 'REVOKED') {
+      stopPolling(index)
+    } else if (data.simulationList[index].progressForm.task_status === 'REVOKED') {
       ElMessage({
         type: 'error',
         message: 'REVOKED',
       })
       data.loading = false
-      stopPolling()
-    } else if (progressForm.task_status === 'SUCCESS') {
+      stopPolling(index)
+    } else if (data.simulationList[index].progressForm.task_status === 'SUCCESS') {
       ElMessage({
         type: 'success',
         message: 'SUCCESS',
       })
       data.loading = false
-      stopPolling()
+      stopPolling(index)
       getProjectListFn()
     }
   }
@@ -694,21 +704,44 @@ const getCurrentSimulatingTaskFn = async (simulation) => {
 const initSimulationRunning = () => {
   data.simulationList = data.currentProject.simulation_list
   for (let i = 0; i < data.simulationList.length; i++) {
+    let progressForm = {
+      isPolling: false,
+      pollingTimer: null,
+      task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+    }
+    data.simulationList[i].progressForm = progressForm
     getSimulationsParamFn(data.simulationList[i].simulation_name)
-    startPolling(data.simulationList[i].simulation_name)
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
+      startPolling(data.simulationList[i].simulation_name, i)
+    }
   }
 }
 
 const initSimulation = () => {
   data.simulationList = data.currentProject.simulation_list
   for (let i = 0; i < data.simulationList.length; i++) {
+    let progressForm = {
+      isPolling: false,
+      pollingTimer: null,
+      task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+    }
+    data.simulationList[i].progressForm = progressForm
+
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_OUTPUT') {
       getSimulationsParamFn(data.simulationList[i].simulation_name)
     }
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
       getMetaData(data.simulationList[i].simulation_name)
     }
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
+      getSimulationsParamFn(data.simulationList[i].simulation_name)
+      startPolling(data.simulationList[i].simulation_name, i)
+    }
   }
+}
+
+const resetFn = (index) => {
+  getMetaData(data.simulationList[index].simulation_name)
 }
 
 const getSimulationsParamFn = async (simulation) => {
@@ -759,9 +792,6 @@ const getSimulationsParamFn = async (simulation) => {
 
       simulation_item.constraints_on_channels = res.simulation_parameters.constraints_on_channels
 
-      console.log('data.simulationList[index]', data.simulationList[index])
-      console.log('simulation_item', simulation_item)
-
       data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
   }
@@ -805,13 +835,12 @@ watch(
   (value) => {
     if (value && value.project_status) {
       data.currentProject = value
+      console.log('waitch')
       init()
     }
-    
   },
   { deep: false, immediate: true },
 )
-
 
 onUnmounted(() => {
   if (progressForm.pollingTimer) {

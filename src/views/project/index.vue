@@ -13,6 +13,7 @@
       <Simulator
         :project="data.currentProject"
         v-if="pageParam.currentComponent === 'simulator'"
+        @setProject="handleProject"
       ></Simulator>
     </div>
   </div>
@@ -37,6 +38,10 @@ const data = reactive({
   project_list: [],
   currentProject: {},
 })
+
+const handleProject = (project) => {
+  getProjectListFn(pageParam.group)
+}
 
 const getProjectListFn = async (group_name) => {
   let param = {

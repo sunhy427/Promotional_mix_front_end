@@ -25,8 +25,8 @@ const userInfo = reactive({
 })
 const getUserId = async () => {
   let res = await getUserProfile()
-  if (res && res.User_id) {
-    userInfo.userId = res.User_id
+  if (res && res.mudid) {
+    userInfo.userId = res.mudid
   }
 }
 onMounted(() => {

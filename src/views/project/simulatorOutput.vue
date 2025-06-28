@@ -119,10 +119,11 @@
             <el-col :span="14">
               <div class="item">
                 <p class="title">Cost Distribution</p>
-                <div class="chart-content" v-if="costDistributionOptions.series[0].data.length > 0">
+                <div class="chart-content">
                   <bar
                     :options="costDistributionOptions"
                     :chartId="props.simulation + '_costDistribution'"
+                    v-if="costDistributionOptions.series[0].data.length > 0"
                   ></bar>
                 </div>
               </div>
@@ -165,7 +166,6 @@
                   :options="current_costDistributionOptions"
                   :chartId="props.simulation + '_current_costDistributionOptions'"
                   v-if="current_costDistributionOptions.series[0].data.length > 0"
-                  :resize="data.tabValue === 'Current'"
                 ></bar>
               </div>
             </el-col>
@@ -212,7 +212,7 @@
 
               <el-segmented v-model="data.current_ROItrigger" :options="['ROI', 'MROI']" />
               <div v-if="data.current_ROItrigger === 'ROI'">
-                <el-select
+                <!-- <el-select
                   v-model="data.current_ROIChannelValue"
                   placeholder="Select"
                   class="channel-select-input"
@@ -224,13 +224,13 @@
                     :label="item"
                     :value="item"
                   />
-                </el-select>
+                </el-select> -->
                 <div class="chart-content">
                   <bar
                     :options="current_ROIChartOptions"
                     :chartId="props.simulation + '_current_ROIChart'"
                     v-if="current_ROIChartOptions.xAxis.data.length > 0"
-                    :key="props.simulation + '_' + data.current_ROIChannelValue"
+                    :key="props.simulation"
                   ></bar>
                 </div>
               </div>
@@ -239,7 +239,7 @@
                   :options="current_MROIChartOptions"
                   :chartId="props.simulation + '_MROIChart'"
                   v-if="current_MROIChartOptions.xAxis.data.length > 0"
-                  :key="props.simulation + '_' + data.current_ROIChannelValue"
+                  :key="props.simulation"
                 ></bar>
               </div>
             </el-col>

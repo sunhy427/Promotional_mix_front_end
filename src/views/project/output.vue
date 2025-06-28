@@ -98,7 +98,11 @@
           <el-col :span="14">
             <span class="title">Cost Distribution</span>
             <div class="chart-content" v-if="costDistributionOptions.series[0].data.length > 0">
-              <bar :options="costDistributionOptions" chartId="costDistribution"></bar>
+              <bar
+                :options="costDistributionOptions"
+                chartId="costDistribution"
+                :key="pageParam.timestamp"
+              ></bar>
             </div>
           </el-col>
           <el-col :span="10">
@@ -132,7 +136,7 @@
                 :options="costByChannelOptions"
                 :chartId="outputData.cost_by_channel_vs_total_sales_trend_select + 'costByChannel'"
                 v-if="costByChannelOptions.xAxis.data.length > 0"
-                :key="outputData.cost_by_channel_vs_total_sales_trend_select"
+                :key="outputData.cost_by_channel_vs_total_sales_trend_select + pageParam.timestamp"
               ></bar>
             </div>
           </el-col>
@@ -160,7 +164,10 @@
                   outputData.torch_points_by_channel_vs_total_sales_trend_select + 'touchByChannel'
                 "
                 v-if="touchByChannelOptions.xAxis.data.length > 0"
-                :key="outputData.torch_points_by_channel_vs_total_sales_trend_select"
+                :key="
+                  outputData.torch_points_by_channel_vs_total_sales_trend_select +
+                  pageParam.timestamp
+                "
               ></bar>
             </div>
           </el-col>
@@ -181,6 +188,7 @@
                 :options="promotionOptions"
                 chartId="promotion"
                 v-if="promotionOptions.xAxis[0].data.length > 0"
+                :key="pageParam.timestamp"
               ></bar>
             </div>
           </el-col>
@@ -191,6 +199,7 @@
                 :options="totalPromotionOptions"
                 chartId="totalPromotion"
                 v-if="totalPromotionOptions.series[0].data.length > 0"
+                :key="pageParam.timestamp"
               ></bar>
             </div>
           </el-col>
@@ -218,7 +227,7 @@
                   :options="ROIChartOptions"
                   chartId="ROIChart"
                   v-if="ROIChartOptions.xAxis.data.length > 0"
-                  :key="data.ROIChannelValue"
+                  :key="data.ROIChannelValue + pageParam.timestamp"
                 ></bar>
               </div>
             </div>
@@ -227,6 +236,7 @@
                 :options="MROIChartOptions"
                 chartId="MROIChart"
                 v-if="MROIChartOptions.xAxis.data.length > 0"
+                :key="pageParam.timestamp"
               ></bar>
             </div>
           </el-col>
@@ -248,12 +258,12 @@
                 :value="item"
               />
             </el-select>
-            <div class="chart-content">
+            <div class="chart-content" style="min-height: 300px">
               <bar
                 :options="responseCurveOptions"
                 :chartId="outputData.response_curve_select + 'responseCurveChart'"
                 v-if="responseCurveOptions.xAxis.data.length > 0"
-                :Key="outputData.response_curve_select"
+                :Key="outputData.response_curve_select + pageParam.timestamp"
               ></bar>
             </div>
           </el-col>
@@ -263,7 +273,7 @@
             <span class="title">Model Metrics</span>
 
             <div class="chart-content">
-              <el-table :data="ModelMetricsTableData" border style="width: 100%">
+              <el-table :data="outputData.modelMetricsTableData" border style="width: 100%">
                 <el-table-column prop="mape" align="center">
                   <template #header>
                     <span class="table-header-tip">Mape</span>
@@ -328,6 +338,7 @@ const router = useRouter()
 const pageParam = reactive({
   group: route.params.group,
   project: route.params.project,
+  timestamp: Date.now(),
 })
 
 const outputMetadata = reactive({
@@ -353,6 +364,7 @@ const outputData = reactive({
   promotion_vs_nonpromotion: {},
   response_curve: {},
   response_curve_options: [],
+  response_curve_select: '',
   roi: {},
   roi_options: ['cost', 'cost_direct'],
   roi_select: '',
@@ -363,6 +375,7 @@ const outputData = reactive({
   total_cost_vs_total_sales: {},
   total_promotion_contribution: {},
   total_sales: [],
+  modelMetricsTableData: [],
 })
 
 const previewModelOutputMetadataFn = async () => {
@@ -393,6 +406,7 @@ const previewModelOutputResultFn = async () => {
   }
   let res = await previewModelOutputResult(param)
   if (res) {
+    pageParam.timestamp = Date.now()
     outputData.total_cost = res.total_cost
     outputData.total_sales = res.total_sales
     outputData.total_cost_vs_total_sales = parseInt(res.total_cost_vs_total_sales * 100)
@@ -404,6 +418,7 @@ const previewModelOutputResultFn = async () => {
       costDistributionOptions.series[0].data.push(item)
     }
     //current_unit_price
+    outputData.current_unit_price = []
     for (let key in res.current_unit_price) {
       let item = {
         channel: key,
@@ -457,11 +472,12 @@ const previewModelOutputResultFn = async () => {
     outputData.response_curve_select = outputData.response_curve_options[0]
     changeResponse_curve()
 
+    outputData.modelMetricsTableData = []
     let modelMetrics = {
       mape: res.model_metrics.MAPE.toFixed(2),
       R2: res.model_metrics.R_square.toFixed(2),
     }
-    ModelMetricsTableData.push(modelMetrics)
+    outputData.modelMetricsTableData.push(modelMetrics)
   }
 }
 
@@ -620,7 +636,7 @@ const changeResponse_curve = () => {
   responseCurveOptions.xAxis.data = []
   responseCurveOptions.series[0].data =
     outputData.response_curve[outputData.response_curve_select].y
-  responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
+
   responseCurveOptions.series[0].markLine.data.push({
     name: '',
     xAxis:
@@ -630,6 +646,9 @@ const changeResponse_curve = () => {
   })
   responseCurveOptions.series[0].markLine.label.formatter =
     outputData.response_curve[outputData.response_curve_select].current_roi[0]
+  setTimeout(() => {
+    responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
+  }, 500)
 }
 onMounted(() => {
   previewModelOutputMetadataFn()
@@ -955,7 +974,6 @@ const responseCurveOptions = reactive({
   },
   legend: {},
 })
-const ModelMetricsTableData = reactive([])
 
 const change_response_curve_select = () => {}
 
