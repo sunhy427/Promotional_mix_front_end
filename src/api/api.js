@@ -48,7 +48,7 @@ export function createMetaData() {
 
 //get project list
 export function getProjectList(params) {
-  return request.get(`${basic.apiUrl}/projects/${params.group_name}/contents/list`)
+  return request.get(`${basic.apiUrl}projects/${params.group_name}/contents/list`)
 }
 
 //Publish project

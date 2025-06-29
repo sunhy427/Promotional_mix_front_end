@@ -296,7 +296,8 @@
         </div>
       </template>
     </el-dialog>
-    <div class="foot-wrap" v-if="data.simulationList.length > 0">
+    <!-- 暂时禁掉 -->
+    <!-- <div class="foot-wrap" v-if="data.simulationList.length > 0">
       <el-button type="primary" @click="downloadFn">
         <el-icon><Download /></el-icon>
         Download Data
@@ -305,7 +306,7 @@
         <el-icon><Download /></el-icon>
         Save Package
       </el-button>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup>

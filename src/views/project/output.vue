@@ -303,7 +303,8 @@
     <el-card class="continue-wrap">
       <el-button type="primary" @click="goContinue">Continue</el-button>
     </el-card>
-    <div class="foot-wrap">
+    <!-- 暂时禁掉 -->
+    <!-- <div class="foot-wrap">
       <el-button type="primary">
         <el-icon><Download /></el-icon>
         Download Data
@@ -312,7 +313,7 @@
         <el-icon><Download /></el-icon>
         Save Package
       </el-button>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup>
