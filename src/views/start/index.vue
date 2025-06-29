@@ -14,7 +14,7 @@
         </div>
       </el-col>
       <el-col :span="16">
-        <el-card class="login-wrap">
+        <!-- <el-card class="login-wrap">
           <el-form label-position="top" label-width="auto" :model="data.formLogin">
             <el-form-item label="Username">
               <el-input v-model="data.formLogin.username" />
@@ -24,7 +24,7 @@
             </el-form-item>
           </el-form>
           <el-button type="primary" class="sign-btn">Sign in</el-button>
-        </el-card>
+        </el-card> -->
         <el-card class="saml-wrap">
           <p class="saml-title">Sign in with</p>
           <el-button class="saml-btn" @click="goSAML">Oauth2.0</el-button>
@@ -45,7 +45,6 @@ const data = reactive({
 const goSAML = async () => {
   await getSAML()
 }
-
 </script>
 
 <style lang="less" scoped>
@@ -105,7 +104,7 @@ const goSAML = async () => {
   }
   .saml-wrap {
     width: 70%;
-    margin: 1vh auto 0 auto;
+    margin: 40vh auto 0 auto;
     .saml-title {
       margin-bottom: 20px;
     }

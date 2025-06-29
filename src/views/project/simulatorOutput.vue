@@ -185,7 +185,7 @@
             </el-col>
           </el-row>
           <el-row>
-            <el-col :span="14">
+            <el-col :span="8">
               <div class="item">
                 <p class="title">Promotion VS Non-promotion</p>
                 <bar
@@ -195,7 +195,7 @@
                 ></bar>
               </div>
             </el-col>
-            <el-col :span="10">
+            <el-col :span="16">
               <div class="item">
                 <p class="title">Total Promotion Contribution</p>
                 <bar

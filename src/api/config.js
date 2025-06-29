@@ -48,7 +48,9 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response) => {
     if (response.status === 302 && response.headers.location) {
-      window.location.href = response.headers.location // 跳转到重定向地址
+      if (response.headers && response.headers.location) {
+        window.location.href = response.headers.location // 跳转到重定向地址
+      }
       return new Promise(() => {}) // 中断当前请求链，避免后续处理
     }
 
