@@ -1,7 +1,7 @@
 <template>
   <div class="group-list-page">
     <div class="top-welcome">
-      <div class="welcome">Welcome!</div>
+      <div class="welcome">Welcome! {{ data.userId }}</div>
       <div class="btn-wrap">
         <el-button
           type="primary"
@@ -60,7 +60,7 @@
   </div>
 </template>
 <script setup>
-import { getGroupList, createGroup, getPopup, logout } from '../../api/api'
+import { getGroupList, createGroup, getPopup, logout, getUserProfile } from '../../api/api'
 import { ElMessage, ElNotification } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
@@ -70,6 +70,7 @@ const form = reactive({
 })
 const data = reactive({
   searchKey: '',
+  userId: '',
 })
 
 const groupIndex = reactive({
@@ -89,6 +90,14 @@ const createConfirm = () => {
     create()
   }
 }
+
+const getUserId = async () => {
+  let res = await getUserProfile()
+  if (res && res.mudid) {
+    data.userId = res.mudid
+  }
+}
+
 const create = async () => {
   let param = form
   let res = await createGroup(param.group_name)
@@ -137,6 +146,7 @@ const logoutFn = async () => {
 onMounted(() => {
   getGroupFn()
   getPopFn()
+  getUserId()
 })
 </script>
 
