@@ -3,5 +3,5 @@
 // const config = require('./env.' + environment)
 // module.exports = config
 export const basic = {
-  apiUrl: '/api/',
+  apiUrl: '/multichannel/',
 }

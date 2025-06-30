@@ -104,7 +104,7 @@
                   v-model="form.agg_rule[data.channelNumber][key].channels"
                   multiple
                   placeholder="Select"
-                  style="width: 440px"
+                  class="select-btn-440"
                   :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
                   @focus="initChannelOptions(key)"
                 >
@@ -115,7 +115,7 @@
                 </span>
                 <el-input
                   v-model="form.agg_rule[data.channelNumber][key].new_column_name"
-                  style="width: 240px"
+                  class="select-btn-240"
                   placeholder="Please input"
                   :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
                 />
@@ -126,7 +126,7 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="form.segmentation_type" placeholder="Select" style="width: 100%">
+            <el-select v-model="form.segmentation_type" placeholder="Select"  >
               <el-option
                 v-for="item in options.segmentOptions"
                 :key="item.segment_type"
@@ -142,11 +142,7 @@
         <!-- <el-button type="info" round size="small" @click="runCancel">Cancel</el-button> -->
       </div>
     </el-card>
-    <el-card
-      v-if="progressForm.isPolling"
-      style="width: 100%; height: 200px"
-      v-loading="progressForm.isPolling"
-    >
+    <el-card class="card-loading" v-if="progressForm.isPolling" v-loading="progressForm.isPolling">
     </el-card>
   </div>
 </template>
@@ -237,18 +233,18 @@ const getPreviewRawData = async () => {
 }
 
 const createNewChannel = () => {
- console.log('form.agg_rule', form.agg_rule['customized'])
- let total = []
- for (let i = 0; i < form.agg_rule['customized'].length; i++) {
-  total = [...total, ...form.agg_rule['customized'][i].channels]
- }
- if (total.length === options.channelListOptions.length) {
-  ElMessage({
-    type: 'error',
-     message: 'No channel options',
-  })
-  return
- }
+  console.log('form.agg_rule', form.agg_rule['customized'])
+  let total = []
+  for (let i = 0; i < form.agg_rule['customized'].length; i++) {
+    total = [...total, ...form.agg_rule['customized'][i].channels]
+  }
+  if (total.length === options.channelListOptions.length) {
+    ElMessage({
+      type: 'error',
+      message: 'No channel options',
+    })
+    return
+  }
   let channel = {
     new_column_name: '',
     channels: [],
@@ -409,11 +405,12 @@ const formatRes = (res) => {
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
 
-    form.segmentation_type = ''
+    
     options.segmentOptions = []
     for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
       options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
     }
+    form.segmentation_type =  options.segmentOptions[0].segment_type
 
     form.channel = []
     for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
@@ -481,12 +478,22 @@ watch(
 <style lang="less" scoped>
 .analysis-page {
   padding: 15px;
+  .card-loading {
+    width: 100%;
+    height: 200px;
+  }
   .el-dropdown {
     float: right;
   }
   .select-wrap {
     li {
       margin-bottom: 10px;
+      .select-btn-440 {
+        width: 440px;
+      }
+      .select-btn-240 {
+        width: 240px;
+      }
     }
   }
   .card-title {

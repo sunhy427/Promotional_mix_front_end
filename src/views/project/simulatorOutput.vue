@@ -4,7 +4,6 @@
       <p class="title">Optimal Channel Performance</p>
       <el-table
         border
-        style="width: 100%"
         header-row-class-name="header-unit"
         :data="simulationOutput.optimal_channel_performance"
       >
@@ -43,7 +42,6 @@
       <p class="title">Current Channel Performance</p>
       <el-table
         border
-        style="width: 100%"
         header-row-class-name="header-unit"
         :data="simulationOutput.current_channel_performance"
       >
@@ -134,7 +132,6 @@
                 <div class="chart-content">
                   <el-table
                     border
-                    style="width: 100%"
                     header-row-class-name="header-unit"
                     :data="simulationOutput.calculated_unit_price"
                   >
@@ -172,7 +169,7 @@
             <el-col :span="10">
               <div class="item">
                 <p class="title">Current Unit Price</p>
-                <el-table :data="Current_output.current_unit_price" border style="width: 100%">
+                <el-table :data="Current_output.current_unit_price" border>
                   <el-table-column prop="channel" label="Channel" align="center" />
                   <el-table-column
                     prop="price"

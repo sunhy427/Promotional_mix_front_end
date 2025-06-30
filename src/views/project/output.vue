@@ -50,7 +50,7 @@
             <span
               v-for="(item, index) in outputMetadata.aggregate_channel_list"
               :key="index"
-              style="margin: 0 5px"
+              class="channle-list-span"
               >{{ item }}
             </span>
           </p>
@@ -61,7 +61,7 @@
           <el-select
             v-model="form.segmentation_type"
             placeholder="Select"
-            style="width: 240px"
+            class="select-btn-240"
             @change="changeSegment"
           >
             <el-option
@@ -108,7 +108,7 @@
           <el-col :span="10">
             <span class="title">Current Unit Price</span>
             <div class="chart-content">
-              <el-table :data="outputData.current_unit_price" border style="width: 100%">
+              <el-table :data="outputData.current_unit_price" border>
                 <el-table-column prop="channel" label="Channel" align="center" />
                 <el-table-column prop="price" label="Unit Price(CNY per TP)" align="center" />
               </el-table>
@@ -258,7 +258,7 @@
                 :value="item"
               />
             </el-select>
-            <div class="chart-content" style="min-height: 300px">
+            <div class="chart-content-curve">
               <bar
                 :options="responseCurveOptions"
                 :chartId="outputData.response_curve_select + 'responseCurveChart'"
@@ -273,7 +273,7 @@
             <span class="title">Model Metrics</span>
 
             <div class="chart-content">
-              <el-table :data="outputData.modelMetricsTableData" border style="width: 100%">
+              <el-table :data="outputData.modelMetricsTableData" border>
                 <el-table-column prop="mape" align="center">
                   <template #header>
                     <span class="table-header-tip">Mape</span>
@@ -304,16 +304,13 @@
       <el-button type="primary" @click="goContinue">Continue</el-button>
     </el-card>
     <!-- 暂时禁掉 -->
-    <!-- <div class="foot-wrap">
-      <el-button type="primary">
+    <div class="foot-wrap">
+      <el-button type="primary" @click="downloadFn">
         <el-icon><Download /></el-icon>
         Download Data
       </el-button>
-      <el-button type="success">
-        <el-icon><Download /></el-icon>
-        Save Package
-      </el-button>
-    </div> -->
+      
+    </div>
   </div>
 </template>
 <script setup>
@@ -322,6 +319,7 @@ import { reactive, onMounted, defineProps } from 'vue'
 import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
 import { color } from 'echarts'
+import { basic } from '../../config'
 
 const props = defineProps({
   project_status: {
@@ -664,6 +662,12 @@ const data = reactive({
   key: Date.now(),
 })
 
+const downloadFn = () => {
+  const port = window.location.port ? window.location.port : ''
+  const baseUrl = `${window.location.protocol}//${window.location.hostname}:${port}`
+  window.location.href = `${baseUrl}${basic.apiUrl}contents/${pageParam.group}/${pageParam.project}/modeling/download`
+}
+
 const costDistributionOptions = reactive({
   tooltip: {
     trigger: 'item',
@@ -989,6 +993,12 @@ const goPage = (name) => {
 <style lang="less" scoped>
 .output-page {
   padding: 15px;
+  .channle-list-span {
+    margin: 0 5px;
+  }
+  .select-btn-240 {
+    width: 240px;
+  }
   .el-dropdown {
     float: right;
   }
@@ -1003,6 +1013,9 @@ const goPage = (name) => {
       margin-bottom: 20px;
       .chart-content {
         padding: 15px 0;
+      }
+      .chart-content-curve {
+        min-height: 300px;
       }
       .channel-select-input {
         width: 240px;

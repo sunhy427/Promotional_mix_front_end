@@ -13,7 +13,7 @@
           Add Permission
         </el-button>
       </div>
-      <el-table :data="data.permissionsList" style="width: 100%">
+      <el-table :data="data.permissionsList">
         <el-table-column prop="mudid" label="mudid" />
         <el-table-column prop="role" label="Role" />
         <el-table-column label="Activity">

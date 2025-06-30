@@ -287,6 +287,7 @@
             :auto-upload="false"
             name="content"
             :data="uploadForm"
+            :on-success="uploadSuccess"
           >
             <template #trigger>
               <el-button type="primary">Select File</el-button>
@@ -627,12 +628,34 @@ const uploadForm = reactive({
 })
 
 const uploadFn = (groupName) => {
-  data.uploadUrl = `${basic.apiUrl}projects/${groupName}?action=import_json`
+  data.uploadUrl = `${basic.apiUrl}projects/${groupName}/project/upload?action=import_json`
   data.showUploadDialog = true
 }
 const uploadRef = ref(null)
 const uploadConfirm = () => {
+  if (uploadForm.project_name === '') {
+    ElMessage({
+      type: 'error',
+      message: 'Input Project Name'
+    })
+    return
+  }
   uploadRef.value.submit()
+}
+
+const uploadSuccess = (res) => {
+  if (res.status === 1) {
+    ElMessage({
+      type: 'success',
+      message: 'Upload success'
+    })
+     data.showUploadDialog = false
+  } else {
+    ElMessage({
+      type: 'error',
+      message: res.msg
+    })
+  }
 }
 
 const shareProjectRuleFormRef = ref(null)

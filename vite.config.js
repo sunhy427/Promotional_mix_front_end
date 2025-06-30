@@ -17,7 +17,7 @@ export default defineConfig({
     port: 13002,
     proxy: {
       // 配置代理规则
-      '/api': {
+      '/multichannel': {
         target: 'http://shauapp003p.rxcorp.com:14444', // 目标服务器地址
         changeOrigin: true, // 允许跨域
       },

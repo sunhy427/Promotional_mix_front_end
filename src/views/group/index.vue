@@ -7,7 +7,7 @@
           type="primary"
           color="#e99d42"
           @click="showDialog = true"
-          style="color: #fff; margin-right: 10px"
+          class="btn-new-group"
           v-if="
             groupIndex.group_meta.group_privileges.length > 0 &&
             groupIndex.group_meta.group_privileges[0] === 'Create New Group'
@@ -21,6 +21,10 @@
             Setting
           </el-button></router-link
         >
+        <el-button type="primary" color="#e99d42" @click="logoutFn" class="btn-logout">
+          <el-icon><Promotion /></el-icon>
+          Logout
+        </el-button>
       </div>
     </div>
     <div class="search-wrap">
@@ -56,7 +60,7 @@
   </div>
 </template>
 <script setup>
-import { getGroupList, createGroup, getPopup } from '../../api/api'
+import { getGroupList, createGroup, getPopup, logout } from '../../api/api'
 import { ElMessage, ElNotification } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
@@ -96,7 +100,6 @@ const create = async () => {
     ComponentGroupList.value.getList()
     showDialog.value = false
     form.group_name = ''
-    
   }
 }
 
@@ -121,6 +124,16 @@ const getPopFn = async () => {
   }
 }
 
+const logoutFn = async () => {
+  let res = await logout()
+  if (res && res.status) {
+    ElMessage({
+      message: 'logout success',
+      type: 'success',
+    })
+  }
+}
+
 onMounted(() => {
   getGroupFn()
   getPopFn()
@@ -141,8 +154,18 @@ onMounted(() => {
       font-weight: bold;
     }
     .btn-wrap {
+      .btn-new-group {
+        color: #fff;
+        margin-right: 10px;
+      }
       .setting-btn {
         i {
+          margin-right: 5px;
+        }
+      }
+      .btn-logout {
+        margin: 0 10px;
+        .el-icon {
           margin-right: 5px;
         }
       }

@@ -6,6 +6,10 @@ export function getSAML() {
   return request.get('/as/ack')
 }
 
+export function logout() {
+  return request.post(`${basic.apiUrl}logout`)
+}
+
 // /api/user_profile
 export function getUserProfile() {
   return request.get(basic.apiUrl + 'user_profile')

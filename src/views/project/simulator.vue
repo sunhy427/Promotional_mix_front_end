@@ -74,7 +74,7 @@
               </el-input-number>
             </el-form-item>
             <el-form-item label="Budget(of the time period)">
-              <el-input-number v-model="item.budget" :min="0" size="small" style="width: 250px">
+              <el-input-number v-model="item.budget" :min="0" size="small" class="input-btn-250">
                 <template #suffix>
                   <span>CNY</span>
                 </template>
@@ -83,9 +83,9 @@
             <el-form-item label="">
               <div>
                 <p class="tips">
-                  Note: The average monthly budget for the modeling period is 38,900,000.
+                  {{ item.average_monthly_cost }}
                 </p>
-                <p class="tips">It is recommended that the total budget be set on this basis.</p>
+                <!-- <p class="tips">It is recommended that the total budget be set on this basis.</p> -->
               </div>
             </el-form-item>
             <el-form-item>
@@ -94,7 +94,6 @@
                 v-if="data.simulationList[index].unit_price_pct_input"
                 :data="data.simulationList[index].unit_price_pct_input"
                 border
-                style="width: 100%"
                 header-row-class-name="header-unit"
               >
                 <el-table-column prop="channel" label="Channel" />
@@ -129,14 +128,13 @@
                 item.optimization_type === 'fixed_budget' && item.constraints_on_channels_select
               "
             >
-              <p class="title" style="margin-bottom: 30px">
+              <p class="title">
                 Constraints on Channels
-                <span style="float: right">
+                <span class="float-right">
                   <span>AB proportion</span>
                   <el-select
                     v-model="item.constraints_on_channels_select"
                     placeholder="Select"
-                    style="width: 150px; margin: 0 15px"
                     size="small"
                   >
                     <el-option
@@ -208,9 +206,7 @@
                 item.optimization_type === 'mccp_suggestion' && item.constraints_on_channels_select
               "
             >
-              <p class="title" style="margin-bottom: 30px">
-                Constraints on MCCP Suggested Channels
-              </p>
+              <p class="title">Constraints on MCCP Suggested Channels</p>
 
               <el-row
                 v-for="(unitValue, unitKey, unitIndex) in item.constraints_on_channels"
@@ -239,6 +235,14 @@
             <el-divider />
             <Output :simulation="item.simulation_name" v-if="item.simulation_name"></Output>
           </div>
+          <el-button
+            type="primary"
+            @click="downloadFn(item.simulation_name)"
+            v-show="item.canDownload"
+          >
+            <el-icon><Download /></el-icon>
+            Download Data
+          </el-button>
         </el-card>
       </li>
     </ul>
@@ -259,7 +263,7 @@
           v-if="simulationForm.Optimization_Type === 'mccp_suggestion'"
           prop="MCCP_cycle"
         >
-          <el-select v-model="simulationForm.MCCP_cycle" placeholder="Select" style="width: 440px">
+          <el-select v-model="simulationForm.MCCP_cycle" placeholder="Select" class="width-440">
             <el-option
               v-for="item in simulationForm.MCCP_cycle_options"
               :key="item"
@@ -296,17 +300,6 @@
         </div>
       </template>
     </el-dialog>
-    <!-- 暂时禁掉 -->
-    <!-- <div class="foot-wrap" v-if="data.simulationList.length > 0">
-      <el-button type="primary" @click="downloadFn">
-        <el-icon><Download /></el-icon>
-        Download Data
-      </el-button>
-      <el-button type="success" @click="savePackageFn">
-        <el-icon><Download /></el-icon>
-        Save Package
-      </el-button>
-    </div> -->
   </div>
 </template>
 <script setup>
@@ -471,6 +464,7 @@ const getMetaData = async (simulation_name) => {
         constraints_on_channels_options: Object.keys(res.constraints_on_channels),
         constraints_on_channels_select: Object.keys(res.constraints_on_channels)[0],
         constraints_on_channels: {},
+        average_monthly_cost: res.average_monthly_cost,
       }
 
       for (let key in res.unit_price_pct_input) {
@@ -729,6 +723,7 @@ const initSimulation = () => {
     data.simulationList[i].progressForm = progressForm
 
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_OUTPUT') {
+      data.simulationList[i].canDownload = true
       getSimulationsParamFn(data.simulationList[i].simulation_name)
     }
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
@@ -770,6 +765,7 @@ const getSimulationsParamFn = async (simulation) => {
           res.simulation_parameters.constraints_on_channels,
         )[0],
         constraints_on_channels: {},
+        average_monthly_cost: res.average_monthly_cost,
       }
       for (let key in res.simulation_parameters.unit_price_pct_input) {
         let item = {
@@ -820,12 +816,17 @@ const simulationVisibilityFn = async (simulation, visible) => {
   }
 }
 
-const downloadFn = async () => {
-  window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_excel`
+const downloadFn = async (simulation_name) => {
+  const port = window.location.port ? window.location.port : ''
+  const baseUrl = `${window.location.protocol}//${window.location.hostname}:${port}`
+  window.location.href = `${baseUrl}${basic.apiUrl}contents/${data.group_name}/${data.project_name}/${simulation_name}/simulating/download`
 }
 
 const savePackageFn = async () => {
-  window.location.href = `/${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
+  // multichannel/projects/<str:group_name>/<str:project_name>?action=export_json
+  const port = window.location.port ? window.location.port : ''
+  const baseUrl = `${window.location.protocol}//${window.location.hostname}:${port}`
+  window.location.href = `${baseUrl}${basic.apiUrl}projects/${data.group_name}/${data.project_name}?action=export_json`
 }
 
 const goPage = (name) => {
@@ -836,7 +837,6 @@ watch(
   (value) => {
     if (value && value.project_status) {
       data.currentProject = value
-      console.log('waitch')
       init()
     }
   },
@@ -852,6 +852,12 @@ onUnmounted(() => {
 <style lang="less" scoped>
 .simulator-page {
   padding: 15px;
+  .input-btn-250 {
+    width: 250px;
+  }
+  .width-440 {
+    width: 440px;
+  }
   .foot-wrap {
     text-align: right;
   }
@@ -913,10 +919,17 @@ onUnmounted(() => {
             }
           }
           .constraint-wrap {
-            .title {
+            p.title {
               color: #606266;
-              margin-bottom: 20px;
+              margin-bottom: 30px;
               width: 100%;
+              .float-right {
+                float: right;
+                .el-select {
+                  width: 150px;
+                  margin: 0 15px;
+                }
+              }
             }
             .el-row {
               margin-bottom: 15px;
