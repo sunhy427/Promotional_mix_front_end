@@ -8,18 +8,8 @@
         :data="simulationOutput.optimal_channel_performance"
       >
         <el-table-column prop="channel" label="Decision Variable" />
-        <el-table-column
-          prop="gr_in_sales_simulated"
-          label="GR in Sales(simulated)"
-          :formatter="formatNumber"
-        />
-        <el-table-column
-          prop="gr_in_spending_simulated"
-          label="GR in Spending(simulated)"
-          :formatter="formatNumber"
-        />
-        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="formatNumber" />
         <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="formatNumber" />
+        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="formatNumber" />
         <el-table-column
           prop="sales_contribution_pct_simulated"
           label="Sales % Contribution(simulated)"
@@ -36,6 +26,9 @@
           :formatter="formatNumberto0"
         />
         <el-table-column prop="tp_simulated" label="TP(simulated)" :formatter="formatNumberto0" />
+
+        <el-table-column prop="gr_in_sales_simulated" label="GR in Sales(simulated)" />
+        <el-table-column prop="gr_in_spending_simulated" label="GR in Spending(simulated)" />
       </el-table>
     </div>
     <div class="content">
@@ -46,18 +39,20 @@
         :data="simulationOutput.current_channel_performance"
       >
         <el-table-column prop="channel" label="Channel" />
-        <el-table-column prop="mroi" label="MROI" :formatter="formatNumber" />
         <el-table-column prop="roi" label="ROI" :formatter="formatNumber" />
-        <el-table-column
-          prop="sales_contribution"
-          label="Sales Contribution"
-          :formatter="formatNumberto0"
-        />
+
+        <el-table-column prop="mroi" label="MROI" :formatter="formatNumber" />
         <el-table-column
           prop="sales_contribution_pct"
           label="Sales % Contribution"
           :formatter="formatNumberFG"
         />
+        <el-table-column
+          prop="sales_contribution"
+          label="Sales Contribution"
+          :formatter="formatNumberto0"
+        />
+
         <el-table-column prop="spending" label="Spending" :formatter="formatNumberto0" />
       </el-table>
     </div>
@@ -137,14 +132,14 @@
                   >
                     <el-table-column prop="channels" label="channels" />
                     <el-table-column
-                      prop="tp_simulated"
-                      label="tp_simulated"
-                      :formatter="formatNumberto0"
-                    />
-                    <el-table-column
                       prop="unit_price"
                       label="unit_price"
                       :formatter="formatNumber"
+                    />
+                    <el-table-column
+                      prop="tp_simulated"
+                      label="tp_simulated"
+                      :formatter="formatNumberto0"
                     />
                   </el-table>
                 </div>
@@ -292,11 +287,11 @@ const Current_output = reactive({
 })
 
 const formatNumber = (row, column, cellValue) => {
-  return Number(cellValue).toFixed(2)
+  return Number(Number(cellValue).toFixed(2)).toLocaleString()
 }
 
 const formatNumberto0 = (row, column, cellValue) => {
-  return Number(cellValue).toFixed(0)
+  return Number(Number(cellValue).toFixed(0)).toLocaleString()
 }
 const formatNumberFG = (row, column, cellValue) => {
   return Number(cellValue * 100).toFixed(2) + '%'

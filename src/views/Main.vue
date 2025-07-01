@@ -19,20 +19,23 @@
 </template>
 <script setup>
 import HeaderNav from '../components/header.vue'
-// import { getUserProfile } from '../api/api'
+import { getUserProfile } from '../api/api'
 import { onMounted, reactive } from 'vue'
 
-// const userInfo = reactive({
-//   userId: '',
-// })
-// const getUserId = async () => {
-//   let res = await getUserProfile()
-//   if (res && res.mudid) {
-//     userInfo.userId = res.mudid
-//   }
-// }
+const userInfo = reactive({
+  userId: '',
+  frsc: ''
+})
+const getUserId = async () => {
+  let res = await getUserProfile()
+  if (res && res.frsc) {
+    userInfo.userId = res.mudid
+    userInfo.frsc = res.frsc
+    localStorage.setItem('frsc', userInfo.frsc)
+  }
+}
 onMounted(() => {
-  // getUserId()
+  getUserId()
 })
 </script>
 

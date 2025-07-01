@@ -19,6 +19,11 @@ axios.defaults.withCredentials = true
 // 添加请求拦截器
 service.interceptors.request.use(
   (config) => {
+    const csrfToken = localStorage.getItem('frsc')
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken
+    }
+
     if (config.headers['Content-Type'] === 'multipart/form-data') {
       const formData = new FormData()
       Object.entries(config.data).map(([key, value]) => {

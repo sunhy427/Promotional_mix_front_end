@@ -756,7 +756,7 @@ const publishProjectFn = async (group_name, project_name, is_publish) => {
   let res = await publishProject(param)
   if (res.status === 1) {
     ElMessage({
-      message: 'Publish success',
+      message: is_publish === true ? 'Cancel publish success' : 'Publish success',
       type: 'success',
     })
     getList()

@@ -206,11 +206,11 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <span class="title">Promotion VS Non-promotion</span>
+            <span class="title"></span>
             <el-segmented v-model="data.ROItrigger" :options="['ROI', 'MROI']" />
             <div v-if="data.ROItrigger === 'ROI'">
               <el-select
-                v-model="data.ROIChannelValue"
+                v-model="outputData.roi_select"
                 placeholder="Select"
                 class="channel-select-input"
                 @change="changeROI"
@@ -227,17 +227,32 @@
                   :options="ROIChartOptions"
                   chartId="ROIChart"
                   v-if="ROIChartOptions.xAxis.data.length > 0"
-                  :key="data.ROIChannelValue + pageParam.timestamp"
+                  :key="outputData.roi_select + pageParam.timestamp"
                 ></bar>
               </div>
             </div>
             <div v-if="data.ROItrigger === 'MROI'">
-              <bar
-                :options="MROIChartOptions"
-                chartId="MROIChart"
-                v-if="MROIChartOptions.xAxis.data.length > 0"
-                :key="pageParam.timestamp"
-              ></bar>
+              <el-select
+                v-model="outputData.mroi_select"
+                placeholder="Select"
+                class="channel-select-input"
+                @change="changeMROI"
+              >
+                <el-option
+                  v-for="item in outputData.mroi_options"
+                  :key="item"
+                  :label="item"
+                  :value="item"
+                />
+              </el-select>
+              <div class="chart-content">
+                <bar
+                  :options="MROIChartOptions"
+                  chartId="MROIChart"
+                  v-if="MROIChartOptions.xAxis.data.length > 0"
+                  :key="outputData.mroi_select + pageParam.timestamp"
+                ></bar>
+              </div>
             </div>
           </el-col>
         </el-row>
@@ -309,7 +324,6 @@
         <el-icon><Download /></el-icon>
         Download Data
       </el-button>
-      
     </div>
   </div>
 </template>
@@ -358,7 +372,7 @@ const outputData = reactive({
   cost_by_channel_vs_total_sales_trend_select: '',
   current_unit_price: [],
   mroi: {},
-  mroi_options: ['cost'],
+  mroi_options: ['cost', 'cost_direct'],
   mroi_select: 'cost',
   promotion_vs_nonpromotion: {},
   response_curve: {},
@@ -409,6 +423,8 @@ const previewModelOutputResultFn = async () => {
     outputData.total_cost = res.total_cost
     outputData.total_sales = res.total_sales
     outputData.total_cost_vs_total_sales = parseInt(res.total_cost_vs_total_sales * 100)
+
+    costDistributionOptions.series[0].data = []
     for (let key in res.cost_distribution) {
       let item = {
         name: key,
@@ -449,6 +465,7 @@ const previewModelOutputResultFn = async () => {
     promotionOptions.xAxis[0].data = res.promotion_vs_nonpromotion.x
 
     //totalPromotionOptions
+    totalPromotionOptions.series[0].data = []
     for (let key in res.total_promotion_contribution) {
       let item = {
         name: key,
@@ -461,10 +478,11 @@ const previewModelOutputResultFn = async () => {
     changeROI()
 
     outputData.mroi = res.mroi
-
-    MROIChartOptions.xAxis.data = []
-    MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
-    MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
+    outputData.mroi_select = outputData.roi_options[0]
+    changeMROI()
+    // MROIChartOptions.xAxis.data = []
+    // MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
+    // MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
 
     outputData.response_curve = res.response_curve
     outputData.response_curve_options = Object.keys(res.response_curve)
@@ -497,7 +515,7 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
         {
           name: outputData.cost_by_channel_vs_total_sales_trend[
             outputData.cost_by_channel_vs_total_sales_trend_select
-          ]['desc_marked'][0],
+          ]['desc_marked'][1],
           value: '',
           xAxis:
             outputData.cost_by_channel_vs_total_sales_trend[
@@ -511,7 +529,7 @@ const changeCost_by_channel_vs_total_sales_trend = () => {
         {
           name: outputData.cost_by_channel_vs_total_sales_trend[
             outputData.cost_by_channel_vs_total_sales_trend_select
-          ]['desc_marked'][1],
+          ]['desc_marked'][0],
           value: '',
           xAxis:
             outputData.cost_by_channel_vs_total_sales_trend[
@@ -570,7 +588,7 @@ const changeTorch_points_by_channel_vs_total_sales_trend = () => {
         {
           name: outputData.torch_points_by_channel_vs_total_sales_trend[
             outputData.torch_points_by_channel_vs_total_sales_trend_select
-          ]['desc_marked'][0],
+          ]['desc_marked'][1],
           value: '',
           xAxis:
             outputData.torch_points_by_channel_vs_total_sales_trend[
@@ -584,7 +602,7 @@ const changeTorch_points_by_channel_vs_total_sales_trend = () => {
         {
           name: outputData.torch_points_by_channel_vs_total_sales_trend[
             outputData.torch_points_by_channel_vs_total_sales_trend_select
-          ]['desc_marked'][1],
+          ]['desc_marked'][0],
           value: '',
           xAxis:
             outputData.torch_points_by_channel_vs_total_sales_trend[
@@ -629,6 +647,12 @@ const changeROI = () => {
   ROIChartOptions.xAxis.data = []
   ROIChartOptions.series[0].data = outputData.roi[outputData.roi_select].y
   ROIChartOptions.xAxis.data = outputData.roi[outputData.roi_select].x
+}
+
+const changeMROI = () => {
+  MROIChartOptions.xAxis.data = []
+  MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
+  MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
 }
 
 const changeResponse_curve = () => {
@@ -681,7 +705,7 @@ const costDistributionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '60%'],
@@ -806,9 +830,9 @@ const promotionOptions = reactive({
   yAxis: [
     {
       type: 'value',
-      axisLabel: {
-        formatter: '{value}B',
-      },
+      // axisLabel: {
+      //   formatter: '{value}',
+      // },
     },
   ],
   series: [
@@ -816,13 +840,20 @@ const promotionOptions = reactive({
       name: 'Promotion',
       type: 'bar',
       stack: 'Ad',
-      emphasis: {
-        focus: 'series',
-      },
+
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#e99d42',
@@ -832,13 +863,19 @@ const promotionOptions = reactive({
       name: 'Non-promotion',
       type: 'bar',
       stack: 'Ad',
-      emphasis: {
-        focus: 'series',
-      },
       data: [],
       label: {
         show: true,
-        formatter: (params) => params.value + 'B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       itemStyle: {
         color: '#f9d2a3',
@@ -859,7 +896,7 @@ const totalPromotionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '60%'],
@@ -870,7 +907,16 @@ const totalPromotionOptions = reactive({
         borderWidth: 2,
       },
       label: {
-        formatter: '{b}: {c}B',
+        formatter: (params) => {
+          let num = params.value
+          if (num >= 1e9) {
+            return (num / 1e9).toFixed(2) + 'B'
+          } else if (num >= 1e6) {
+            return (num / 1e6).toFixed(2) + 'M'
+          } else {
+            return num.toFixed(2)
+          }
+        },
       },
       data: [],
     },
@@ -933,7 +979,8 @@ const responseCurveOptions = reactive({
     data: [],
     axisLabel: {
       formatter: (params) => {
-        return Number(params).toFixed(0)
+         return Number(params).toFixed(0)
+        // return 4000
       },
     },
   },
