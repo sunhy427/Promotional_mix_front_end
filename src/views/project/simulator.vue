@@ -39,9 +39,9 @@
       </el-button>
     </div>
     <ul class="list-content" v-if="data.simulationList.length > 0">
-      <li v-for="(item, index) in data.simulationList" :key="index">
+      <li v-for="(item, index) in data.simulationList" :key="index" :id="item.simulation_name">
         <div class="card-title">
-          <i>{{ index }}</i>
+          <i>{{ index + 1 }}</i>
           <span>{{ item.simulation_name }}</span>
         </div>
         <el-card>
@@ -633,10 +633,12 @@ const init = () => {
   if (data.currentProject.project_status === 'MODEL_OUTPUT') {
     data.simulationList = []
   }
-  if (data.currentProject.project_status === 'SIMULATION' || data.currentProject.project_status === 'SIMULATION_RUNNING') {
+  if (
+    data.currentProject.project_status === 'SIMULATION' ||
+    data.currentProject.project_status === 'SIMULATION_RUNNING'
+  ) {
     initSimulation()
   }
- 
 }
 const progressForm = reactive({
   isPolling: false,
@@ -658,8 +660,8 @@ const startPolling = (simulation, index) => {
 }
 
 const stopPolling = (index) => {
+  console.log('data.simulationList[index].progressForm', data.simulationList[index].progressForm)
   data.simulationList[index].progressForm.isPolling = false
-  console.log('stop', data.simulationList[index].progressForm.isPolling)
   clearInterval(data.simulationList[index].progressForm.pollingTimer)
 }
 
@@ -693,15 +695,18 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
       })
       data.loading = false
       stopPolling(index)
-      getProjectListFn()
+      //getProjectListFn()
     }
   }
 }
 
-
 const initSimulation = () => {
   data.simulationList = data.currentProject.simulation_list
   for (let i = 0; i < data.simulationList.length; i++) {
+    if (data.simulationList[i].progressForm && data.simulationList[i].progressForm.pollingTimer) {
+      stopPolling(i)
+    }
+
     let progressForm = {
       isPolling: false,
       pollingTimer: null,
@@ -792,7 +797,7 @@ const simulationVisibilityFn = async (simulation, visible) => {
   if (res && res.status) {
     ElMessage({
       type: 'success',
-      message: visible  === 1 ?  'visible' : 'not visible',
+      message: visible === 1 ? 'visible' : 'not visible',
     })
     let index = data.simulationList.findIndex((item) => {
       return item.simulation_name === simulation
@@ -831,8 +836,10 @@ watch(
 )
 
 onUnmounted(() => {
-  if (progressForm.pollingTimer) {
-    stopPolling()
+  for (let i = 0; i < data.simulationList.length; i++) {
+    if (data.simulationList[i].progressForm && data.simulationList[i].progressForm.pollingTimer) {
+      stopPolling(i)
+    }
   }
 })
 </script>

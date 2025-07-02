@@ -6,7 +6,7 @@
         <span>{{ data.currentGroupName }}</span>
       </el-menu-item>
     </el-menu>
-    
+
     <el-menu
       :default-active="data.currentProjectName"
       class="el-menu-vertical-demo"
@@ -30,12 +30,16 @@
             item.project_name === data.currentProjectName
           "
         >
-          <el-menu-item
-            v-for="simulationItem in item.simulation_list"
-            :index="simulationItem.simulation_name"
-            >{{ simulationItem.simulation_name }}
-          </el-menu-item>
-
+          <el-anchor :offset="100">
+            <el-menu-item
+              v-for="simulationItem in item.simulation_list"
+              :index="simulationItem.simulation_name"
+            >
+              <el-anchor-link :href="`#${simulationItem.simulation_name}`">
+                {{ simulationItem.simulation_name }}
+              </el-anchor-link>
+            </el-menu-item>
+          </el-anchor>
         </el-menu-item-group>
       </el-sub-menu>
     </el-menu>
@@ -103,6 +107,17 @@ const enter = (item) => {
   width: 200px;
   overflow-y: auto;
   overflow-x: hidden;
+  .el-anchor__list {
+    background-color: #f0b36b;
+    color: #fff;
+    .el-anchor__link {
+      font-size: 14px;
+      color: #fff;
+    }
+    .el-menu-item {
+      padding-left: 10px !important;
+    }
+  }
 
   .el-menu-vertical-demo {
     .el-sub-menu__title:hover {

@@ -126,7 +126,7 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="form.segmentation_type" placeholder="Select"  >
+            <el-select v-model="form.segmentation_type" placeholder="Select">
               <el-option
                 v-for="item in options.segmentOptions"
                 :key="item.segment_type"
@@ -254,15 +254,14 @@ const createNewChannel = () => {
 
 const runConfirm = async () => {
   if (data.channelNumber === 'customized') {
-    
     let select = []
     for (let i = 0; i < form.agg_rule['customized'].length; i++) {
       select = [...select, ...form.agg_rule['customized'][i].channels]
     }
     if (select.length < options.channelListOptions.length) {
       ElMessage({
-      type: 'error',
-      message: 'All channels should be selected',
+        type: 'error',
+        message: 'All channels should be selected',
       })
       return
     }
@@ -418,12 +417,11 @@ const formatRes = (res) => {
   ) {
     options.channelListOptions = tempRes.default_channel_list.channel_name
 
-    
     options.segmentOptions = []
     for (let i = 0; i < tempRes.default_segmentation_type_list.length; i++) {
       options.segmentOptions.push(tempRes.default_segmentation_type_list[i])
     }
-    form.segmentation_type =  options.segmentOptions[0].segment_type
+    form.segmentation_type = options.segmentOptions[0].segment_type
 
     form.channel = []
     for (let i = 0; i < tempRes.default_channel_list.channel_name.length > 0; i++) {
