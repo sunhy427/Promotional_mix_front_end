@@ -6,6 +6,7 @@
         <span>{{ data.currentGroupName }}</span>
       </el-menu-item>
     </el-menu>
+    
     <el-menu
       :default-active="data.currentProjectName"
       class="el-menu-vertical-demo"
@@ -34,6 +35,7 @@
             :index="simulationItem.simulation_name"
             >{{ simulationItem.simulation_name }}
           </el-menu-item>
+
         </el-menu-item-group>
       </el-sub-menu>
     </el-menu>
@@ -121,6 +123,10 @@ const enter = (item) => {
   }
   .el-sub-menu__title {
     color: #fff;
+    span {
+      display: inline-block;
+      width: 100%;
+    }
   }
 }
 </style>

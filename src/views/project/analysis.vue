@@ -233,7 +233,6 @@ const getPreviewRawData = async () => {
 }
 
 const createNewChannel = () => {
-  console.log('form.agg_rule', form.agg_rule['customized'])
   let total = []
   for (let i = 0; i < form.agg_rule['customized'].length; i++) {
     total = [...total, ...form.agg_rule['customized'][i].channels]
@@ -254,6 +253,20 @@ const createNewChannel = () => {
 }
 
 const runConfirm = async () => {
+  if (data.channelNumber === 'customized') {
+    
+    let select = []
+    for (let i = 0; i < form.agg_rule['customized'].length; i++) {
+      select = [...select, ...form.agg_rule['customized'][i].channels]
+    }
+    if (select.length < options.channelListOptions.length) {
+      ElMessage({
+      type: 'error',
+      message: 'All channels should be selected',
+      })
+      return
+    }
+  }
   let param = {
     group_name: pageParam.group,
     project_name: pageParam.project,

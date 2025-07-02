@@ -656,10 +656,18 @@ const changeMROI = () => {
 }
 
 const changeResponse_curve = () => {
-  responseCurveOptions.xAxis.data = []
-  responseCurveOptions.series[0].data =
-    outputData.response_curve[outputData.response_curve_select].y
+   responseCurveOptions.xAxis.data = []
 
+
+   responseCurveOptions.series[0].data = []
+   for (let i = 0; i < outputData.response_curve[outputData.response_curve_select].x.length > 0; i++) {
+    let item = [outputData.response_curve[outputData.response_curve_select].x[i], outputData.response_curve[outputData.response_curve_select].y[i]]
+    responseCurveOptions.series[0].data.push(item)
+   }
+
+  // responseCurveOptions.series[0].data =
+  //   outputData.response_curve[outputData.response_curve_select].y
+  responseCurveOptions.series[0].markLine.data = []
   responseCurveOptions.series[0].markLine.data.push({
     name: '',
     xAxis:
@@ -669,9 +677,11 @@ const changeResponse_curve = () => {
   })
   responseCurveOptions.series[0].markLine.label.formatter =
     outputData.response_curve[outputData.response_curve_select].current_roi[0]
+
   setTimeout(() => {
     responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
   }, 500)
+
 }
 onMounted(() => {
   previewModelOutputMetadataFn()
@@ -975,14 +985,14 @@ const MROIChartOptions = reactive({
 })
 const responseCurveOptions = reactive({
   xAxis: {
-    type: 'category',
+    type: 'value',
     data: [],
-    axisLabel: {
-      formatter: (params) => {
-         return Number(params).toFixed(0)
-        // return 4000
-      },
-    },
+    // axisLabel: {
+    //   formatter: (params) => {
+    //      return Number(params).toFixed(0)
+    //     // return 4000
+    //   },
+    // },
   },
   yAxis: {
     type: 'value',
@@ -1012,18 +1022,7 @@ const responseCurveOptions = reactive({
   tooltip: {
     trigger: 'axis',
   },
-  toolbox: {
-    show: false,
-    feature: {
-      dataZoom: {
-        yAxisIndex: 'none',
-      },
-      dataView: { readOnly: false },
-      magicType: { type: ['line', 'bar'] },
-      restore: {},
-      saveAsImage: {},
-    },
-  },
+
   legend: {},
 })
 
@@ -1062,6 +1061,7 @@ const goPage = (name) => {
         padding: 15px 0;
       }
       .chart-content-curve {
+        margin-top: 20px;
         min-height: 300px;
       }
       .channel-select-input {

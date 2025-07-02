@@ -609,6 +609,13 @@ const commitSimulation = async (index) => {
   if (res) {
     // task_id
     //getSimulationsParamFn(param.simulation_name)
+    let progressForm = {
+      isPolling: false,
+      pollingTimer: null,
+      task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
+    }
+    data.simulationList[index].progressForm = progressForm
+
     startPolling(param.simulation_name, index)
   }
 }
@@ -626,15 +633,10 @@ const init = () => {
   if (data.currentProject.project_status === 'MODEL_OUTPUT') {
     data.simulationList = []
   }
-  if (data.currentProject.project_status === 'SIMULATION') {
-    // empty output
+  if (data.currentProject.project_status === 'SIMULATION' || data.currentProject.project_status === 'SIMULATION_RUNNING') {
     initSimulation()
   }
-  if (data.currentProject.project_status === 'SIMULATION_RUNNING') {
-    // running
-    //initSimulationRunning()
-    initSimulation()
-  }
+ 
 }
 const progressForm = reactive({
   isPolling: false,
@@ -695,22 +697,7 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
     }
   }
 }
-//
-const initSimulationRunning = () => {
-  data.simulationList = data.currentProject.simulation_list
-  for (let i = 0; i < data.simulationList.length; i++) {
-    let progressForm = {
-      isPolling: false,
-      pollingTimer: null,
-      task_status: '', //{FAILURE|PENDING|RECEIVED|RETRY|REVOKED|STARTED|SUCCESS}
-    }
-    data.simulationList[i].progressForm = progressForm
-    getSimulationsParamFn(data.simulationList[i].simulation_name)
-    if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
-      startPolling(data.simulationList[i].simulation_name, i)
-    }
-  }
-}
+
 
 const initSimulation = () => {
   data.simulationList = data.currentProject.simulation_list
@@ -805,7 +792,7 @@ const simulationVisibilityFn = async (simulation, visible) => {
   if (res && res.status) {
     ElMessage({
       type: 'success',
-      message: 'Setting success',
+      message: visible  === 1 ?  'visible' : 'not visible',
     })
     let index = data.simulationList.findIndex((item) => {
       return item.simulation_name === simulation
