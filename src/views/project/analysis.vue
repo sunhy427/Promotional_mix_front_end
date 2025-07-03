@@ -49,7 +49,7 @@
               >Reset to Default</el-button
             >
             <span class="reset-tips"
-              >*Note: Dafault values come from IQVIA industry experience</span
+              >*Note: Default values come from IQVIA industry experience</span
             >
           </el-form-item>
         </el-form>
@@ -105,7 +105,7 @@
                   multiple
                   placeholder="Select"
                   class="select-btn-440"
-                  :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
+                  :disabled="data.channelNumber != 'customized'"
                   @focus="initChannelOptions(key)"
                 >
                   <el-option v-for="item in val.options" :key="item" :label="item" :value="item" />
@@ -117,7 +117,7 @@
                   v-model="form.agg_rule[data.channelNumber][key].new_column_name"
                   class="select-btn-240"
                   placeholder="Please input"
-                  :disabled="data.channelNumber === '7' || data.channelNumber === '9'"
+                  :disabled="data.channelNumber != 'customized'"
                 />
               </li>
             </ul>
@@ -175,15 +175,16 @@ const data = reactive({
   loading: false,
   currentProject: {},
   labelPosition: true,
-  channelNumber: '7',
+  channelNumber: '',
+  channelNumberOptions: [],
   task_id: '',
 })
 
 const form = reactive({
   channel: [],
   agg_rule: {
-    7: [],
-    9: [],
+    // 7: [],
+    // 9: [],
     customized: [],
   },
   segmentation_type: '',
@@ -431,27 +432,27 @@ const formatRes = (res) => {
       })
     }
 
-    form.agg_rule['7'] = []
-    form.agg_rule['9'] = []
-    form.agg_rule['customized'] = []
-    for (let key in tempRes.default_agg_rule['7']) {
-      form.agg_rule['7'].push({
-        new_column_name: key,
-        channels: tempRes.default_agg_rule['7'][key],
-      })
+    data.channelNumberOptions = []
+    for (let type in tempRes.ori_channel_order) {
+      data.channelNumberOptions.push(type)
+
+      form.agg_rule[type] = []
+      
+      for (let i = 0; i < tempRes.ori_channel_order[type].length; i++) {
+        form.agg_rule[type].push({
+          new_column_name: tempRes.ori_channel_order[type][i],
+          channels: tempRes.default_agg_rule[type][tempRes.ori_channel_order[type][i]],
+        })
+      }
+      // for (let key in tempRes.default_agg_rule[type]) {
+      //   form.agg_rule[type].push({
+      //     new_column_name: key,
+      //     channels: tempRes.default_agg_rule[type][key],
+      //   })
+      // }
     }
-    for (let key in tempRes.default_agg_rule['9']) {
-      form.agg_rule['9'].push({
-        new_column_name: key,
-        channels: tempRes.default_agg_rule['9'][key],
-      })
-    }
-    for (let key in tempRes.default_agg_rule['customized']) {
-      form.agg_rule['customized'].push({
-        new_column_name: key,
-        channels: tempRes.default_agg_rule['customized'][key],
-      })
-    }
+
+    data.channelNumber = data.channelNumberOptions[0]
   }
 }
 

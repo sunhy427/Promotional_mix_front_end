@@ -656,14 +656,20 @@ const changeMROI = () => {
 }
 
 const changeResponse_curve = () => {
-   responseCurveOptions.xAxis.data = []
+  responseCurveOptions.xAxis.data = []
 
-
-   responseCurveOptions.series[0].data = []
-   for (let i = 0; i < outputData.response_curve[outputData.response_curve_select].x.length > 0; i++) {
-    let item = [outputData.response_curve[outputData.response_curve_select].x[i], outputData.response_curve[outputData.response_curve_select].y[i]]
+  responseCurveOptions.series[0].data = []
+  for (
+    let i = 0;
+    i < outputData.response_curve[outputData.response_curve_select].x.length > 0;
+    i++
+  ) {
+    let item = [
+      outputData.response_curve[outputData.response_curve_select].x[i],
+      outputData.response_curve[outputData.response_curve_select].y[i],
+    ]
     responseCurveOptions.series[0].data.push(item)
-   }
+  }
 
   // responseCurveOptions.series[0].data =
   //   outputData.response_curve[outputData.response_curve_select].y
@@ -681,7 +687,6 @@ const changeResponse_curve = () => {
   setTimeout(() => {
     responseCurveOptions.xAxis.data = outputData.response_curve[outputData.response_curve_select].x
   }, 500)
-
 }
 onMounted(() => {
   previewModelOutputMetadataFn()
@@ -937,6 +942,13 @@ const ROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',
@@ -962,6 +974,13 @@ const MROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',

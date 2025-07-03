@@ -130,7 +130,7 @@
             >
               <p class="title">
                 Constraints on Channels
-                <span class="float-right">
+                <!-- <span class="float-right">
                   <span>AB proportion</span>
                   <el-select
                     v-model="item.constraints_on_channels_select"
@@ -144,7 +144,7 @@
                       :value="item"
                     />
                   </el-select>
-                </span>
+                </span> -->
               </p>
 
               <el-row
@@ -153,7 +153,7 @@
                 ]"
                 :key="unitIndex"
               >
-                <el-col :span="4">
+                <el-col :span="8">
                   <span class="title">{{ unitKey }}</span>
                 </el-col>
 
@@ -180,7 +180,7 @@
                     :disabled="unitValue.constraint === false"
                   />
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="5">
                   <span>Max Spend</span>
                   <el-input-number
                     v-model="unitValue.max_spend"
@@ -190,14 +190,14 @@
                   />
                 </el-col>
 
-                <el-col :span="3" v-if="'proportion' in unitValue">
+                <!-- <el-col :span="3" v-if="'proportion' in unitValue">
                   <el-input-number
                     v-model="unitValue.proportion"
                     :controls="false"
                     size="small"
                     :disabled="item.constraints_on_channels_select != 'customized'"
                   />
-                </el-col>
+                </el-col> -->
               </el-row>
             </div>
             <div
@@ -227,7 +227,7 @@
               type="primary"
               @click="commitSimulation(index)"
               :loading="item.progressForm && item.progressForm.isPolling"
-              >Comfirm</el-button
+              >Confirm</el-button
             >
             <el-button type="info" @click="resetFn(index)">Reset</el-button>
           </div>
@@ -406,7 +406,7 @@ const addConfirmFn = async () => {
         ...simulationForm,
       }
       let res = await addSimulation(param)
-      if (res) {
+      if (res && res.status === 1) {
         ElMessage({
           message: 'Create success!',
           type: 'success',
@@ -438,7 +438,7 @@ const getProjectListFn = async () => {
       data.currentProject = data.project_list[index]
       data.simulationList = data.currentProject.simulation_list
       emits('setProject', data.currentProject)
-      initSimulation()
+      // initSimulation()
     }
   }
 }
@@ -467,7 +467,8 @@ const getMetaData = async (simulation_name) => {
         average_monthly_cost: res.average_monthly_cost,
       }
 
-      for (let key in res.unit_price_pct_input) {
+      for (let orderIndex = 0; orderIndex < res.ori_channel_order.length; orderIndex++) {
+        let key = res.ori_channel_order[orderIndex]
         let item = {
           channel: key,
           unit_price: res.unit_price_pct_input[key].default_price,
@@ -482,7 +483,11 @@ const getMetaData = async (simulation_name) => {
         }
         simulation_item.unit_price_pct_input.push(item)
       }
+
+
+      // 顺序 AB Protion 一起改
       simulation_item.constraints_on_channels = res.constraints_on_channels
+      console.log('simulation_item.constraints_on_channels', simulation_item.constraints_on_channels)
 
       data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
@@ -502,7 +507,7 @@ const renameComfirm = async () => {
     simulation_name_new: data.renameForm.simulation_name_new,
   }
   let res = await simulationRename(param)
-  if (res) {
+  if (res && res.status === 1) {
     ElMessage({
       message: 'Create success!',
       type: 'success',
@@ -569,6 +574,15 @@ const commitSimulation = async (index) => {
       message: 'Please input Budget(of the time period)',
     })
     return
+  }
+  for (let i = 0; i < data.simulationList.length; i++) {
+    if (data.simulationList[i].progressForm.isPolling) {
+      ElMessage({
+        type: 'error',
+        message: 'A simulation task is in progress. Please try again later.',
+      })
+      return
+    }
   }
   let param = {
     group_name: data.group_name,
@@ -695,6 +709,9 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
       })
       data.loading = false
       stopPolling(index)
+      setTimeout(() => {
+        getProjectListFn()
+      }, 1500)
       //getProjectListFn()
     }
   }

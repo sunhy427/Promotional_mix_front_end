@@ -150,33 +150,7 @@
       </el-tab-pane>
       <el-tab-pane label="Current Performance" name="Current" :lazy="true">
         <div class="content-wrap">
-          <el-row>
-            <el-col :span="14">
-              <div class="item">
-                <p class="title">Cost Distribution</p>
-                <bar
-                  :options="current_costDistributionOptions"
-                  :chartId="props.simulation + '_current_costDistributionOptions'"
-                  v-if="current_costDistributionOptions.series[0].data.length > 0"
-                ></bar>
-              </div>
-            </el-col>
-            <el-col :span="10">
-              <div class="item">
-                <p class="title">Current Unit Price</p>
-                <el-table :data="Current_output.current_unit_price" border>
-                  <el-table-column prop="channel" label="Channel" align="center" />
-                  <el-table-column
-                    prop="price"
-                    label="Unit Price(CNY per TP)"
-                    align="center"
-                    :formatter="formatNumber"
-                  />
-                </el-table>
-              </div>
-            </el-col>
-          </el-row>
-          <el-row>
+           <el-row>
             <el-col :span="8">
               <div class="item">
                 <p class="title">Promotion VS Non-promotion</p>
@@ -198,7 +172,7 @@
               </div>
             </el-col>
           </el-row>
-          <el-row>
+           <el-row>
             <el-col :span="24">
               <span class="title">ROI/MROI</span>
 
@@ -229,13 +203,41 @@
               <div v-if="data.current_ROItrigger === 'MROI'">
                 <bar
                   :options="current_MROIChartOptions"
-                  :chartId="props.simulation + '_MROIChart'"
+                  :chartId="props.simulation + '_current_MROIChart'"
                   v-if="current_MROIChartOptions.xAxis.data.length > 0"
                   :key="props.simulation"
                 ></bar>
               </div>
             </el-col>
           </el-row>
+          <el-row>
+            <el-col :span="14">
+              <div class="item">
+                <p class="title">Cost Distribution</p>
+                <bar
+                  :options="current_costDistributionOptions"
+                  :chartId="props.simulation + '_current_costDistributionOptions'"
+                  v-if="current_costDistributionOptions.series[0].data.length > 0"
+                ></bar>
+              </div>
+            </el-col>
+            <el-col :span="10">
+              <div class="item">
+                <p class="title">Current Unit Price</p>
+                <el-table :data="Current_output.current_unit_price" border>
+                  <el-table-column prop="channel" label="Channel" align="center" />
+                  <el-table-column
+                    prop="price"
+                    label="Unit Price(CNY per TP)"
+                    align="center"
+                    :formatter="formatNumber"
+                  />
+                </el-table>
+              </div>
+            </el-col>
+          </el-row>
+         
+         
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -490,7 +492,7 @@ const totalPromotionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '50%'],
@@ -521,6 +523,13 @@ const ROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',
@@ -547,6 +556,13 @@ const MROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',
@@ -582,7 +598,7 @@ const costDistributionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
       center: ['35%', '45%'],
       radius: ['10%', '60%'],
@@ -622,7 +638,7 @@ const current_costDistributionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
       center: ['35%', '45%'],
       radius: ['10%', '60%'],
@@ -743,10 +759,10 @@ const current_totalPromotionOptions = reactive({
   },
   series: [
     {
-      name: 'Access From',
+      name: '',
       type: 'pie',
-      center: ['45%', '45%'],
-      radius: ['10%', '60%'],
+       center: ['45%', '45%'],
+      radius: ['10%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -774,6 +790,13 @@ const current_ROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',
@@ -799,6 +822,13 @@ const current_MROIChartOptions = reactive({
   xAxis: {
     type: 'category',
     data: [],
+    axisLabel: {
+      interval: 0,
+      rotate: 20,
+    },
+  },
+  grid: {
+    bottom: '15%',
   },
   yAxis: {
     type: 'value',
