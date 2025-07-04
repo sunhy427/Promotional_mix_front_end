@@ -150,7 +150,7 @@
       </el-tab-pane>
       <el-tab-pane label="Current Performance" name="Current" :lazy="true">
         <div class="content-wrap">
-           <el-row>
+          <el-row>
             <el-col :span="8">
               <div class="item">
                 <p class="title">Promotion VS Non-promotion</p>
@@ -172,7 +172,7 @@
               </div>
             </el-col>
           </el-row>
-           <el-row>
+          <el-row>
             <el-col :span="24">
               <span class="title">ROI/MROI</span>
 
@@ -224,6 +224,7 @@
             <el-col :span="10">
               <div class="item">
                 <p class="title">Current Unit Price</p>
+                
                 <el-table :data="Current_output.current_unit_price" border>
                   <el-table-column prop="channel" label="Channel" align="center" />
                   <el-table-column
@@ -236,8 +237,6 @@
               </div>
             </el-col>
           </el-row>
-         
-         
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -289,7 +288,8 @@ const Current_output = reactive({
 })
 
 const formatNumber = (row, column, cellValue) => {
-  return Number(Number(cellValue).toFixed(2)).toLocaleString()
+  // return Number(Number(cellValue).toFixed(2)).toLocaleString()
+  return Number(cellValue).toFixed(2)
 }
 
 const formatNumberto0 = (row, column, cellValue) => {
@@ -366,6 +366,7 @@ const previewSimulationsFn = async () => {
       }
       Current_output.current_unit_price.push(item)
     }
+
     for (let key in res.Current_output.total_promotion_contribution) {
       let item = {
         name: key,
@@ -437,13 +438,18 @@ const promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -462,13 +468,18 @@ const promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -506,11 +517,11 @@ const totalPromotionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },
@@ -601,7 +612,7 @@ const costDistributionOptions = reactive({
       name: '',
       type: 'pie',
       center: ['35%', '45%'],
-      radius: ['10%', '60%'],
+      radius: ['60%', '30%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -612,11 +623,11 @@ const costDistributionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },
@@ -640,8 +651,8 @@ const current_costDistributionOptions = reactive({
     {
       name: '',
       type: 'pie',
-      center: ['35%', '45%'],
-      radius: ['10%', '60%'],
+       center: ['35%', '45%'],
+      radius: ['60%', '30%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -652,11 +663,11 @@ const current_costDistributionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },
@@ -705,13 +716,18 @@ const current_promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -730,13 +746,18 @@ const current_promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -761,7 +782,7 @@ const current_totalPromotionOptions = reactive({
     {
       name: '',
       type: 'pie',
-       center: ['45%', '45%'],
+      center: ['45%', '45%'],
       radius: ['10%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
@@ -773,11 +794,11 @@ const current_totalPromotionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },

@@ -50,13 +50,20 @@
                     {{ formatDate(itemProject.updated_datetime) }}
                   </p>
                 </div>
+                <!-- @click.stop="
+                      publishProjectFn(
+                        item.group_name,
+                        itemProject.project_name,
+                        itemProject.is_publish,
+                      )
+                    " -->
                 <div class="publish">
                   <el-checkbox
                     v-model="itemProject.is_publish"
                     label="Publish"
                     size="small"
-                    @click.stop="
-                      publishProjectFn(
+                    @click.native.prevent="
+                      handlePublish(
                         item.group_name,
                         itemProject.project_name,
                         itemProject.is_publish,
@@ -368,6 +375,28 @@ const goProject = (group, project, status) => {
   })
 }
 
+const handlePublish = (group_name, project_name, is_publish) => {
+  console.log('is_publish', is_publish)
+  ElMessageBox.confirm(
+    `Are you sure want to ${is_publish === false ? 'publish' : 'cancel publish'} ${group_name} / ${project_name}? You can also undo this action by ${is_publish === true ? 'checking' : 'unchecking'} the box.`,
+    'Warning',
+    {
+      confirmButtonText: 'Confirm',
+      cancelButtonText: 'Cancel',
+      type: 'warning',
+    },
+  )
+    .then(() => {
+      publishProjectFn(group_name, project_name, is_publish)
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: 'Publish canceled',
+      })
+    })
+}
+
 const sliceData = () => {
   let currentList = data.groupList.slice(
     data.page.currentPage * data.page.size,
@@ -636,7 +665,7 @@ const uploadConfirm = () => {
   if (uploadForm.project_name === '') {
     ElMessage({
       type: 'error',
-      message: 'Input Project Name'
+      message: 'Input Project Name',
     })
     return
   }
@@ -647,13 +676,13 @@ const uploadSuccess = (res) => {
   if (res.status === 1) {
     ElMessage({
       type: 'success',
-      message: 'Upload success'
+      message: 'Upload success',
     })
-     data.showUploadDialog = false
+    data.showUploadDialog = false
   } else {
     ElMessage({
       type: 'error',
-      message: res.msg
+      message: res.msg,
     })
   }
 }
@@ -864,6 +893,7 @@ onMounted(() => {
         }
         .btn-wrap {
           line-height: 45px;
+          width: 35%;
           .analysis-btn > a {
             margin-right: 15px;
             cursor: pointer;

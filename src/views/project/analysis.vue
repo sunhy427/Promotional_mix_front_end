@@ -206,7 +206,11 @@ const options = reactive({
 
 // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const init = () => {
-  if (data.currentProject.project_status === 'EMPTY') {
+  if (data.currentProject.project_status === 'EMPTY' ) {
+    getPreviewRawData()
+  }
+  if (data.currentProject.project_status === 'MODEL_FAILED') {
+    // jiatishi 
     getPreviewRawData()
   }
   if (data.currentProject.project_status === 'MODEL_RUNNING') {

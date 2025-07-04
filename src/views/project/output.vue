@@ -734,11 +734,11 @@ const costDistributionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },
@@ -753,12 +753,14 @@ const costByChannelOptions = reactive({
   },
   yAxis: [
     {
+      name: 'Cost(CNY)',
       type: 'value',
       axisLabel: {
         formatter: '{value}',
       },
     },
     {
+      name: 'Sales(CNY) ',
       type: 'value',
       axisLabel: {
         formatter: '{value}',
@@ -783,12 +785,14 @@ const touchByChannelOptions = reactive({
   },
   yAxis: [
     {
+      name: 'Touch Point',
       type: 'value',
       axisLabel: {
         formatter: '{value}',
       },
     },
     {
+      name: 'Sales(CNY)',
       type: 'value',
       axisLabel: {
         formatter: '{value}',
@@ -860,13 +864,18 @@ const promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -882,13 +891,18 @@ const promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
+          let sum = 0
+          for (let i = 0; i < promotionOptions.series.length; i++) {
+            sum += promotionOptions.series[i].data[params.dataIndex]
+          }
+          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + ', ' + percent
           }
         },
       },
@@ -925,11 +939,11 @@ const totalPromotionOptions = reactive({
         formatter: (params) => {
           let num = params.value
           if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B'
+            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
           } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M'
+            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
           } else {
-            return num.toFixed(2)
+            return num.toFixed(2) + '，' + params.percent + '%'
           }
         },
       },
@@ -1021,7 +1035,7 @@ const responseCurveOptions = reactive({
   },
   series: [
     {
-      name: 'Revenue',
+      name: 'Sales',
       type: 'line',
       data: [],
       markLine: {
@@ -1075,7 +1089,7 @@ const goPage = (name) => {
       color: #000;
     }
     & > .el-row {
-      margin-bottom: 20px;
+      margin-bottom: 40px;
       .chart-content {
         padding: 15px 0;
       }

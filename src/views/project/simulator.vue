@@ -74,11 +74,18 @@
               </el-input-number>
             </el-form-item>
             <el-form-item label="Budget(of the time period)">
-              <el-input-number v-model="item.budget" :min="0" size="small" class="input-btn-250">
+              <el-input-number
+                v-model="item.budget"
+                :min="0"
+                size="small"
+                class="input-btn-250"
+                @blur="changeBudget(index)"
+              >
                 <template #suffix>
                   <span>CNY</span>
                 </template>
               </el-input-number>
+              <span>{{ item.budgetLabel }}</span>
             </el-form-item>
             <el-form-item label="">
               <div>
@@ -122,39 +129,15 @@
                 </el-table-column>
               </el-table>
             </el-form-item>
-            <div
-              class="constraint-wrap"
-              v-if="
-                item.optimization_type === 'fixed_budget' && item.constraints_on_channels_select
-              "
-            >
-              <p class="title">
-                Constraints on Channels
-                <!-- <span class="float-right">
-                  <span>AB proportion</span>
-                  <el-select
-                    v-model="item.constraints_on_channels_select"
-                    placeholder="Select"
-                    size="small"
-                  >
-                    <el-option
-                      v-for="item in item.constraints_on_channels_options"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    />
-                  </el-select>
-                </span> -->
-              </p>
+            <div class="constraint-wrap" v-if="item.optimization_type === 'fixed_budget'">
+              <p class="title">Constraints on Channels</p>
 
               <el-row
-                v-for="(unitValue, unitKey, unitIndex) in item.constraints_on_channels[
-                  item.constraints_on_channels_select
-                ]"
+                v-for="(unitValue, unitIndex) in item.constraints_on_channels"
                 :key="unitIndex"
               >
                 <el-col :span="8">
-                  <span class="title">{{ unitKey }}</span>
+                  <span class="title">{{ unitValue.channel }}</span>
                 </el-col>
 
                 <el-col :span="6">
@@ -189,31 +172,17 @@
                     :disabled="unitValue.constraint === false"
                   />
                 </el-col>
-
-                <!-- <el-col :span="3" v-if="'proportion' in unitValue">
-                  <el-input-number
-                    v-model="unitValue.proportion"
-                    :controls="false"
-                    size="small"
-                    :disabled="item.constraints_on_channels_select != 'customized'"
-                  />
-                </el-col> -->
               </el-row>
             </div>
-            <div
-              class="constraint-wrap"
-              v-if="
-                item.optimization_type === 'mccp_suggestion' && item.constraints_on_channels_select
-              "
-            >
+            <div class="constraint-wrap" v-if="item.optimization_type === 'mccp_suggestion'">
               <p class="title">Constraints on MCCP Suggested Channels</p>
 
               <el-row
-                v-for="(unitValue, unitKey, unitIndex) in item.constraints_on_channels"
+                v-for="(unitValue, unitIndex) in item.constraints_on_channels"
                 :key="unitIndex"
               >
                 <el-col :span="4">
-                  <span class="title">{{ unitKey }}</span>
+                  <span class="title">{{ unitValue.channel }}</span>
                 </el-col>
                 <el-col :span="5">
                   <span>TP</span>
@@ -321,6 +290,7 @@ import {
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
 import { basic } from '../../config'
+import { format } from 'echarts'
 
 const emits = defineEmits(['setProject'])
 const router = useRouter()
@@ -460,10 +430,10 @@ const getMetaData = async (simulation_name) => {
         optimization_type: res.optimization_type,
         n_time_periodss: res.n_time_periods,
         budget: res.budget,
+        budgetLabel: formatBudgetLabel(res.budget),
         unit_price_pct_input: [],
-        constraints_on_channels_options: Object.keys(res.constraints_on_channels),
-        constraints_on_channels_select: Object.keys(res.constraints_on_channels)[0],
-        constraints_on_channels: {},
+
+        constraints_on_channels: [],
         average_monthly_cost: res.average_monthly_cost,
       }
 
@@ -484,12 +454,20 @@ const getMetaData = async (simulation_name) => {
         simulation_item.unit_price_pct_input.push(item)
       }
 
-
       // 顺序 AB Protion 一起改
-      simulation_item.constraints_on_channels = res.constraints_on_channels
-      console.log('simulation_item.constraints_on_channels', simulation_item.constraints_on_channels)
+      if (data.simulationList[index].optimization_type === 'fixed_budget') {
+        for (let i = 0; i < res.ori_channel_order.length; i++) {
+          let item = {
+            channel: res.ori_channel_order[i],
+            ...res.constraints_on_channels[res.ori_channel_order[i]],
+          }
+          simulation_item.constraints_on_channels.push(item)
+        }
+        data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+      } else {
+        // 这里加
 
-      data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+      }
     }
   }
 }
@@ -594,10 +572,6 @@ const commitSimulation = async (index) => {
     unit_price_pct: {},
 
     constraints_on_channels: {},
-    ab_proportion_type:
-      data.simulationList[index].optimization_type === 'fixed_budget'
-        ? data.simulationList[index].constraints_on_channels_select
-        : '',
   }
 
   for (let i = 0; i < data.simulationList[index].unit_price_pct_input.length; i++) {
@@ -615,12 +589,20 @@ const commitSimulation = async (index) => {
       changeIndex
     ] = 1
 
-    param.constraints_on_channels = data.simulationList[index].constraints_on_channels
+    // chuancan
+    for (let i = 0; i < data.simulationList[index].constraints_on_channels.length; i++) {
+      param.constraints_on_channels[data.simulationList[index].constraints_on_channels[i].channel] =
+        {
+          constraint: data.simulationList[index].constraints_on_channels[i].constraint,
+          max_spend: data.simulationList[index].constraints_on_channels[i].max_spend,
+          min_spend: data.simulationList[index].constraints_on_channels[i].min_spend,
+        }
+    }
   }
   data.loading = true
   let res = await runSimulation(param)
 
-  if (res) {
+  if (res && res.status === 1) {
     // task_id
     //getSimulationsParamFn(param.simulation_name)
     let progressForm = {
@@ -766,17 +748,14 @@ const getSimulationsParamFn = async (simulation) => {
         optimization_type: res.simulation_parameters.optimization_type,
         n_time_periods: res.simulation_parameters.n_time_periods,
         budget: res.simulation_parameters.budget,
+        budgetLabel: formatBudgetLabel(res.simulation_parameters.budget),
         unit_price_pct_input: [],
-        constraints_on_channels_options: Object.keys(
-          res.simulation_parameters.constraints_on_channels,
-        ),
-        constraints_on_channels_select: Object.keys(
-          res.simulation_parameters.constraints_on_channels,
-        )[0],
-        constraints_on_channels: {},
+
+        constraints_on_channels: [],
         average_monthly_cost: res.average_monthly_cost,
       }
-      for (let key in res.simulation_parameters.unit_price_pct_input) {
+      for (let orderIndex = 0; orderIndex < res.ori_channel_order.length; orderIndex++) {
+        let key = res.ori_channel_order[orderIndex]
         let item = {
           channel: key,
           unit_price: res.simulation_parameters.unit_price_pct_input[key].default_price,
@@ -796,10 +775,30 @@ const getSimulationsParamFn = async (simulation) => {
         simulation_item.unit_price_pct_input.push(item)
       }
 
-      simulation_item.constraints_on_channels = res.simulation_parameters.constraints_on_channels
-
+      for (let i = 0; i < res.ori_channel_order.length; i++) {
+        let item = {
+          channel: res.ori_channel_order[i],
+          ...res.simulation_parameters.constraints_on_channels[res.ori_channel_order[i]],
+        }
+        simulation_item.constraints_on_channels.push(item)
+      }
       data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
+  }
+}
+
+const changeBudget = (index) => {
+  data.simulationList[index].budgetLabel = formatBudgetLabel(data.simulationList[index].budget)
+}
+
+const formatBudgetLabel = (number) => {
+  if (number) {
+    return Number(number)
+      .toFixed(2)
+      .replace(/(\d)(?=(\d{3})+\.)/g, ($0, $1) => {
+        return $1 + ','
+      })
+      .replace(/\.$/, '')
   }
 }
 
