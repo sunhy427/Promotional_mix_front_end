@@ -60,6 +60,44 @@
       <el-tab-pane label="Simulated Performance" name="Simulated">
         <div class="content-wrap">
           <el-row>
+            <el-col :span="14">
+              <div class="item">
+                <p class="title">Cost Distribution</p>
+                <div class="chart-content">
+                  <bar
+                    :options="costDistributionOptions"
+                    :chartId="props.simulation + '_costDistribution'"
+                    v-if="costDistributionOptions.series[0].data.length > 0"
+                  ></bar>
+                </div>
+              </div>
+            </el-col>
+            <el-col :span="10">
+              <div class="item">
+                <p class="title">Calculated Unit Price</p>
+                <div class="chart-content">
+                  <el-table
+                    border
+                    header-row-class-name="header-unit"
+                    :data="simulationOutput.calculated_unit_price"
+                  >
+                    <el-table-column prop="channels" label="channels" />
+                    <el-table-column
+                      prop="unit_price"
+                      label="unit_price"
+                      :formatter="formatNumber"
+                    />
+                    <el-table-column
+                      prop="tp_simulated"
+                      label="tp_simulated"
+                      :formatter="formatNumberto0"
+                    />
+                  </el-table>
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+          <el-row>
             <el-col :span="8">
               <div class="item">
                 <p class="title">Promotion VS Non-promotion</p>
@@ -108,48 +146,37 @@
               </div>
             </el-col>
           </el-row>
-          <el-row>
-            <el-col :span="14">
-              <div class="item">
-                <p class="title">Cost Distribution</p>
-                <div class="chart-content">
-                  <bar
-                    :options="costDistributionOptions"
-                    :chartId="props.simulation + '_costDistribution'"
-                    v-if="costDistributionOptions.series[0].data.length > 0"
-                  ></bar>
-                </div>
-              </div>
-            </el-col>
-            <el-col :span="10">
-              <div class="item">
-                <p class="title">Calculated Unit Price</p>
-                <div class="chart-content">
-                  <el-table
-                    border
-                    header-row-class-name="header-unit"
-                    :data="simulationOutput.calculated_unit_price"
-                  >
-                    <el-table-column prop="channels" label="channels" />
-                    <el-table-column
-                      prop="unit_price"
-                      label="unit_price"
-                      :formatter="formatNumber"
-                    />
-                    <el-table-column
-                      prop="tp_simulated"
-                      label="tp_simulated"
-                      :formatter="formatNumberto0"
-                    />
-                  </el-table>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
         </div>
       </el-tab-pane>
       <el-tab-pane label="Current Performance" name="Current" :lazy="true">
         <div class="content-wrap">
+          <el-row>
+            <el-col :span="14">
+              <div class="item">
+                <p class="title">Cost Distribution</p>
+                <bar
+                  :options="current_costDistributionOptions"
+                  :chartId="props.simulation + '_current_costDistributionOptions'"
+                  v-if="current_costDistributionOptions.series[0].data.length > 0"
+                ></bar>
+              </div>
+            </el-col>
+            <el-col :span="10">
+              <div class="item">
+                <p class="title">Current Unit Price</p>
+
+                <el-table :data="Current_output.current_unit_price" border>
+                  <el-table-column prop="channel" label="Channel" align="center" />
+                  <el-table-column
+                    prop="price"
+                    label="Unit Price(CNY per TP)"
+                    align="center"
+                    :formatter="formatNumber"
+                  />
+                </el-table>
+              </div>
+            </el-col>
+          </el-row>
           <el-row>
             <el-col :span="8">
               <div class="item">
@@ -174,66 +201,30 @@
           </el-row>
           <el-row>
             <el-col :span="24">
-              <span class="title">ROI/MROI</span>
+              <div class="item">
+                <p class="title">
+                  ROI/MROI
+                  <el-segmented v-model="data.current_ROItrigger" :options="['ROI', 'MROI']" />
+                </p>
 
-              <el-segmented v-model="data.current_ROItrigger" :options="['ROI', 'MROI']" />
-              <div v-if="data.current_ROItrigger === 'ROI'">
-                <!-- <el-select
-                  v-model="data.current_ROIChannelValue"
-                  placeholder="Select"
-                  class="channel-select-input"
-                  @change="current_changeROI"
-                >
-                  <el-option
-                    v-for="item in Current_output.roi_options"
-                    :key="item"
-                    :label="item"
-                    :value="item"
-                  />
-                </el-select> -->
-                <div class="chart-content">
+                <div v-if="data.current_ROItrigger === 'ROI'">
+                  <div class="chart-content">
+                    <bar
+                      :options="current_ROIChartOptions"
+                      :chartId="props.simulation + '_current_ROIChart'"
+                      v-if="current_ROIChartOptions.xAxis.data.length > 0"
+                      :key="props.simulation"
+                    ></bar>
+                  </div>
+                </div>
+                <div v-if="data.current_ROItrigger === 'MROI'">
                   <bar
-                    :options="current_ROIChartOptions"
-                    :chartId="props.simulation + '_current_ROIChart'"
-                    v-if="current_ROIChartOptions.xAxis.data.length > 0"
+                    :options="current_MROIChartOptions"
+                    :chartId="props.simulation + '_current_MROIChart'"
+                    v-if="current_MROIChartOptions.xAxis.data.length > 0"
                     :key="props.simulation"
                   ></bar>
                 </div>
-              </div>
-              <div v-if="data.current_ROItrigger === 'MROI'">
-                <bar
-                  :options="current_MROIChartOptions"
-                  :chartId="props.simulation + '_current_MROIChart'"
-                  v-if="current_MROIChartOptions.xAxis.data.length > 0"
-                  :key="props.simulation"
-                ></bar>
-              </div>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="14">
-              <div class="item">
-                <p class="title">Cost Distribution</p>
-                <bar
-                  :options="current_costDistributionOptions"
-                  :chartId="props.simulation + '_current_costDistributionOptions'"
-                  v-if="current_costDistributionOptions.series[0].data.length > 0"
-                ></bar>
-              </div>
-            </el-col>
-            <el-col :span="10">
-              <div class="item">
-                <p class="title">Current Unit Price</p>
-                
-                <el-table :data="Current_output.current_unit_price" border>
-                  <el-table-column prop="channel" label="Channel" align="center" />
-                  <el-table-column
-                    prop="price"
-                    label="Unit Price(CNY per TP)"
-                    align="center"
-                    :formatter="formatNumber"
-                  />
-                </el-table>
               </div>
             </el-col>
           </el-row>
@@ -611,8 +602,8 @@ const costDistributionOptions = reactive({
     {
       name: '',
       type: 'pie',
-      center: ['35%', '45%'],
-      radius: ['60%', '30%'],
+      center: ['45%', '45%'],
+      radius: ['10%', '60%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -651,8 +642,8 @@ const current_costDistributionOptions = reactive({
     {
       name: '',
       type: 'pie',
-       center: ['35%', '45%'],
-      radius: ['60%', '30%'],
+      center: ['45%', '45%'],
+      radius: ['10%', '60%'],
       avoidLabelOverlap: false,
       itemStyle: {
         borderRadius: 10,
@@ -905,6 +896,7 @@ onMounted(() => {
         border-left: 2px solid #000;
         padding-left: 10px;
         font-size: 16px;
+        margin: 20px 0;
       }
     }
   }

@@ -38,6 +38,7 @@
         Create new simulation
       </el-button>
     </div>
+
     <ul class="list-content" v-if="data.simulationList.length > 0">
       <li v-for="(item, index) in data.simulationList" :key="index" :id="item.simulation_name">
         <div class="card-title">
@@ -45,22 +46,45 @@
           <span>{{ item.simulation_name }}</span>
         </div>
         <el-card>
-          <el-icon class="delete-btn" @click="deleteConfirm(item.simulation_name)"
+          <span class="failed-tips" v-if="item.simulation_task_status === 'SIMULATION_FAILED'"
+            >The last run of this simulation failed. If the error persists, please contact
+            IQVIA.</span
+          >
+          <el-icon
+            class="delete-btn"
+            @click="deleteConfirm(item.simulation_name)"
+            v-if="
+              data.currentProject && data.currentProject.simulation_privileges.includes('Delete')
+            "
             ><Delete
           /></el-icon>
-          <el-icon class="delete-btn" @click="renameFn(item)"><EditPen /></el-icon>
           <el-icon
             class="delete-btn"
-            v-if="item.is_visible"
-            @click="simulationVisibilityFn(item.simulation_name, 0)"
-            ><View
+            @click="renameFn(item)"
+            v-if="
+              data.currentProject && data.currentProject.simulation_privileges.includes('Rename')
+            "
+            ><EditPen
           /></el-icon>
-          <el-icon
-            class="delete-btn"
-            v-if="!item.is_visible"
-            @click="simulationVisibilityFn(item.simulation_name, 1)"
-            ><Hide
-          /></el-icon>
+          <template
+            v-if="
+              data.currentProject &&
+              data.currentProject.simulation_privileges.includes('Visibility')
+            "
+          >
+            <el-icon
+              class="delete-btn"
+              v-if="item.is_visible"
+              @click="simulationVisibilityFn(item.simulation_name, 0)"
+              ><View
+            /></el-icon>
+            <el-icon
+              class="delete-btn"
+              v-if="!item.is_visible"
+              @click="simulationVisibilityFn(item.simulation_name, 1)"
+              ><Hide
+            /></el-icon>
+          </template>
 
           <el-form label-position="left" ref="metadataFormRef">
             <el-form-item label="Optimization Type" label-width="200px">
@@ -92,7 +116,6 @@
                 <p class="tips">
                   {{ item.average_monthly_cost }}
                 </p>
-                <!-- <p class="tips">It is recommended that the total budget be set on this basis.</p> -->
               </div>
             </el-form-item>
             <el-form-item>
@@ -186,7 +209,7 @@
                 </el-col>
                 <el-col :span="5">
                   <span>TP</span>
-                  <span>{{ unitValue.TP }}</span>
+                  <span>{{ floatFormat0(unitValue.TP) }}</span>
                 </el-col>
               </el-row>
             </div>
@@ -272,7 +295,7 @@
   </div>
 </template>
 <script setup>
-import { onMounted, onUnmounted, reactive, ref, watch, defineEmits } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch, defineEmits, resolveDirective } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   addSimulation,
@@ -290,7 +313,6 @@ import {
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
 import { basic } from '../../config'
-import { format } from 'echarts'
 
 const emits = defineEmits(['setProject'])
 const router = useRouter()
@@ -455,7 +477,7 @@ const getMetaData = async (simulation_name) => {
       }
 
       // 顺序 AB Protion 一起改
-      if (data.simulationList[index].optimization_type === 'fixed_budget') {
+      if (simulation_item.optimization_type === 'fixed_budget') {
         for (let i = 0; i < res.ori_channel_order.length; i++) {
           let item = {
             channel: res.ori_channel_order[i],
@@ -463,11 +485,16 @@ const getMetaData = async (simulation_name) => {
           }
           simulation_item.constraints_on_channels.push(item)
         }
-        data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
       } else {
-        // 这里加
-
+        for (let key in res.constraints_on_channels) {
+          let item = {
+            channel: key,
+            TP: res.constraints_on_channels[key].TP,
+          }
+          simulation_item.constraints_on_channels.push(item)
+        }
       }
+      data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
   }
 }
@@ -537,6 +564,13 @@ const floatFormat = (row, column, cellValue) => {
       .replace(/\.$/, '')
   }
 }
+const floatFormat0 = (cellValue) => {
+  if (cellValue) {
+    return Number(cellValue)
+      .toFixed(0)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
+}
 
 const commitSimulation = async (index) => {
   if (!data.simulationList[index].n_time_periods) {
@@ -589,14 +623,24 @@ const commitSimulation = async (index) => {
       changeIndex
     ] = 1
 
-    // chuancan
-    for (let i = 0; i < data.simulationList[index].constraints_on_channels.length; i++) {
-      param.constraints_on_channels[data.simulationList[index].constraints_on_channels[i].channel] =
-        {
+    if (data.simulationList[index].optimization_type === 'fixed_budget') {
+      for (let i = 0; i < data.simulationList[index].constraints_on_channels.length; i++) {
+        param.constraints_on_channels[
+          data.simulationList[index].constraints_on_channels[i].channel
+        ] = {
           constraint: data.simulationList[index].constraints_on_channels[i].constraint,
           max_spend: data.simulationList[index].constraints_on_channels[i].max_spend,
           min_spend: data.simulationList[index].constraints_on_channels[i].min_spend,
         }
+      }
+    } else {
+      for (let i = 0; i < data.simulationList[index].constraints_on_channels.length; i++) {
+        param.constraints_on_channels[
+          data.simulationList[index].constraints_on_channels[i].channel
+        ] = {
+          TP: data.simulationList[index].constraints_on_channels[i].TP,
+        }
+      }
     }
   }
   data.loading = true
@@ -631,7 +675,8 @@ const init = () => {
   }
   if (
     data.currentProject.project_status === 'SIMULATION' ||
-    data.currentProject.project_status === 'SIMULATION_RUNNING'
+    data.currentProject.project_status === 'SIMULATION_RUNNING' ||
+    data.currentProject.project_status === 'SIMULATION_FAILED'
   ) {
     initSimulation()
   }
@@ -656,7 +701,6 @@ const startPolling = (simulation, index) => {
 }
 
 const stopPolling = (index) => {
-  console.log('data.simulationList[index].progressForm', data.simulationList[index].progressForm)
   data.simulationList[index].progressForm.isPolling = false
   clearInterval(data.simulationList[index].progressForm.pollingTimer)
 }
@@ -720,6 +764,9 @@ const initSimulation = () => {
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_EMPTY') {
       getMetaData(data.simulationList[i].simulation_name)
     }
+    if (data.simulationList[i].simulation_task_status === 'SIMULATION_FAILED') {
+      getMetaData(data.simulationList[i].simulation_name)
+    }
     if (data.simulationList[i].simulation_task_status === 'SIMULATION_RUNNING') {
       getSimulationsParamFn(data.simulationList[i].simulation_name)
       startPolling(data.simulationList[i].simulation_name, i)
@@ -775,14 +822,25 @@ const getSimulationsParamFn = async (simulation) => {
         simulation_item.unit_price_pct_input.push(item)
       }
 
-      for (let i = 0; i < res.ori_channel_order.length; i++) {
-        let item = {
-          channel: res.ori_channel_order[i],
-          ...res.simulation_parameters.constraints_on_channels[res.ori_channel_order[i]],
+      if (data.simulationList[index].optimization_type === 'fixed_budget') {
+        for (let i = 0; i < res.ori_channel_order.length; i++) {
+          let item = {
+            channel: res.ori_channel_order[i],
+            ...res.simulation_parameters.constraints_on_channels[res.ori_channel_order[i]],
+          }
+          simulation_item.constraints_on_channels.push(item)
         }
-        simulation_item.constraints_on_channels.push(item)
+        data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
+      } else {
+        for (let key in res.simulation_parameters.constraints_on_channels) {
+          let item = {
+            channel: key,
+            TP: res.simulation_parameters.constraints_on_channels[key].TP,
+          }
+          simulation_item.constraints_on_channels.push(item)
+        }
+        data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
       }
-      data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
     }
   }
 }
@@ -900,6 +958,13 @@ onUnmounted(() => {
     padding: 15px 0;
     & > li {
       .el-card {
+        .failed-tips {
+          color: #bd3124;
+          font-weight: bold;
+          margin-bottom: 20px;
+          display: inline-block;
+          font-size: 14px;
+        }
         .delete-btn {
           float: right;
           margin-right: 20px;

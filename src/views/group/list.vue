@@ -50,15 +50,10 @@
                     {{ formatDate(itemProject.updated_datetime) }}
                   </p>
                 </div>
-                <!-- @click.stop="
-                      publishProjectFn(
-                        item.group_name,
-                        itemProject.project_name,
-                        itemProject.is_publish,
-                      )
-                    " -->
+
                 <div class="publish">
                   <el-checkbox
+                    v-if="itemProject.project_privileges.includes('Publish')"
                     v-model="itemProject.is_publish"
                     label="Publish"
                     size="small"
@@ -366,7 +361,11 @@ const goProject = (group, project, status) => {
   if (status === 'MODEL_OUTPUT') {
     name = 'output'
   }
-  if (status === 'SIMULATION_RUNNING' || status === 'SIMULATION') {
+  if (
+    status === 'SIMULATION_RUNNING' ||
+    status === 'SIMULATION' ||
+    status === 'SIMULATION_FAILED'
+  ) {
     name = 'simulator'
   }
   router.push({
@@ -894,6 +893,7 @@ onMounted(() => {
         .btn-wrap {
           line-height: 45px;
           width: 35%;
+          text-align: right;
           .analysis-btn > a {
             margin-right: 15px;
             cursor: pointer;
