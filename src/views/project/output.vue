@@ -332,7 +332,6 @@ import bar from '../../components/bar.vue'
 import { reactive, onMounted, defineProps } from 'vue'
 import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
-import { color } from 'echarts'
 import { basic } from '../../config'
 
 const props = defineProps({
