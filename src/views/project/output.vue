@@ -708,9 +708,9 @@ const downloadFn = () => {
 }
 
 const costDistributionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     // orient: 'vertical',
@@ -769,10 +769,10 @@ const costByChannelOptions = reactive({
   ],
 
   series: [],
-  tooltip: {
-    show: true,
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   show: true,
+  //   trigger: 'axis',
+  // },
 
   legend: {
     data: ['Cost', 'Sales'],
@@ -800,9 +800,9 @@ const touchByChannelOptions = reactive({
     },
   ],
   series: [],
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   toolbox: {
     show: false,
     feature: {
@@ -827,12 +827,12 @@ const channeOptions = reactive([
   'Sponsorship',
 ])
 const promotionOptions = reactive({
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'shadow',
-    },
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  //   axisPointer: {
+  //     type: 'shadow',
+  //   },
+  // },
   legend: {},
   grid: {
     left: '3%',
@@ -913,9 +913,9 @@ const promotionOptions = reactive({
   ],
 })
 const totalPromotionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     // orient: 'vertical',
@@ -967,9 +967,9 @@ const ROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
@@ -999,9 +999,9 @@ const MROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
@@ -1052,9 +1052,9 @@ const responseCurveOptions = reactive({
       },
     },
   ],
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
 
   legend: {},
 })

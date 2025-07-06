@@ -390,12 +390,12 @@ const current_changeROI = () => {
   current_ROIChartOptions.xAxis.data = Current_output.roi[Current_output.roi_select].x
 }
 const promotionOptions = reactive({
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'shadow',
-    },
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  //   axisPointer: {
+  //     type: 'shadow',
+  //   },
+  // },
   legend: {},
   grid: {
     left: '3%',
@@ -482,9 +482,9 @@ const promotionOptions = reactive({
 })
 
 const totalPromotionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     // orient: 'vertical',
@@ -536,9 +536,9 @@ const ROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
@@ -569,9 +569,9 @@ const MROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
@@ -588,9 +588,9 @@ const MROIChartOptions = reactive({
 })
 
 const costDistributionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     orient: 'horizontal',
@@ -628,9 +628,9 @@ const costDistributionOptions = reactive({
 })
 
 const current_costDistributionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     // orient: 'vertical',
@@ -668,12 +668,12 @@ const current_costDistributionOptions = reactive({
 })
 
 const current_promotionOptions = reactive({
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: {
-      type: 'shadow',
-    },
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  //   axisPointer: {
+  //     type: 'shadow',
+  //   },
+  // },
   legend: {},
   grid: {
     left: '3%',
@@ -759,9 +759,9 @@ const current_promotionOptions = reactive({
   ],
 })
 const current_totalPromotionOptions = reactive({
-  tooltip: {
-    trigger: 'item',
-  },
+  // tooltip: {
+  //   trigger: 'item',
+  // },
   legend: {
     type: 'scroll',
     // orient: 'vertical',
@@ -813,9 +813,9 @@ const current_ROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
@@ -845,9 +845,9 @@ const current_MROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  tooltip: {
-    trigger: 'axis',
-  },
+  // tooltip: {
+  //   trigger: 'axis',
+  // },
   series: [
     {
       data: [],
