@@ -137,9 +137,8 @@
           </el-form-item>
         </el-form>
       </div>
-      <div class="foot-button">
+      <div class="foot-button" v-if="!data.currentProject.hide">
         <el-button type="primary" round size="small" @click="runConfirm">Confirm</el-button>
-        <!-- <el-button type="info" round size="small" @click="runCancel">Cancel</el-button> -->
       </div>
     </el-card>
     <el-card class="card-loading" v-if="progressForm.isPolling" v-loading="progressForm.isPolling">
@@ -206,11 +205,11 @@ const options = reactive({
 
 // ["EMPTY","MODEL_RUNNING","MODEL_OUTPUT","SIMULATION","SIMULATION_RUNNING"]
 const init = () => {
-  if (data.currentProject.project_status === 'EMPTY' ) {
+  if (data.currentProject.project_status === 'EMPTY') {
     getPreviewRawData()
   }
   if (data.currentProject.project_status === 'MODEL_FAILED') {
-    // jiatishi 
+    // jiatishi
     getPreviewRawData()
   }
   if (data.currentProject.project_status === 'MODEL_RUNNING') {
@@ -354,6 +353,9 @@ const getCurrentModelTaskFn = async () => {
         progressForm.percentage = progressForm.percentage + 5
       }
     }
+  } else if (res && res.status === 0) {
+    data.loading = false
+    stopPolling()
   }
 }
 
@@ -441,7 +443,7 @@ const formatRes = (res) => {
       data.channelNumberOptions.push(type)
 
       form.agg_rule[type] = []
-      
+
       for (let i = 0; i < tempRes.ori_channel_order[type].length; i++) {
         form.agg_rule[type].push({
           new_column_name: tempRes.ori_channel_order[type][i],

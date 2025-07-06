@@ -32,7 +32,8 @@
         </template>
       </el-dropdown>
     </div>
-    <div class="top-btn-wrap" v-if="data.showAddBtn">
+   
+    <div class="top-btn-wrap" v-if="data.showAddBtn && !data.currentProject.hide">
       <el-button type="primary" @click="addSimulationFn">
         <el-icon><CirclePlus /></el-icon>
         Create new simulation
@@ -214,14 +215,15 @@
               </el-row>
             </div>
           </el-form>
-          <div class="btn-wrap">
+          <!-- !data.currentProject.hide -->
+          <div class="btn-wrap" >
             <el-button
               type="primary"
               @click="commitSimulation(index)"
               :loading="item.progressForm && item.progressForm.isPolling"
               >Confirm</el-button
             >
-            <el-button type="info" @click="resetFn(index)">Reset</el-button>
+            <el-button type="info" @click="resetFn(index)">Reset Parameter</el-button>
           </div>
           <div class="output-wrap" v-if="item.simulation_task_status === 'SIMULATION_OUTPUT'">
             <el-divider />
@@ -287,7 +289,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="data.dialogFormVisible = false">Cancel</el-button>
+          <el-button @click="data.renameDialog = false">Cancel</el-button>
           <el-button type="primary" @click="renameComfirm"> Confirm </el-button>
         </div>
       </template>
@@ -332,7 +334,7 @@ const data = reactive({
   },
   changesList: ['unchanged', 'up', 'down'],
   currentProject: {},
-  showAddBtn: true,
+  showAddBtn: true
 })
 
 const props = defineProps({
@@ -477,7 +479,7 @@ const getMetaData = async (simulation_name) => {
       }
 
       // 顺序 AB Protion 一起改
-      if (simulation_item.optimization_type === 'fixed_budget') {
+      if (res.optimization_type === 'fixed_budget') {
         for (let i = 0; i < res.ori_channel_order.length; i++) {
           let item = {
             channel: res.ori_channel_order[i],
@@ -625,6 +627,17 @@ const commitSimulation = async (index) => {
 
     if (data.simulationList[index].optimization_type === 'fixed_budget') {
       for (let i = 0; i < data.simulationList[index].constraints_on_channels.length; i++) {
+        if (
+          data.simulationList[index].constraints_on_channels[i].constraint &&
+          data.simulationList[index].constraints_on_channels[i].min_spend >
+            data.simulationList[index].constraints_on_channels[i].max_spend
+        ) {
+          ElMessage({
+            type: 'error',
+            message: 'Min spend should be less than or equal to Max spend',
+          })
+          return
+        }
         param.constraints_on_channels[
           data.simulationList[index].constraints_on_channels[i].channel
         ] = {
@@ -648,7 +661,7 @@ const commitSimulation = async (index) => {
 
   if (res && res.status === 1) {
     // task_id
-    //getSimulationsParamFn(param.simulation_name)
+    getSimulationsParamFn(param.simulation_name)
     let progressForm = {
       isPolling: false,
       pollingTimer: null,
@@ -665,7 +678,8 @@ const init = () => {
 
   if (
     data.currentProject.project_status === 'EMPTY' ||
-    data.currentProject.project_status === 'MODEL_RUNNING'
+    data.currentProject.project_status === 'MODEL_RUNNING' ||
+    data.currentProject.project_status === 'MODEL_FAILED'
   ) {
     data.simulationList = []
     data.showAddBtn = false
@@ -701,6 +715,7 @@ const startPolling = (simulation, index) => {
 }
 
 const stopPolling = (index) => {
+  console.log(' data.simulationList[index]', data.simulationList[index])
   data.simulationList[index].progressForm.isPolling = false
   clearInterval(data.simulationList[index].progressForm.pollingTimer)
 }
@@ -735,10 +750,10 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
       })
       data.loading = false
       stopPolling(index)
-      setTimeout(() => {
-        getProjectListFn()
-      }, 1500)
-      //getProjectListFn()
+      // setTimeout(() => {
+      //   getProjectListFn()
+      // }, 1500)
+      getProjectListFn()
     }
   }
 }
@@ -821,13 +836,13 @@ const getSimulationsParamFn = async (simulation) => {
         }
         simulation_item.unit_price_pct_input.push(item)
       }
-
-      if (data.simulationList[index].optimization_type === 'fixed_budget') {
+      if (res.simulation_parameters.optimization_type === 'fixed_budget') {
         for (let i = 0; i < res.ori_channel_order.length; i++) {
           let item = {
             channel: res.ori_channel_order[i],
             ...res.simulation_parameters.constraints_on_channels[res.ori_channel_order[i]],
           }
+
           simulation_item.constraints_on_channels.push(item)
         }
         data.simulationList[index] = { ...data.simulationList[index], ...simulation_item }
@@ -898,6 +913,8 @@ const savePackageFn = async () => {
 const goPage = (name) => {
   window.location.href = `/${name}/${data.group_name}/${data.project_name}`
 }
+
+
 watch(
   () => props.project,
   (value) => {

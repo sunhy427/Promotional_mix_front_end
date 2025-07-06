@@ -541,11 +541,6 @@ const renameGroupConfirm = async () => {
     })
     data.showRenameGroupDialog = false
     getList()
-  } else {
-    ElMessage({
-      message: res && res.message ? res.message : 'rename error',
-      type: 'error',
-    })
   }
 }
 
@@ -580,11 +575,6 @@ const renameProjectFn = async () => {
     })
     data.showRenameProjectDialog = false
     getList()
-  } else {
-    ElMessage({
-      message: res && res.message ? res.message : 'rename error',
-      type: 'error',
-    })
   }
 }
 

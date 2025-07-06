@@ -487,9 +487,9 @@ const totalPromotionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
+    // orient: 'vertical',
+    // right: 10,
+    top: 'bottom',
     bottom: 20,
   },
   series: [
@@ -593,16 +593,16 @@ const costDistributionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
-    bottom: 20,
+    orient: 'horizontal',
+    top: 'bottom',
+    // right: 10,
+    // bottom: 10,
   },
   series: [
     {
       name: '',
       type: 'pie',
-      center: ['45%', '45%'],
+      center: ['50%', '45%'],
       radius: ['10%', '60%'],
       avoidLabelOverlap: false,
       itemStyle: {
@@ -633,10 +633,10 @@ const current_costDistributionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
-    bottom: 20,
+    // orient: 'vertical',
+    // right: 10,
+    top: 'bottom',
+    // bottom: 20,
   },
   series: [
     {
@@ -764,9 +764,9 @@ const current_totalPromotionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
+    // orient: 'vertical',
+    // right: 10,
+    top: 'bottom',
     bottom: 20,
   },
   series: [

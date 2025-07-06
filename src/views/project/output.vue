@@ -713,10 +713,10 @@ const costDistributionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
-    bottom: 20,
+    // orient: 'vertical',
+    // right: 10,
+    top: 'bottom',
+    // bottom: 20,
   },
   series: [
     {
@@ -918,10 +918,10 @@ const totalPromotionOptions = reactive({
   },
   legend: {
     type: 'scroll',
-    orient: 'vertical',
-    right: 10,
-    top: 20,
-    bottom: 20,
+    // orient: 'vertical',
+    // right: 10,
+    top: 'bottom',
+    // bottom: 20,
   },
   series: [
     {
