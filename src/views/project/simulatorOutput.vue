@@ -522,7 +522,7 @@ const totalPromotionOptions = reactive({
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '50%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
@@ -632,7 +632,7 @@ const costDistributionOptions = reactive({
       type: 'pie',
       center: ['50%', '45%'],
       radius: ['10%', '60%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
@@ -689,7 +689,7 @@ const current_costDistributionOptions = reactive({
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '60%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
@@ -805,7 +805,7 @@ const current_totalPromotionOptions = reactive({
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '50%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',

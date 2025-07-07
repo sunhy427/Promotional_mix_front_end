@@ -723,7 +723,7 @@ const costDistributionOptions = reactive({
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '60%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
@@ -928,7 +928,7 @@ const totalPromotionOptions = reactive({
       type: 'pie',
       center: ['45%', '45%'],
       radius: ['10%', '60%'],
-      avoidLabelOverlap: false,
+      avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
         borderColor: '#fff',
