@@ -631,7 +631,7 @@ const costDistributionOptions = reactive({
       name: '',
       type: 'pie',
       center: ['50%', '45%'],
-      radius: ['10%', '60%'],
+      radius: ['10%', '50%'],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
@@ -688,7 +688,7 @@ const current_costDistributionOptions = reactive({
       name: '',
       type: 'pie',
       center: ['45%', '45%'],
-      radius: ['10%', '60%'],
+      radius: ['10%', '50%'],
       avoidLabelOverlap: true,
       itemStyle: {
         borderRadius: 10,
