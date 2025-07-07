@@ -32,7 +32,7 @@
         </template>
       </el-dropdown>
     </div>
-   
+
     <div class="top-btn-wrap" v-if="data.showAddBtn && !data.currentProject.hide">
       <el-button type="primary" @click="addSimulationFn">
         <el-icon><CirclePlus /></el-icon>
@@ -92,7 +92,13 @@
               <span>{{ item.optimization_type }}</span>
             </el-form-item>
             <el-form-item label="Time Period" prop="n_time_periods">
-              <el-input-number v-model="item.n_time_periods" :min="0" :max="100" size="small">
+              <el-input-number
+                v-model="item.n_time_periods"
+                :min="0"
+                :max="100"
+                size="small"
+                :disabled="data.currentProject.hide"
+              >
                 <template #suffix>
                   <span>Month</span>
                 </template>
@@ -105,6 +111,7 @@
                 size="small"
                 class="input-btn-250"
                 @blur="changeBudget(index)"
+                :disabled="data.currentProject.hide"
               >
                 <template #suffix>
                   <span>CNY</span>
@@ -134,6 +141,7 @@
                     <el-segmented
                       v-model="scope.row.if_changes"
                       :options="['unchanged', 'up', 'down']"
+                      :disabled="data.currentProject.hide"
                     />
                   </template>
                 </el-table-column>
@@ -143,6 +151,7 @@
                       <el-input-number
                         v-model="item.unit_price_pct_input[scope.$index].change_percentage"
                         :min="1"
+                        :disabled="data.currentProject.hide"
                       >
                         <template #suffix>
                           <span>%</span>
@@ -170,6 +179,7 @@
                     v-model="unitValue.constraint"
                     size="small"
                     :options="[true, false]"
+                    :disabled="data.currentProject.hide"
                   >
                     <template #default="scope">
                       <div class="flex flex-col items-center gap-2 p-2">
@@ -184,7 +194,7 @@
                     v-model="unitValue.min_spend"
                     :controls="false"
                     size="small"
-                    :disabled="unitValue.constraint === false"
+                    :disabled="unitValue.constraint === false || data.currentProject.hide"
                   />
                 </el-col>
                 <el-col :span="5">
@@ -193,7 +203,7 @@
                     v-model="unitValue.max_spend"
                     :controls="false"
                     size="small"
-                    :disabled="unitValue.constraint === false"
+                    :disabled="unitValue.constraint === false || data.currentProject.hide"
                   />
                 </el-col>
               </el-row>
@@ -215,8 +225,7 @@
               </el-row>
             </div>
           </el-form>
-          <!-- !data.currentProject.hide -->
-          <div class="btn-wrap" >
+          <div class="btn-wrap" v-if="!data.currentProject.hide">
             <el-button
               type="primary"
               @click="commitSimulation(index)"
@@ -334,7 +343,7 @@ const data = reactive({
   },
   changesList: ['unchanged', 'up', 'down'],
   currentProject: {},
-  showAddBtn: true
+  showAddBtn: true,
 })
 
 const props = defineProps({
@@ -913,7 +922,6 @@ const savePackageFn = async () => {
 const goPage = (name) => {
   window.location.href = `/${name}/${data.group_name}/${data.project_name}`
 }
-
 
 watch(
   () => props.project,

@@ -84,13 +84,18 @@
                     <el-table-column prop="channels" label="channels" />
                     <el-table-column
                       prop="unit_price"
-                      label="unit_price"
+                      label="unit price"
                       :formatter="formatNumber"
                     />
                     <el-table-column
                       prop="tp_simulated"
-                      label="tp_simulated"
+                      label="tp simulated"
                       :formatter="formatNumberto0"
+                    />
+                    <el-table-column
+                      prop="price"
+                      label="current unit price"
+                      :formatter="formatNumber"
                     />
                   </el-table>
                 </div>
@@ -269,6 +274,10 @@ const simulationOutput = reactive({
 })
 
 const Current_output = reactive({
+  total_cost_distribution: 0,
+  total_promotion_contribution_number: 0,
+  total_promotion_contribution: {},
+  cost_distribution: {},
   current_unit_price: [],
   mroi: {},
   mroi_options: ['cost'],
@@ -297,10 +306,21 @@ const previewSimulationsFn = async () => {
   }
   let res = await previewSimulations(param)
   if (res && res.Simulation_output) {
-    simulationOutput.calculated_unit_price =
-      res.Simulation_output.Total_market.calculated_unit_price
+    for (let i = 0; i < res.Simulation_output.Total_market.calculated_unit_price.length; i++) {
+      let item = {
+        ...res.Simulation_output.Total_market.calculated_unit_price[i],
+        price:
+          res.Current_output.current_unit_price[
+            res.Simulation_output.Total_market.calculated_unit_price[i].channels
+          ],
+      }
+      simulationOutput.calculated_unit_price.push(item)
+    }
+    // simulationOutput.calculated_unit_price =
+    //   res.Simulation_output.Total_market.calculated_unit_price
 
     simulationOutput.cost_distribution = res.Simulation_output.Total_market.cost_distribution
+    Current_output.cost_distribution = res.Current_output.cost_distribution
 
     simulationOutput.current_channel_performance =
       res.Simulation_output.Total_market.current_channel_performance
@@ -348,6 +368,7 @@ const previewSimulationsFn = async () => {
         value: res.Current_output.cost_distribution[key],
       }
       current_costDistributionOptions.series[0].data.push(item)
+      Current_output.total_cost_distribution = Current_output.total_cost_distribution + item.value
     }
 
     for (let key in res.Current_output.current_unit_price) {
@@ -358,12 +379,15 @@ const previewSimulationsFn = async () => {
       Current_output.current_unit_price.push(item)
     }
 
+    Current_output.total_promotion_contribution = res.Current_output.total_promotion_contribution
+
     for (let key in res.Current_output.total_promotion_contribution) {
       let item = {
         name: key,
         value: res.Current_output.total_promotion_contribution[key],
       }
       current_totalPromotionOptions.series[0].data.push(item)
+      Current_output.total_promotion_contribution_number += item.value
     }
     current_promotionOptions.series[0].data = [
       res.Current_output.promotion_vs_nonpromotion.y.promotion,
@@ -390,12 +414,6 @@ const current_changeROI = () => {
   current_ROIChartOptions.xAxis.data = Current_output.roi[Current_output.roi_select].x
 }
 const promotionOptions = reactive({
-  // tooltip: {
-  //   trigger: 'axis',
-  //   axisPointer: {
-  //     type: 'shadow',
-  //   },
-  // },
   legend: {},
   grid: {
     left: '3%',
@@ -434,14 +452,20 @@ const promotionOptions = reactive({
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
           let percent = ((params.value / sum) * 100).toFixed(1) + '%'
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
-          } else {
-            return num.toFixed(2) + ', ' + percent
-          }
+
+          let current_sum =
+            current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
+
+          let current_percent =
+            ((current_promotionOptions.series[0].data[0] / current_sum) * 100).toFixed(1) + '%'
+
+          let label =
+            translateNumber(params.value, percent) +
+            '\n' +
+            '( ' +
+            translateNumber(current_promotionOptions.series[0].data[0], current_percent) +
+            ' )'
+          return label
         },
       },
       itemStyle: {
@@ -464,14 +488,19 @@ const promotionOptions = reactive({
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
           let percent = ((params.value / sum) * 100).toFixed(1) + '%'
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
-          } else {
-            return num.toFixed(2) + ', ' + percent
-          }
+          let current_sum =
+            current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
+          let current_percent = (
+            (current_promotionOptions.series[1].data[0] / current_sum) *
+            100
+          ).toFixed(1)
+          let label =
+            translateNumber(params.value, percent) +
+            '\n' +
+            '( ' +
+            translateNumber(current_promotionOptions.series[1].data[0], current_percent) +
+            ' )'
+          return label
         },
       },
       itemStyle: {
@@ -482,13 +511,8 @@ const promotionOptions = reactive({
 })
 
 const totalPromotionOptions = reactive({
-  // tooltip: {
-  //   trigger: 'item',
-  // },
   legend: {
     type: 'scroll',
-    // orient: 'vertical',
-    // right: 10,
     top: 'bottom',
     bottom: 20,
   },
@@ -506,14 +530,13 @@ const totalPromotionOptions = reactive({
       },
       label: {
         formatter: (params) => {
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
-          } else {
-            return num.toFixed(2) + '，' + params.percent + '%'
-          }
+          let numStr = translateNumber(params.value, params.percent) + '\n'
+          let current_num = Current_output.total_promotion_contribution[params.name]
+          let current_percent =
+            (current_num / Current_output.total_promotion_contribution_number) * 100
+
+          numStr += '(' + translateNumber(current_num, current_percent.toFixed(2)) + ')'
+          return numStr
         },
       },
       data: [],
@@ -536,16 +559,18 @@ const ROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  // tooltip: {
-  //   trigger: 'axis',
-  // },
   series: [
     {
       data: [],
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value.toFixed(2),
+        position: 'top',
+        formatter: (params) => {
+          let current = Current_output.roi.cost.y[params.dataIndex]
+          let label = params.value.toFixed(2) + '\n' + `( ${current.toFixed(2)} )`
+          return label
+        },
       },
       itemStyle: {
         color: '#e99d42',
@@ -569,17 +594,20 @@ const MROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  // tooltip: {
-  //   trigger: 'axis',
-  // },
   series: [
     {
       data: [],
       type: 'bar',
       label: {
         show: true,
-        formatter: (params) => params.value.toFixed(2),
+        position: 'top',
+        formatter: (params) => {
+          let current = Current_output.mroi.cost.y[params.dataIndex]
+          let label = params.value.toFixed(2) + '\n' + `( ${current.toFixed(2)} )`
+          return label
+        },
       },
+
       itemStyle: {
         color: '#e99d42',
       },
@@ -612,20 +640,37 @@ const costDistributionOptions = reactive({
       },
       label: {
         formatter: (params) => {
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
-          } else {
-            return num.toFixed(2) + '，' + params.percent + '%'
+          let labelStr = translateNumber(params.value, params.percent)
+          if (Current_output.cost_distribution) {
+            let percent =
+              (Current_output.cost_distribution[params.name] /
+                Current_output.total_cost_distribution) *
+              100
+            let numStr = translateNumber(
+              Current_output.cost_distribution[params.name],
+              percent.toFixed(2),
+            )
+            labelStr = labelStr + `\n ( ${numStr} )`
           }
+          return labelStr
         },
       },
       data: [],
     },
   ],
 })
+
+const translateNumber = (num, percent) => {
+  let numStr = ''
+  if (num >= 1e9) {
+    numStr = (num / 1e9).toFixed(2) + 'B' + '，' + percent + '%'
+  } else if (num >= 1e6) {
+    numStr = (num / 1e6).toFixed(2) + 'M' + '，' + percent + '%'
+  } else {
+    numStr = num.toFixed(2) + '，' + percent + '%'
+  }
+  return numStr
+}
 
 const current_costDistributionOptions = reactive({
   // tooltip: {
@@ -707,19 +752,12 @@ const current_promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
-          let sum = 0
-          for (let i = 0; i < promotionOptions.series.length; i++) {
-            sum += promotionOptions.series[i].data[params.dataIndex]
-          }
-          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
-          } else {
-            return num.toFixed(2) + ', ' + percent
-          }
+          let sum =
+            current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
+
+          let percent = ((params.value / sum) * 100).toFixed(1)
+
+          return translateNumber(params.value, percent)
         },
       },
       itemStyle: {
@@ -737,19 +775,11 @@ const current_promotionOptions = reactive({
       label: {
         show: true,
         formatter: (params) => {
-          let sum = 0
-          for (let i = 0; i < promotionOptions.series.length; i++) {
-            sum += promotionOptions.series[i].data[params.dataIndex]
-          }
-          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
-          let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + ', ' + percent
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + ', ' + percent
-          } else {
-            return num.toFixed(2) + ', ' + percent
-          }
+          let sum =
+            current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
+          let percent = ((params.value / sum) * 100).toFixed(1)
+
+          return translateNumber(params.value, percent)
         },
       },
       itemStyle: {
@@ -822,6 +852,7 @@ const current_ROIChartOptions = reactive({
       type: 'bar',
       label: {
         show: true,
+        position: 'top',
         formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {
@@ -845,15 +876,13 @@ const current_MROIChartOptions = reactive({
   yAxis: {
     type: 'value',
   },
-  // tooltip: {
-  //   trigger: 'axis',
-  // },
   series: [
     {
       data: [],
       type: 'bar',
       label: {
         show: true,
+        position: 'top',
         formatter: (params) => params.value.toFixed(2),
       },
       itemStyle: {

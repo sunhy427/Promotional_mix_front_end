@@ -41,11 +41,21 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i> Adjust priors?</template>
-            <el-radio-group v-model="form.adjust_priors" aria-label="label position" size="small">
+            <el-radio-group
+              v-model="form.adjust_priors"
+              aria-label="label position"
+              size="small"
+              :disabled="data.currentProject.hide"
+            >
               <el-radio-button :value="true">True</el-radio-button>
               <el-radio-button :value="false">false</el-radio-button>
             </el-radio-group>
-            <el-button type="info" size="small" class="reset-button" @click="resetFn"
+            <el-button
+              type="info"
+              size="small"
+              class="reset-button"
+              @click="resetFn"
+              v-if="!data.currentProject.hide"
               >Reset to Default</el-button
             >
             <span class="reset-tips"
@@ -67,7 +77,7 @@
               :min="0"
               :max="100"
               size="small"
-              :disabled="!form.adjust_priors"
+              :disabled="!form.adjust_priors || data.currentProject.hide"
             >
               <template #suffix>
                 <span>%</span>
@@ -83,7 +93,12 @@
           </el-form-item>
         </el-form>
         <div class="channel-wrap">
-          <el-radio-group v-model="data.channelNumber" aria-label="label position" size="small">
+          <el-radio-group
+            v-model="data.channelNumber"
+            aria-label="label position"
+            size="small"
+            :disabled="data.currentProject.hide"
+          >
             <el-radio-button value="7">7 Channels </el-radio-button>
             <el-radio-button value="9">9 Channels </el-radio-button>
             <el-radio-button value="customized">Customized </el-radio-button>
@@ -92,7 +107,7 @@
             <el-button
               type="primary"
               size="small"
-              v-if="data.channelNumber === 'customized'"
+              v-if="data.channelNumber === 'customized' && !data.currentProject.hide"
               @click="createNewChannel"
             >
               <el-icon><CirclePlus /></el-icon>
@@ -126,7 +141,7 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="form.segmentation_type" placeholder="Select">
+            <el-select v-model="form.segmentation_type" placeholder="Select" :disabled="data.currentProject.hide">
               <el-option
                 v-for="item in options.segmentOptions"
                 :key="item.segment_type"
