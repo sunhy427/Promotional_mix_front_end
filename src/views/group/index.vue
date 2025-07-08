@@ -59,7 +59,7 @@
     </el-dialog>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import { getGroupList, createGroup, getPopup, logout, getUserProfile } from '../../api/api'
 import { ElMessage, ElNotification } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'

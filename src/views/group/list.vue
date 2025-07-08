@@ -306,7 +306,7 @@
     </el-dialog>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import { ElMessage, ElMessageBox, dayjs } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { watch, ref, reactive, computed, onMounted } from 'vue'

@@ -327,7 +327,7 @@
     </div>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import bar from '../../components/bar.vue'
 import { reactive, onMounted, defineProps } from 'vue'
 import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'

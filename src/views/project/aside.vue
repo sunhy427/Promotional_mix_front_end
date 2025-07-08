@@ -45,7 +45,7 @@
     </el-menu>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import { reactive, defineProps, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()

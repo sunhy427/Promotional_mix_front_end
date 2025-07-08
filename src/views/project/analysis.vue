@@ -160,7 +160,7 @@
     </el-card>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import { reactive, onMounted, defineProps, watch } from 'vue'
 import {
   previewRawData,

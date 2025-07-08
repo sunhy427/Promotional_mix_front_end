@@ -60,6 +60,14 @@
       <el-tab-pane label="Simulated Performance" name="Simulated">
         <div class="content-wrap">
           <el-row>
+            <el-col :span="24">
+              <p class="tips-chart">
+                Notes: All annotations in the figures represent simulated performance (current
+                performance), shown in parentheses for comparison.
+              </p>
+            </el-col>
+          </el-row>
+          <el-row>
             <el-col :span="14">
               <div class="item">
                 <p class="title">Cost Distribution</p>
@@ -919,6 +927,11 @@ onMounted(() => {
   .content-wrap {
     background-color: #fff5ea;
     padding: 15px;
+    .tips-chart {
+      font-size: 16px;
+      color: #ee6666;
+      font-weight: bold;
+    }
     .item {
       .title {
         font-weight: bold;

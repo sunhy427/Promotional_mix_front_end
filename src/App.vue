@@ -1,7 +1,7 @@
 <template>
   <router-view />
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER"></script>
+<script setup></script>
 
 <style lang="less">
 #app {

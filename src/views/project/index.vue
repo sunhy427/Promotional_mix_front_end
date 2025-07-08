@@ -18,7 +18,7 @@
     </div>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import { onMounted, reactive } from 'vue'
 import Aside from './aside.vue'
 import Analysis from './analysis.vue'

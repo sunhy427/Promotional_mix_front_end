@@ -6,7 +6,7 @@
   ></div>
 </template>
 
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import * as echarts from "echarts";
 import { defineProps, onMounted, reactive, watch } from "vue";
 

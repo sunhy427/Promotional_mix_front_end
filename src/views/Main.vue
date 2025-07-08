@@ -17,7 +17,7 @@
     </el-watermark>
   </div>
 </template>
-<script setup nonce="NONCE_PLACE_HOLDER">
+<script setup>
 import HeaderNav from '../components/header.vue'
 import { getUserProfile } from '../api/api'
 import { onMounted, reactive } from 'vue'

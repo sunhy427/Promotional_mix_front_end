@@ -3,11 +3,15 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
+// import { cspHtmlPlugin } from 'vite-plugin-csp'
 
 console.log('Vite config is loaded')
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
+  html: {
+    cspNonce: 'NONCE_PLACE_HOLDER',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -31,13 +35,3 @@ export default defineConfig({
     assetsDir: 'static', // 将所有静态资源输出到 dist/static/ 目录
   },
 })
-// 13002
-// import { defineConfig } from 'vite'
-// import vue from '@vitejs/plugin-vue'
-
-// export default defineConfig({
-//   plugins: [vue()],
-//   server: {
-//     port: 3000, // 示例配置
-//   },
-// })
