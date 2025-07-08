@@ -81,7 +81,7 @@
     </el-dialog>
   </div>
 </template>
-<script setup>
+<script setup nonce="NONCE_PLACE_HOLDER">
 import { reactive, onMounted } from 'vue'
 import { drawerEmits, ElMessage, ElMessageBox } from 'element-plus'
 import { getPermissions, addPermission, removePermission, updatePermission } from '../../api/api'

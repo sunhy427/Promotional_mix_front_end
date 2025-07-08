@@ -305,7 +305,7 @@
     </el-dialog>
   </div>
 </template>
-<script setup>
+<script setup nonce="NONCE_PLACE_HOLDER">
 import { onMounted, onUnmounted, reactive, ref, watch, defineEmits, resolveDirective } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {

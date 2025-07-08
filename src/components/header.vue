@@ -4,7 +4,7 @@
     <img src="../assets/images/gif_logo_opt.gif" alt="" class="logo" @click="go" />
   </div>
 </template>
-<script setup>
+<script setup nonce="NONCE_PLACE_HOLDER">
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const go = () => {
