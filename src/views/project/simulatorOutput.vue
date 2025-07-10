@@ -7,7 +7,7 @@
         header-row-class-name="header-unit"
         :data="simulationOutput.optimal_channel_performance"
       >
-        <el-table-column prop="channel" label="Decision Variable" />
+        <el-table-column prop="channel" label="Channel" />
         <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="formatNumber" />
         <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="formatNumber" />
         <el-table-column
@@ -459,13 +459,13 @@ const promotionOptions = reactive({
           for (let i = 0; i < promotionOptions.series.length; i++) {
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
-          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
+          let percent = ((params.value / sum) * 100).toFixed(1) 
 
           let current_sum =
             current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
 
           let current_percent =
-            ((current_promotionOptions.series[0].data[0] / current_sum) * 100).toFixed(1) + '%'
+            ((current_promotionOptions.series[0].data[0] / current_sum) * 100).toFixed(1) 
 
           let label =
             translateNumber(params.value, percent) +
@@ -495,7 +495,7 @@ const promotionOptions = reactive({
           for (let i = 0; i < promotionOptions.series.length; i++) {
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
-          let percent = ((params.value / sum) * 100).toFixed(1) + '%'
+          let percent = ((params.value / sum) * 100).toFixed(1) 
           let current_sum =
             current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
           let current_percent = (

@@ -291,7 +291,7 @@
               <el-table :data="outputData.modelMetricsTableData" border>
                 <el-table-column prop="mape" align="center">
                   <template #header>
-                    <span class="table-header-tip">Mape</span>
+                    <span class="table-header-tip">MAPE</span>
                     <el-tooltip
                       content="MAPE（平均绝对百分比误差）表示模型预测值与实际值之间的平均百分比误差，数值越小越好。"
                     >
@@ -351,6 +351,9 @@ const pageParam = reactive({
   group: route.params.group,
   project: route.params.project,
   timestamp: Date.now(),
+  min: 0,
+  max: 0,
+  interval: 5,
 })
 
 const outputMetadata = reactive({
@@ -745,7 +748,12 @@ const costDistributionOptions = reactive({
     },
   ],
 })
+
 const costByChannelOptions = reactive({
+  grid: {
+    left: '15%',
+    right: '15%',
+  },
   xAxis: {
     type: 'category',
     data: [],
@@ -756,6 +764,9 @@ const costByChannelOptions = reactive({
       type: 'value',
       axisLabel: {
         formatter: '{value}',
+      },
+      splitLine: {
+        show: false,
       },
     },
     {
@@ -768,16 +779,15 @@ const costByChannelOptions = reactive({
   ],
 
   series: [],
-  // tooltip: {
-  //   show: true,
-  //   trigger: 'axis',
-  // },
-
   legend: {
     data: ['Cost', 'Sales'],
   },
 })
 const touchByChannelOptions = reactive({
+  grid: {
+    left: '15%',
+    right: '15%',
+  },
   xAxis: {
     type: 'category',
     data: [],
@@ -789,6 +799,9 @@ const touchByChannelOptions = reactive({
       axisLabel: {
         formatter: '{value}',
       },
+      splitLine: {
+        show: false,
+      },
     },
     {
       name: 'Sales(CNY)',
@@ -799,21 +812,7 @@ const touchByChannelOptions = reactive({
     },
   ],
   series: [],
-  // tooltip: {
-  //   trigger: 'axis',
-  // },
-  toolbox: {
-    show: false,
-    feature: {
-      dataZoom: {
-        yAxisIndex: 'none',
-      },
-      dataView: { readOnly: false },
-      magicType: { type: ['line', 'bar'] },
-      restore: {},
-      saveAsImage: {},
-    },
-  },
+
   legend: {},
 })
 const channeOptions = reactive([

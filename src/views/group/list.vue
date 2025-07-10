@@ -377,7 +377,7 @@ const goProject = (group, project, status) => {
 const handlePublish = (group_name, project_name, is_publish) => {
   console.log('is_publish', is_publish)
   ElMessageBox.confirm(
-    `Are you sure want to ${is_publish === false ? 'publish' : 'cancel publish'} ${group_name} / ${project_name}? You can also undo this action by ${is_publish === true ? 'checking' : 'unchecking'} the box.`,
+    `Are you sure you want to ${is_publish === false ? 'publish' : 'cancel publish'} ${group_name} / ${project_name}? You can also undo this action by ${is_publish === true ? 'checking' : 'unchecking'} the box.`,
     'Warning',
     {
       confirmButtonText: 'Confirm',
