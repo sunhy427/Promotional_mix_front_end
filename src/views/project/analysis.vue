@@ -141,7 +141,11 @@
         <el-form label-width="auto">
           <el-form-item>
             <template v-slot:label> <i class="label-title"></i>Select segmentation type</template>
-            <el-select v-model="form.segmentation_type" placeholder="Select" :disabled="data.currentProject.hide">
+            <el-select
+              v-model="form.segmentation_type"
+              placeholder="Select"
+              :disabled="data.currentProject.hide"
+            >
               <el-option
                 v-for="item in options.segmentOptions"
                 :key="item.segment_type"
@@ -161,7 +165,7 @@
   </div>
 </template>
 <script setup>
-import { reactive, onMounted, defineProps, watch } from 'vue'
+import { reactive, watch, onUnmounted } from 'vue'
 import {
   previewRawData,
   runModeling,
@@ -197,8 +201,6 @@ const data = reactive({
 const form = reactive({
   channel: [],
   agg_rule: {
-    // 7: [],
-    // 9: [],
     customized: [],
   },
   segmentation_type: '',
@@ -495,6 +497,10 @@ const initChannelOptions = (index) => {
 const resetFn = () => {
   getPreviewRawData()
 }
+
+onUnmounted(() => {
+  stopPolling()
+})
 
 watch(
   () => props.project,

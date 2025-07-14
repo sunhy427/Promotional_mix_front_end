@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <el-watermark :content="userInfo.userId">
+    <!-- <el-watermark :content="userInfo.userId"> -->
     <el-container>
       <el-header>
         <HeaderNav></HeaderNav>
@@ -14,7 +14,7 @@
         </router-view>
       </el-main>
     </el-container>
-    </el-watermark>
+    <!-- </el-watermark> -->
   </div>
 </template>
 <script setup>

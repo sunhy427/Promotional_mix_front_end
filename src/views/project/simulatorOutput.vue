@@ -251,7 +251,6 @@ import { useRouter } from 'vue-router'
 import { nextTick, onMounted, reactive, watch } from 'vue'
 import { previewSimulations } from '../../api/api'
 import bar from '../../components/bar.vue'
-import { formatter } from 'element-plus'
 
 const router = useRouter()
 const props = defineProps({

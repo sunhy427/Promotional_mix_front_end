@@ -8,9 +8,7 @@
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const go = () => {
-  router.push({
-    name: 'group',
-  })
+  window.location.href = '/group'
 }
 </script>
 <style lang="less" scoped>
