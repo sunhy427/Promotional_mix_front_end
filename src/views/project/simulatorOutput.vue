@@ -141,19 +141,27 @@
                 </p>
 
                 <div v-if="data.ROItrigger === 'ROI'">
+                  <el-button type="default" @click="resetROIChart" class="reset-button">
+                    Reset
+                  </el-button>
                   <div class="chart-content">
                     <bar
                       :options="ROIChartOptions"
                       :chartId="props.simulation + '_ROIChart'"
                       v-if="ROIChartOptions.xAxis.data.length > 0"
+                      @click="handleROIBarClick"
                     ></bar>
                   </div>
                 </div>
                 <div v-if="data.ROItrigger === 'MROI'">
+                  <el-button type="default" @click="resetMROIChart" class="reset-button">
+                    Reset
+                  </el-button>
                   <bar
                     :options="MROIChartOptions"
                     :chartId="props.simulation + '_MROIChart'"
                     v-if="MROIChartOptions.xAxis.data.length > 0"
+                    @click="handleMROIBarClick"
                   ></bar>
                 </div>
               </div>
@@ -221,21 +229,29 @@
                 </p>
 
                 <div v-if="data.current_ROItrigger === 'ROI'">
+                  <el-button type="default" @click="resetCurrentROIChart" class="reset-button">
+                    Reset
+                  </el-button>
                   <div class="chart-content">
                     <bar
                       :options="current_ROIChartOptions"
                       :chartId="props.simulation + '_current_ROIChart'"
                       v-if="current_ROIChartOptions.xAxis.data.length > 0"
                       :key="props.simulation"
+                      @click="handleCurrentROIBarClick"
                     ></bar>
                   </div>
                 </div>
                 <div v-if="data.current_ROItrigger === 'MROI'">
+                  <el-button type="default" @click="resetCurrentMROIChart" class="reset-button">
+                    Reset
+                  </el-button>
                   <bar
                     :options="current_MROIChartOptions"
                     :chartId="props.simulation + '_current_MROIChart'"
                     v-if="current_MROIChartOptions.xAxis.data.length > 0"
                     :key="props.simulation"
+                    @click="handleCurrentMROIBarClick"
                   ></bar>
                 </div>
               </div>
@@ -363,10 +379,12 @@ const previewSimulationsFn = async () => {
     ROIChartOptions.xAxis.data = []
     ROIChartOptions.series[0].data = res.Simulation_output.Total_market.roi.y
     ROIChartOptions.xAxis.data = res.Simulation_output.Total_market.roi.x
+    backupROIChartData()
 
     MROIChartOptions.xAxis.data = []
     MROIChartOptions.series[0].data = res.Simulation_output.Total_market.mroi.y
     MROIChartOptions.xAxis.data = res.Simulation_output.Total_market.mroi.x
+    backupMROIChartData()
 
     //
     for (let key in res.Current_output.cost_distribution) {
@@ -413,12 +431,183 @@ const previewSimulationsFn = async () => {
     current_MROIChartOptions.xAxis.data = []
     current_MROIChartOptions.series[0].data = Current_output.mroi[Current_output.mroi_select].y
     current_MROIChartOptions.xAxis.data = Current_output.mroi[Current_output.mroi_select].x
+    backupCurrentMROIChartData()
   }
 }
 const current_changeROI = () => {
   current_ROIChartOptions.xAxis.data = []
   current_ROIChartOptions.series[0].data = Current_output.roi[Current_output.roi_select].y
   current_ROIChartOptions.xAxis.data = Current_output.roi[Current_output.roi_select].x
+  // 备份完整数据
+  backupCurrentROIChartData()
+}
+
+// ROIChart 数据备份
+const roiChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
+
+// 备份 ROIChart 的完整数据
+const backupROIChartData = () => {
+  // 深拷贝数据以防止引用问题
+  Object.assign(roiChartDataBackup, {
+    xAxis: JSON.parse(JSON.stringify(ROIChartOptions.xAxis.data)),
+    series: JSON.parse(JSON.stringify(ROIChartOptions.series[0].data))
+  })
+  
+  console.log('ROIChart 数据已备份:', roiChartDataBackup)
+}
+
+// 重置 ROIChart，显示所有隐藏的 bar
+const resetROIChart = () => {
+  if (roiChartDataBackup.xAxis.length > 0) {
+    ROIChartOptions.xAxis.data = [...roiChartDataBackup.xAxis]
+    ROIChartOptions.series[0].data = [...roiChartDataBackup.series]
+    console.log('ROIChart 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// 点击 ROIChart 柱状图 bar 时的隐藏功能
+const handleROIBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  ROIChartOptions.xAxis.data.splice(dataIndex, 1)
+  ROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
+}
+
+// MROIChart 数据备份
+const mroiChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
+
+// 备份 MROIChart 的完整数据
+const backupMROIChartData = () => {
+  // 深拷贝数据以防止引用问题
+  Object.assign(mroiChartDataBackup, {
+    xAxis: JSON.parse(JSON.stringify(MROIChartOptions.xAxis.data)),
+    series: JSON.parse(JSON.stringify(MROIChartOptions.series[0].data))
+  })
+  
+  console.log('MROIChart 数据已备份:', mroiChartDataBackup)
+}
+
+// 重置 MROIChart，显示所有隐藏的 bar
+const resetMROIChart = () => {
+  if (mroiChartDataBackup.xAxis.length > 0) {
+    MROIChartOptions.xAxis.data = [...mroiChartDataBackup.xAxis]
+    MROIChartOptions.series[0].data = [...mroiChartDataBackup.series]
+    console.log('MROIChart 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// 点击 MROIChart 柱状图 bar 时的隐藏功能
+const handleMROIBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  MROIChartOptions.xAxis.data.splice(dataIndex, 1)
+  MROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
+}
+
+// Current ROIChart 数据备份
+const currentROIChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
+
+// 备份 Current ROIChart 的完整数据
+const backupCurrentROIChartData = () => {
+  // 深拷贝数据以防止引用问题
+  Object.assign(currentROIChartDataBackup, {
+    xAxis: JSON.parse(JSON.stringify(current_ROIChartOptions.xAxis.data)),
+    series: JSON.parse(JSON.stringify(current_ROIChartOptions.series[0].data))
+  })
+  
+  console.log('Current ROIChart 数据已备份:', currentROIChartDataBackup)
+}
+
+// 重置 Current ROIChart，显示所有隐藏的 bar
+const resetCurrentROIChart = () => {
+  if (currentROIChartDataBackup.xAxis.length > 0) {
+    current_ROIChartOptions.xAxis.data = [...currentROIChartDataBackup.xAxis]
+    current_ROIChartOptions.series[0].data = [...currentROIChartDataBackup.series]
+    console.log('Current ROIChart 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// 点击 Current ROIChart 柱状图 bar 时的隐藏功能
+const handleCurrentROIBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  current_ROIChartOptions.xAxis.data.splice(dataIndex, 1)
+  current_ROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
+}
+
+// Current MROIChart 数据备份
+const currentMROIChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
+
+// 备份 Current MROIChart 的完整数据
+const backupCurrentMROIChartData = () => {
+  // 深拷贝数据以防止引用问题
+  Object.assign(currentMROIChartDataBackup, {
+    xAxis: JSON.parse(JSON.stringify(current_MROIChartOptions.xAxis.data)),
+    series: JSON.parse(JSON.stringify(current_MROIChartOptions.series[0].data))
+  })
+  
+  console.log('Current MROIChart 数据已备份:', currentMROIChartDataBackup)
+}
+
+// 重置 Current MROIChart，显示所有隐藏的 bar
+const resetCurrentMROIChart = () => {
+  if (currentMROIChartDataBackup.xAxis.length > 0) {
+    current_MROIChartOptions.xAxis.data = [...currentMROIChartDataBackup.xAxis]
+    current_MROIChartOptions.series[0].data = [...currentMROIChartDataBackup.series]
+    console.log('Current MROIChart 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// 点击 Current MROIChart 柱状图 bar 时的隐藏功能
+const handleCurrentMROIBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  current_MROIChartOptions.xAxis.data.splice(dataIndex, 1)
+  current_MROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
 }
 const promotionOptions = reactive({
   legend: {},
@@ -939,6 +1128,10 @@ onMounted(() => {
         font-size: 16px;
         margin: 20px 0;
       }
+    }
+    .reset-button {
+      margin-right: 20px;
+      margin-bottom: 10px;
     }
   }
 }

@@ -184,11 +184,15 @@
           <el-col :span="10">
             <span class="title">Promotion VS Non-promotion</span>
             <div class="chart-content">
+              <el-button type="default" @click="resetPromotionChart" class="reset-button">
+                Reset
+              </el-button>
               <bar
                 :options="promotionOptions"
                 chartId="promotion"
                 v-if="promotionOptions.xAxis[0].data.length > 0"
                 :key="pageParam.timestamp"
+                @click="handlePromotionBarClick"
               ></bar>
             </div>
           </el-col>
@@ -473,6 +477,7 @@ const previewModelOutputResultFn = async () => {
     promotionOptions.series[0].data = [res.promotion_vs_nonpromotion.y.promotion]
     promotionOptions.series[1].data = [res.promotion_vs_nonpromotion.y.nonpromotion]
     promotionOptions.xAxis[0].data = res.promotion_vs_nonpromotion.x
+    backupPromotionChartData()
 
     //totalPromotionOptions
     totalPromotionOptions.series[0].data = []
@@ -751,6 +756,53 @@ const handleBarClick = (params) => {
   // 从图表数据中移除该 bar
   ROIChartOptions.xAxis.data.splice(dataIndex, 1)
   ROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
+}
+
+// promotionOptions 数据备份
+const promotionChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
+
+// 备份 promotionOptions 的完整数据
+const backupPromotionChartData = () => {
+  // 深拷贝数据以防止引用问题
+  Object.assign(promotionChartDataBackup, {
+    xAxis: JSON.parse(JSON.stringify(promotionOptions.xAxis[0].data)),
+    series: [
+      JSON.parse(JSON.stringify(promotionOptions.series[0].data)),
+      JSON.parse(JSON.stringify(promotionOptions.series[1].data))
+    ]
+  })
+  
+  console.log('promotionOptions 数据已备份:', promotionChartDataBackup)
+}
+
+// 重置 promotionOptions，显示所有隐藏的 bar
+const resetPromotionChart = () => {
+  if (promotionChartDataBackup.xAxis.length > 0) {
+    promotionOptions.xAxis[0].data = [...promotionChartDataBackup.xAxis]
+    promotionOptions.series[0].data = [...promotionChartDataBackup.series[0]]
+    promotionOptions.series[1].data = [...promotionChartDataBackup.series[1]]
+    console.log('promotionOptions 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// 点击 promotionOptions 柱状图 bar 时的隐藏功能
+const handlePromotionBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  promotionOptions.xAxis[0].data.splice(dataIndex, 1)
+  promotionOptions.series[0].data.splice(dataIndex, 1)
+  promotionOptions.series[1].data.splice(dataIndex, 1)
   
   console.log(`隐藏了 ${category}: ${value}`)
 }
