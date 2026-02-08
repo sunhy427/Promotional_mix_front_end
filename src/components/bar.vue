@@ -62,6 +62,17 @@ watch(
   // { deep: false, immediate: true },
 )
 
+// 监听 options 变化，重新渲染图表
+watch(
+  () => props.options,
+  (newOptions) => {
+    if (data.chart && newOptions) {
+      data.chart.setOption(newOptions)
+    }
+  },
+  { deep: true }
+)
+
 </script>
 
 <style lang="less" scoped>
