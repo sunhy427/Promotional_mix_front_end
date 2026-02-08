@@ -323,7 +323,7 @@
         </el-row>
       </div>
     </el-card>
-    <el-card class="continue-wrap">
+    <el-card class="continue-wrap" @keyup.enter="goContinue">
       <el-button type="primary" @click="goContinue" @keyup.enter="goContinue">Continue</el-button>
     </el-card>
     <!-- 暂时禁掉 -->

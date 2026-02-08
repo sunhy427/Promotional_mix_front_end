@@ -36,7 +36,7 @@
       <i>1</i>
       <span>Priors and Channel Aggregation</span>
     </div>
-    <el-card>
+    <el-card @keyup.enter="runConfirm">
       <div class="content">
         <el-form label-width="auto">
           <el-form-item>

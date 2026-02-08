@@ -251,10 +251,10 @@
       </li>
     </ul>
 
-    <el-dialog v-model="data.dialogFormVisible" title="Create a New Simulation">
+    <el-dialog v-model="data.dialogFormVisible" title="Create a New Simulation" @keyup.enter="addConfirmFn">
       <el-form :model="simulationForm" ref="simulationFormRef" :rules="simulationFormRules">
         <el-form-item label="Enter a name" prop="simulation_name">
-          <el-input v-model="simulationForm.simulation_name" />
+          <el-input v-model="simulationForm.simulation_name" @keyup.enter="addConfirmFn" />
         </el-form-item>
         <el-form-item label="Optimization Type" prop="optimization_type">
           <el-segmented
@@ -288,13 +288,13 @@
         </div>
       </template>
     </el-dialog>
-    <el-dialog v-model="data.renameDialog" title="Rename Simulation">
+    <el-dialog v-model="data.renameDialog" title="Rename Simulation" @keyup.enter="renameComfirm">
       <el-form ref="renameFormRef">
         <el-form-item label="Enter a new name" prop="simulation_name">
           <el-input v-model="data.renameForm.simulation_name" disabled />
         </el-form-item>
         <el-form-item label="Enter a new name" prop="simulation_name">
-          <el-input v-model="data.renameForm.simulation_name_new" />
+          <el-input v-model="data.renameForm.simulation_name_new" @keyup.enter="renameComfirm" />
         </el-form-item>
       </el-form>
       <template #footer>

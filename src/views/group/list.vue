@@ -136,10 +136,10 @@
       />
     </div>
 
-    <el-dialog v-model="data.showRenameGroupDialog" title="Rename Current Group">
+    <el-dialog v-model="data.showRenameGroupDialog" title="Rename Current Group" @keyup.enter="confirmRenameGroup">
       <el-form :model="renameGroupForm" label-position="top">
         <el-form-item label="Enter New Group Name" :label-width="200">
-          <el-input v-model="renameGroupForm.group_name_new" />
+          <el-input v-model="renameGroupForm.group_name_new" @keyup.enter="confirmRenameGroup" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -150,10 +150,10 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showRenameProjectDialog" title="Rename Current Analysis">
+    <el-dialog v-model="data.showRenameProjectDialog" title="Rename Current Analysis" @keyup.enter="confirmRenameProject">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter New Analysis Name" :label-width="200">
-          <el-input v-model="renameProjectForm.project_name_new" />
+          <el-input v-model="renameProjectForm.project_name_new" @keyup.enter="confirmRenameProject" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -164,10 +164,10 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showCreateProjectDialog" title="Create a New Analysis Project">
+    <el-dialog v-model="data.showCreateProjectDialog" title="Create a New Analysis Project" @keyup.enter="confirmCreateProject">
       <el-form :model="createProjectForm" label-position="top" ref="createProjectFormRef" :rules="createProjectRules">
         <el-form-item label="Enter project name" :label-width="200" prop="project_name">
-          <el-input v-model="createProjectForm.project_name" />
+          <el-input v-model="createProjectForm.project_name" @keyup.enter="confirmCreateProject" />
         </el-form-item>
         <el-form-item label="Select brand" :label-width="200" prop="brand_name">
           <el-select v-model="createProjectForm.brand_name" placeholder="Select" @change="handleBrandChange">
@@ -217,7 +217,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showShareProjectDialog" title="Share Project">
+    <el-dialog v-model="data.showShareProjectDialog" title="Share Project" @keyup.enter="shareProjectConfirm">
       <el-form
         :model="shareProjectForm"
         label-width="140"
@@ -237,10 +237,10 @@
           </el-select>
         </el-form-item> -->
         <el-form-item label="Mudid" prop="mudid">
-          <el-input v-model="shareProjectForm.mudid" />
+          <el-input v-model="shareProjectForm.mudid" @keyup.enter="shareProjectConfirm" />
         </el-form-item>
         <el-form-item label="Message">
-          <el-input v-model="shareProjectForm.msg" />
+          <el-input v-model="shareProjectForm.msg" @keyup.enter="shareProjectConfirm" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -251,7 +251,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showForkProjectDialog" title="Copy a project file">
+    <el-dialog v-model="data.showForkProjectDialog" title="Copy a project file" @keyup.enter="forkProjectConfirm">
       <el-form
         :model="forkProjectForm"
         label-width="140"
@@ -264,7 +264,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="New Project Name">
-          <el-input v-model="forkProjectForm.project_name_new" />
+          <el-input v-model="forkProjectForm.project_name_new" @keyup.enter="forkProjectConfirm" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -282,10 +282,10 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showUploadDialog" title="Upload a project file">
+    <el-dialog v-model="data.showUploadDialog" title="Upload a project file" @keyup.enter="uploadConfirm">
       <el-form :model="uploadForm" label-width="200">
         <el-form-item label="Enter a Project Name">
-          <el-input v-model="uploadForm.project_name" />
+          <el-input v-model="uploadForm.project_name" @keyup.enter="uploadConfirm" />
         </el-form-item>
         <el-form-item label="Select a project file(.JSON)">
           <el-upload

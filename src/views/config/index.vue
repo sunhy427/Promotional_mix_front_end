@@ -37,6 +37,7 @@
       size="50%"
       class="drawer-wrap"
       header-class="drawer-header"
+      @keyup.enter="confirmDrawer"
     >
       <div class="detail">
         <p>Account</p>
@@ -60,10 +61,10 @@
         </div>
       </template>
     </el-drawer>
-    <el-dialog v-model="data.showAddPermissionDialog" title="Add Permission" width="500">
+    <el-dialog v-model="data.showAddPermissionDialog" title="Add Permission" width="500" @keyup.enter="confirmAddPermission">
       <el-form :model="data.addPermissionForm" label-position="top">
         <el-form-item label="User Mudid">
-          <el-input v-model="data.addPermissionForm.username" />
+          <el-input v-model="data.addPermissionForm.username" @keyup.enter="confirmAddPermission" />
         </el-form-item>
         <el-form-item label="Role">
           <el-radio-group v-model="data.addPermissionForm.role">

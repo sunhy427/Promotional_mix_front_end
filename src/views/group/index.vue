@@ -44,10 +44,10 @@
       </div>
     </div>
     <group-list ref="ComponentGroupList"></group-list>
-    <el-dialog v-model="showDialog" title="Create a New Group">
+    <el-dialog v-model="showDialog" title="Create a New Group" @keyup.enter="createConfirm">
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter Group Name" :label-width="200">
-          <el-input v-model="form.group_name" />
+          <el-input v-model="form.group_name" @keyup.enter="createConfirm" />
         </el-form-item>
       </el-form>
       <template #footer>
