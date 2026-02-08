@@ -223,7 +223,7 @@
                 />
               </el-select>
               <el-button type="default" @click="resetROIChart" class="reset-button">
-                重置
+                Reset
               </el-button>
               <div class="chart-content">
                 <bar
@@ -250,7 +250,7 @@
                 />
               </el-select>
               <el-button type="default" @click="resetMROIChart" class="reset-button">
-                重置
+                Reset
               </el-button>
               <div class="chart-content">
                 <bar
@@ -1196,6 +1196,11 @@ const goPage = (name) => {
       .channel-select-input {
         width: 240px;
         float: right;
+        margin-right: 20px;
+      }
+      .reset-button {
+        margin-right: 20px;
+        margin-top: 20px;
       }
       .table-header-tip {
         margin: 0 5px;
