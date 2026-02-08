@@ -229,6 +229,7 @@
             <el-button
               type="primary"
               @click="commitSimulation(index)"
+              @keyup.enter="commitSimulation(index)"
               :loading="item.progressForm && item.progressForm.isPolling"
               >Confirm</el-button
             >
@@ -283,7 +284,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.dialogFormVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="addConfirmFn"> Confirm </el-button>
+          <el-button type="primary" @click="addConfirmFn" @keyup.enter="addConfirmFn"> Confirm </el-button>
         </div>
       </template>
     </el-dialog>
@@ -299,7 +300,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.renameDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="renameComfirm"> Confirm </el-button>
+          <el-button type="primary" @click="renameComfirm" @keyup.enter="renameComfirm"> Confirm </el-button>
         </div>
       </template>
     </el-dialog>

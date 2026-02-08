@@ -324,7 +324,7 @@
       </div>
     </el-card>
     <el-card class="continue-wrap">
-      <el-button type="primary" @click="goContinue">Continue</el-button>
+      <el-button type="primary" @click="goContinue" @keyup.enter="goContinue">Continue</el-button>
     </el-card>
     <!-- 暂时禁掉 -->
     <div class="foot-wrap">

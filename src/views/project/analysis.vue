@@ -157,7 +157,7 @@
         </el-form>
       </div>
       <div class="foot-button" v-if="!data.currentProject.hide">
-        <el-button type="primary" round size="small" @click="runConfirm">Confirm</el-button>
+        <el-button type="primary" round size="small" @click="runConfirm" @keyup.enter="runConfirm">Confirm</el-button>
       </div>
     </el-card>
     <el-card class="card-loading" v-if="progressForm.isPolling" v-loading="progressForm.isPolling">

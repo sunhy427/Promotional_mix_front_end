@@ -145,7 +145,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="data.showRenameGroupDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmRenameGroup"> Confirm </el-button>
+          <el-button type="primary" @click="confirmRenameGroup" @keyup.enter="confirmRenameGroup"> Confirm </el-button>
         </span>
       </template>
     </el-dialog>
@@ -159,7 +159,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="data.showRenameProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmRenameProject"> Confirm </el-button>
+          <el-button type="primary" @click="confirmRenameProject" @keyup.enter="confirmRenameProject"> Confirm </el-button>
         </span>
       </template>
     </el-dialog>
@@ -207,6 +207,7 @@
           <el-button
             type="primary"
             @click="confirmCreateProject"
+            @keyup.enter="confirmCreateProject"
             :loading="createProjectForm.loading"
             :disabled="!isFormValid"
           >
@@ -245,7 +246,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showShareProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="shareProjectConfirm()"> Confirm </el-button>
+          <el-button type="primary" @click="shareProjectConfirm()" @keyup.enter="shareProjectConfirm()"> Confirm </el-button>
         </div>
       </template>
     </el-dialog>
@@ -272,6 +273,7 @@
           <el-button
             type="primary"
             @click="forkProjectConfirm()"
+            @keyup.enter="forkProjectConfirm()"
             :loading="forkProjectForm.loading"
           >
             Confirm
@@ -304,7 +306,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showUploadDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="uploadConfirm()"> Upload </el-button>
+          <el-button type="primary" @click="uploadConfirm()" @keyup.enter="uploadConfirm()"> Upload </el-button>
         </div>
       </template>
     </el-dialog>

@@ -53,7 +53,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="createConfirm"> Confirm </el-button>
+          <el-button type="primary" @click="createConfirm" @keyup.enter="createConfirm"> Confirm </el-button>
         </span>
       </template>
     </el-dialog>

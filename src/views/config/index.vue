@@ -56,7 +56,7 @@
       <template #footer>
         <div class="footer">
           <el-button @click="data.showDrawer = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmDrawer">Update Role</el-button>
+          <el-button type="primary" @click="confirmDrawer" @keyup.enter="confirmDrawer">Update Role</el-button>
         </div>
       </template>
     </el-drawer>
@@ -75,7 +75,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showAddPermissionDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmAddPermission"> Confirm </el-button>
+          <el-button type="primary" @click="confirmAddPermission" @keyup.enter="confirmAddPermission"> Confirm </el-button>
         </div>
       </template>
     </el-dialog>
