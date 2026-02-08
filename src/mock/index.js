@@ -64,3 +64,36 @@ Mock.mock('/api/groups/aaa', 'delete', (options) => {
     status: 1
   }
 })
+
+// 模拟创建项目meta数据接口
+Mock.mock('/api/projects/empty/create/metadata', 'get', (options) => {
+  return {
+    "belynsta": {
+      "name": "belynsta",
+      "data_version_id": {
+        "202601": {
+          "name": 202601,
+          "yyyymm": {
+            "202601": {
+              "name": 202601
+            },
+            "202602": {
+              "name": 202602
+            }
+          }
+        },
+        "202602": {
+          "name": 202602,
+          "yyyymm": {
+            "202605": {
+              "name": 202605
+            },
+            "202606": {
+              "name": 202606
+            }
+          }
+        }
+      }
+    }
+  }
+})

@@ -165,12 +165,12 @@
     </el-dialog>
 
     <el-dialog v-model="data.showCreateProjectDialog" title="Create a New Analysis Project">
-      <el-form :model="createProjectForm" label-position="top">
-        <el-form-item label="Enter project name" :label-width="200">
+      <el-form :model="createProjectForm" label-position="top" ref="createProjectFormRef" :rules="createProjectRules">
+        <el-form-item label="Enter project name" :label-width="200" prop="project_name">
           <el-input v-model="createProjectForm.project_name" />
         </el-form-item>
-        <el-form-item label="Select brand" :label-width="200">
-          <el-select v-model="createProjectForm.brand_name" placeholder="Select">
+        <el-form-item label="Select brand" :label-width="200" prop="brand_name">
+          <el-select v-model="createProjectForm.brand_name" placeholder="Select" @change="handleBrandChange">
             <el-option
               :label="item"
               :value="item"
@@ -178,24 +178,26 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Select the last month of the analysis time period" :label-width="200">
-          <el-select v-model="createProjectForm.yyyymm_end" placeholder="Select">
-            <el-option
-              :label="item"
-              :value="item"
-              v-for="(item, index) in createOptions.yyyymm_end_list"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item label="Select the data version" :label-width="200">
-          <el-select v-model="createProjectForm.data_version_id" placeholder="Select">
+        <el-form-item label="Select data version" :label-width="200" prop="data_version_id">
+          <el-select v-model="createProjectForm.data_version_id" placeholder="Select" :disabled="!createProjectForm.brand_name">
             <el-option
               :label="item"
               :value="item"
               v-for="(item, index) in createOptions.data_version_id_list"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item label="Select the last month of the analysis time period" :label-width="200" prop="date_range">
+          <el-date-picker
+            v-model="createProjectForm.date_range"
+            type="monthrange"
+            range-separator="To"
+            start-placeholder="Start Month"
+            end-placeholder="End Month"
+            :disabled="!createProjectForm.brand_name"
+            @change="handleDateRangeChange"
+            value-format="YYYYMM"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -205,6 +207,7 @@
             type="primary"
             @click="confirmCreateProject"
             :loading="createProjectForm.loading"
+            :disabled="!isFormValid"
           >
             Confirm
           </el-button>
@@ -582,30 +585,114 @@ const createProjectForm = reactive({
   group_name: '',
   project_name: '',
   brand_name: '',
+  data_version_id: '',
+  date_range: [],
   loading: false,
 })
 const createOptions = reactive({
   brand_name_list: [],
-  yyyymm_end_list: [],
   data_version_id_list: [],
 })
+
+// 表单验证规则
+const createProjectRules = reactive({
+  project_name: [{ required: true, message: 'Please input project name', trigger: 'blur' }],
+  brand_name: [{ required: true, message: 'Please select brand', trigger: 'change' }],
+  data_version_id: [{ required: true, message: 'Please select data version', trigger: 'change' }],
+  date_range: [{ required: true, message: 'Please select date range', trigger: 'change' }],
+})
+
+// 表单引用
+const createProjectFormRef = ref(null)
+
+// 元数据缓存
+const metaDataCache = ref({})
+
+// 表单是否有效
+const isFormValid = computed(() => {
+  return createProjectForm.project_name && 
+         createProjectForm.brand_name && 
+         createProjectForm.data_version_id && 
+         createProjectForm.date_range && 
+         createProjectForm.date_range.length === 2 && 
+         checkDateRangeValidity()
+})
+
+// 检查日期范围有效性（跨度≥24个月）
+const checkDateRangeValidity = () => {
+  if (!createProjectForm.date_range || createProjectForm.date_range.length !== 2) {
+    return false
+  }
+  const [start, end] = createProjectForm.date_range
+  const startDate = dayjs(start, 'YYYYMM')
+  const endDate = dayjs(end, 'YYYYMM')
+  const monthsDiff = endDate.diff(startDate, 'month')
+  return monthsDiff >= 23 // 24个月跨度
+}
+
+// 品牌选择变化处理
+const handleBrandChange = (value) => {
+  createProjectForm.data_version_id = ''
+  createProjectForm.date_range = []
+  if (value && metaDataCache.value[value]) {
+    createOptions.data_version_id_list = Object.keys(metaDataCache.value[value].data_version_id)
+  } else {
+    createOptions.data_version_id_list = []
+  }
+}
+
+// 日期范围变化处理
+const handleDateRangeChange = (value) => {
+  if (value && value.length === 2) {
+    if (!checkDateRangeValidity()) {
+      ElMessage({
+        message: 'Time span must be at least 24 months',
+        type: 'error',
+      })
+    }
+  }
+}
 
 const createProjectFn = async (group_name) => {
   createProjectForm.group_name = group_name
   createProjectForm.brand_name = ''
+  createProjectForm.data_version_id = ''
+  createProjectForm.date_range = []
   data.showCreateProjectDialog = true
   let res = await createMetaData()
   if (res) {
-    createOptions.brand_name_list = res.brand_name_list
-    createOptions.yyyymm_end_list = res.yyyymm_end_list
-    createOptions.data_version_id_list = res.data_version_id_list
+    metaDataCache.value = res
+    createOptions.brand_name_list = Object.keys(res)
+    createOptions.data_version_id_list = []
   }
 }
 const confirmCreateProject = async () => {
+  // 表单校验
+  createProjectFormRef.value?.validate?.((valid) => {
+    if (valid) {
+      // 检查日期范围有效性
+      if (!checkDateRangeValidity()) {
+        ElMessage({
+          message: 'Time span must be at least 24 months',
+          type: 'error',
+        })
+        return
+      }
+      // 提交表单
+      submitCreateProject()
+    } else {
+      return false
+    }
+  })
+}
+
+const submitCreateProject = async () => {
+  const [yyyymm_start, yyyymm_end] = createProjectForm.date_range
   let param = {
     project_name: createProjectForm.project_name,
     brand_name: createProjectForm.brand_name,
-    yyyymm_end: createProjectForm.yyyymm_end,
+    yyyymm_start: yyyymm_start,
+    yyyymm_end: yyyymm_end,
     data_version_id: createProjectForm.data_version_id,
   }
   createProjectForm.loading = true
