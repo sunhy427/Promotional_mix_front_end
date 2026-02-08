@@ -8,7 +8,9 @@
 
 <script setup>
 import * as echarts from "echarts";
-import { defineProps, onMounted, reactive, watch } from "vue";
+import { defineProps, onMounted, reactive, watch, defineEmits } from "vue";
+
+const emit = defineEmits(["click"]);
 
 const props = defineProps({
   chartId: {
@@ -41,6 +43,10 @@ const initEcharts = () => {
   data.chart = echarts.init(document.getElementById(props.chartId));
   data.chart.setOption(props.options);
   
+  // 添加点击事件监听器
+  data.chart.on('click', (params) => {
+    emit('click', params);
+  });
 };
 onMounted(() => {
   initEcharts();

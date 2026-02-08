@@ -228,6 +228,7 @@
                   chartId="ROIChart"
                   v-if="ROIChartOptions.xAxis.data.length > 0"
                   :key="outputData.roi_select + pageParam.timestamp"
+                  @click="handleBarClick"
                 ></bar>
               </div>
             </div>
@@ -655,6 +656,20 @@ const changeMROI = () => {
   MROIChartOptions.xAxis.data = []
   MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
   MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
+}
+
+// 点击柱状图 bar 时的隐藏功能
+const handleBarClick = (params) => {
+  // 记录被点击的 bar 的数据索引和值
+  const dataIndex = params.dataIndex
+  const category = params.name
+  const value = params.value
+  
+  // 从图表数据中移除该 bar
+  ROIChartOptions.xAxis.data.splice(dataIndex, 1)
+  ROIChartOptions.series[0].data.splice(dataIndex, 1)
+  
+  console.log(`隐藏了 ${category}: ${value}`)
 }
 
 const changeResponse_curve = () => {
