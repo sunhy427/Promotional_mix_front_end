@@ -330,6 +330,8 @@ const runCancel = async () => {
     ElMessage({
       type: 'success',
       message: 'Task canceled',
+      showClose: true,
+      duration: 6000,
     })
   }
 }
@@ -361,6 +363,8 @@ const getCurrentModelTaskFn = async () => {
       ElMessage({
         type: 'success',
         message: 'SUCCESS',
+        showClose: true,
+      duration: 6000,
       })
       data.loading = false
       stopPolling()

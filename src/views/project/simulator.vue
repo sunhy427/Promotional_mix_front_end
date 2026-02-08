@@ -251,7 +251,11 @@
       </li>
     </ul>
 
-    <el-dialog v-model="data.dialogFormVisible" title="Create a New Simulation" @keyup.enter="addConfirmFn">
+    <el-dialog
+      v-model="data.dialogFormVisible"
+      title="Create a New Simulation"
+      @keyup.enter="addConfirmFn"
+    >
       <el-form :model="simulationForm" ref="simulationFormRef" :rules="simulationFormRules">
         <el-form-item label="Enter a name" prop="simulation_name">
           <el-input v-model="simulationForm.simulation_name" @keyup.enter="addConfirmFn" />
@@ -284,7 +288,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.dialogFormVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="addConfirmFn" @keyup.enter="addConfirmFn"> Confirm </el-button>
+          <el-button type="primary" @click="addConfirmFn" @keyup.enter="addConfirmFn">
+            Confirm
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -300,7 +306,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.renameDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="renameComfirm" @keyup.enter="renameComfirm"> Confirm </el-button>
+          <el-button type="primary" @click="renameComfirm" @keyup.enter="renameComfirm">
+            Confirm
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -414,6 +422,8 @@ const addConfirmFn = async () => {
         ElMessage({
           message: 'Create success!',
           type: 'success',
+          showClose: true,
+          duration: 6000,
         })
 
         data.dialogFormVisible = false
@@ -528,6 +538,8 @@ const renameComfirm = async () => {
     ElMessage({
       message: 'Create success!',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     data.renameDialog = false
     getProjectListFn()
@@ -562,6 +574,8 @@ const deleteSimulationFn = async (simulation_name) => {
     ElMessage({
       type: 'success',
       message: 'Delete success',
+      showClose: true,
+      duration: 6000,
     })
     getProjectListFn()
   }
@@ -757,6 +771,8 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
       ElMessage({
         type: 'success',
         message: 'SUCCESS',
+        showClose: true,
+        duration: 6000,
       })
       data.loading = false
       stopPolling(index)
@@ -897,6 +913,8 @@ const simulationVisibilityFn = async (simulation, visible) => {
     ElMessage({
       type: 'success',
       message: visible === 1 ? 'visible' : 'not visible',
+      showClose: true,
+      duration: 6000,
     })
     let index = data.simulationList.findIndex((item) => {
       return item.simulation_name === simulation

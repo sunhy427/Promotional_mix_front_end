@@ -128,7 +128,7 @@ const deleteConfirm = (id) => {
       ElMessage({
         type: 'info',
         message: 'Delete canceled',
-      })
+        })
     })
 }
 
@@ -138,6 +138,8 @@ const deletePermissionFn = async (id) => {
     ElMessage({
       type: 'success',
       message: 'Remove success',
+      showClose: true,
+      duration: 6000,
     })
     getPermissionList()
   }
@@ -156,6 +158,8 @@ const confirmDrawer = async () => {
     ElMessage({
       message: 'Update role success .',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     getPermissionList()
   }
@@ -168,6 +172,8 @@ const confirmAddPermission = async () => {
     ElMessage({
       type: 'success',
       message: 'Add success',
+      showClose: true,
+      duration: 6000,
     })
     getPermissionList()
   }

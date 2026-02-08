@@ -105,6 +105,8 @@ const create = async () => {
     ElMessage({
       message: 'create success',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     ComponentGroupList.value.getList()
     showDialog.value = false
@@ -139,6 +141,8 @@ const logoutFn = async () => {
     ElMessage({
       message: 'logout success',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
   }
 }

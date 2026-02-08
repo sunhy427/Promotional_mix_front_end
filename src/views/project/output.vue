@@ -860,7 +860,6 @@ const costDistributionOptions = reactive({
   //   trigger: 'item',
   // },
   legend: {
-    type: 'scroll',
     // orient: 'vertical',
     // right: 10,
     top: 'bottom',
@@ -1061,7 +1060,7 @@ const totalPromotionOptions = reactive({
   //   trigger: 'item',
   // },
   legend: {
-    type: 'scroll',
+    // type: 'scroll',
     // orient: 'vertical',
     // right: 10,
     top: 'bottom',

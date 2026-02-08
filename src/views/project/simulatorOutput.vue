@@ -445,7 +445,7 @@ const current_changeROI = () => {
 // ROIChart 数据备份
 const roiChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 备份 ROIChart 的完整数据
@@ -453,9 +453,9 @@ const backupROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(roiChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(ROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(ROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(ROIChartOptions.series[0].data)),
   })
-  
+
   console.log('ROIChart 数据已备份:', roiChartDataBackup)
 }
 
@@ -476,18 +476,18 @@ const handleROIBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   ROIChartOptions.xAxis.data.splice(dataIndex, 1)
   ROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
 // MROIChart 数据备份
 const mroiChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 备份 MROIChart 的完整数据
@@ -495,9 +495,9 @@ const backupMROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(mroiChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(MROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(MROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(MROIChartOptions.series[0].data)),
   })
-  
+
   console.log('MROIChart 数据已备份:', mroiChartDataBackup)
 }
 
@@ -518,18 +518,18 @@ const handleMROIBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   MROIChartOptions.xAxis.data.splice(dataIndex, 1)
   MROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
 // Current ROIChart 数据备份
 const currentROIChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 备份 Current ROIChart 的完整数据
@@ -537,9 +537,9 @@ const backupCurrentROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(currentROIChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(current_ROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(current_ROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(current_ROIChartOptions.series[0].data)),
   })
-  
+
   console.log('Current ROIChart 数据已备份:', currentROIChartDataBackup)
 }
 
@@ -560,18 +560,18 @@ const handleCurrentROIBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   current_ROIChartOptions.xAxis.data.splice(dataIndex, 1)
   current_ROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
 // Current MROIChart 数据备份
 const currentMROIChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 备份 Current MROIChart 的完整数据
@@ -579,9 +579,9 @@ const backupCurrentMROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(currentMROIChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(current_MROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(current_MROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(current_MROIChartOptions.series[0].data)),
   })
-  
+
   console.log('Current MROIChart 数据已备份:', currentMROIChartDataBackup)
 }
 
@@ -602,11 +602,11 @@ const handleCurrentMROIBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   current_MROIChartOptions.xAxis.data.splice(dataIndex, 1)
   current_MROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 const promotionOptions = reactive({
@@ -647,13 +647,15 @@ const promotionOptions = reactive({
           for (let i = 0; i < promotionOptions.series.length; i++) {
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
-          let percent = ((params.value / sum) * 100).toFixed(1) 
+          let percent = ((params.value / sum) * 100).toFixed(1)
 
           let current_sum =
             current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
 
-          let current_percent =
-            ((current_promotionOptions.series[0].data[0] / current_sum) * 100).toFixed(1) 
+          let current_percent = (
+            (current_promotionOptions.series[0].data[0] / current_sum) *
+            100
+          ).toFixed(1)
 
           let label =
             translateNumber(params.value, percent) +
@@ -683,7 +685,7 @@ const promotionOptions = reactive({
           for (let i = 0; i < promotionOptions.series.length; i++) {
             sum += promotionOptions.series[i].data[params.dataIndex]
           }
-          let percent = ((params.value / sum) * 100).toFixed(1) 
+          let percent = ((params.value / sum) * 100).toFixed(1)
           let current_sum =
             current_promotionOptions.series[0].data[0] + current_promotionOptions.series[1].data[0]
           let current_percent = (
@@ -708,7 +710,7 @@ const promotionOptions = reactive({
 
 const totalPromotionOptions = reactive({
   legend: {
-    type: 'scroll',
+    // type: 'scroll',
     top: 'bottom',
     bottom: 20,
   },
@@ -816,8 +818,8 @@ const costDistributionOptions = reactive({
   //   trigger: 'item',
   // },
   legend: {
-    type: 'scroll',
-    orient: 'horizontal',
+    // type: 'scroll',
+    // orient: 'horizontal',
     top: 'bottom',
     // right: 10,
     // bottom: 10,
@@ -873,7 +875,7 @@ const current_costDistributionOptions = reactive({
   //   trigger: 'item',
   // },
   legend: {
-    type: 'scroll',
+    // type: 'scroll',
     // orient: 'vertical',
     // right: 10,
     top: 'bottom',
@@ -989,7 +991,7 @@ const current_totalPromotionOptions = reactive({
   //   trigger: 'item',
   // },
   legend: {
-    type: 'scroll',
+    // type: 'scroll',
     // orient: 'vertical',
     // right: 10,
     top: 'bottom',

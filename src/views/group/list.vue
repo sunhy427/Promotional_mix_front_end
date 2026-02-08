@@ -136,7 +136,11 @@
       />
     </div>
 
-    <el-dialog v-model="data.showRenameGroupDialog" title="Rename Current Group" @keyup.enter="confirmRenameGroup">
+    <el-dialog
+      v-model="data.showRenameGroupDialog"
+      title="Rename Current Group"
+      @keyup.enter="confirmRenameGroup"
+    >
       <el-form :model="renameGroupForm" label-position="top">
         <el-form-item label="Enter New Group Name" :label-width="200">
           <el-input v-model="renameGroupForm.group_name_new" @keyup.enter="confirmRenameGroup" />
@@ -145,32 +149,60 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="data.showRenameGroupDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmRenameGroup" @keyup.enter="confirmRenameGroup"> Confirm </el-button>
+          <el-button type="primary" @click="confirmRenameGroup" @keyup.enter="confirmRenameGroup">
+            Confirm
+          </el-button>
         </span>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showRenameProjectDialog" title="Rename Current Analysis" @keyup.enter="confirmRenameProject">
+    <el-dialog
+      v-model="data.showRenameProjectDialog"
+      title="Rename Current Analysis"
+      @keyup.enter="confirmRenameProject"
+    >
       <el-form :model="form" label-position="top">
         <el-form-item label="Enter New Analysis Name" :label-width="200">
-          <el-input v-model="renameProjectForm.project_name_new" @keyup.enter="confirmRenameProject" />
+          <el-input
+            v-model="renameProjectForm.project_name_new"
+            @keyup.enter="confirmRenameProject"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="data.showRenameProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="confirmRenameProject" @keyup.enter="confirmRenameProject"> Confirm </el-button>
+          <el-button
+            type="primary"
+            @click="confirmRenameProject"
+            @keyup.enter="confirmRenameProject"
+          >
+            Confirm
+          </el-button>
         </span>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showCreateProjectDialog" title="Create a New Analysis Project" @keyup.enter="confirmCreateProject">
-      <el-form :model="createProjectForm" label-position="top" ref="createProjectFormRef" :rules="createProjectRules">
+    <el-dialog
+      v-model="data.showCreateProjectDialog"
+      title="Create a New Analysis Project"
+      @keyup.enter="confirmCreateProject"
+    >
+      <el-form
+        :model="createProjectForm"
+        label-position="top"
+        ref="createProjectFormRef"
+        :rules="createProjectRules"
+      >
         <el-form-item label="Enter project name" :label-width="200" prop="project_name">
           <el-input v-model="createProjectForm.project_name" @keyup.enter="confirmCreateProject" />
         </el-form-item>
         <el-form-item label="Select brand" :label-width="200" prop="brand_name">
-          <el-select v-model="createProjectForm.brand_name" placeholder="Select" @change="handleBrandChange">
+          <el-select
+            v-model="createProjectForm.brand_name"
+            placeholder="Select"
+            @change="handleBrandChange"
+          >
             <el-option
               :label="item"
               :value="item"
@@ -179,7 +211,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="Select data version" :label-width="200" prop="data_version_id">
-          <el-select v-model="createProjectForm.data_version_id" placeholder="Select" :disabled="!createProjectForm.brand_name" @change="handleDataVersionChange">
+          <el-select
+            v-model="createProjectForm.data_version_id"
+            placeholder="Select"
+            :disabled="!createProjectForm.brand_name"
+            @change="handleDataVersionChange"
+          >
             <el-option
               :label="item"
               :value="item"
@@ -187,7 +224,11 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Select the last month of the analysis time period" :label-width="200" prop="date_range">
+        <el-form-item
+          label="Select the last month of the analysis time period"
+          :label-width="200"
+          prop="date_range"
+        >
           <el-date-picker
             v-model="createProjectForm.date_range"
             type="monthrange"
@@ -217,7 +258,11 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showShareProjectDialog" title="Share Project" @keyup.enter="shareProjectConfirm">
+    <el-dialog
+      v-model="data.showShareProjectDialog"
+      title="Share Project"
+      @keyup.enter="shareProjectConfirm"
+    >
       <el-form
         :model="shareProjectForm"
         label-width="140"
@@ -246,12 +291,22 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showShareProjectDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="shareProjectConfirm()" @keyup.enter="shareProjectConfirm()"> Confirm </el-button>
+          <el-button
+            type="primary"
+            @click="shareProjectConfirm()"
+            @keyup.enter="shareProjectConfirm()"
+          >
+            Confirm
+          </el-button>
         </div>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showForkProjectDialog" title="Copy a project file" @keyup.enter="forkProjectConfirm">
+    <el-dialog
+      v-model="data.showForkProjectDialog"
+      title="Copy a project file"
+      @keyup.enter="forkProjectConfirm"
+    >
       <el-form
         :model="forkProjectForm"
         label-width="140"
@@ -282,7 +337,11 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="data.showUploadDialog" title="Upload a project file" @keyup.enter="uploadConfirm">
+    <el-dialog
+      v-model="data.showUploadDialog"
+      title="Upload a project file"
+      @keyup.enter="uploadConfirm"
+    >
       <el-form :model="uploadForm" label-width="200">
         <el-form-item label="Enter a Project Name">
           <el-input v-model="uploadForm.project_name" @keyup.enter="uploadConfirm" />
@@ -306,7 +365,9 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="data.showUploadDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="uploadConfirm()" @keyup.enter="uploadConfirm()"> Upload </el-button>
+          <el-button type="primary" @click="uploadConfirm()" @keyup.enter="uploadConfirm()">
+            Upload
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -476,6 +537,8 @@ const deleteProjectFn = async (group_name, project_name) => {
     ElMessage({
       message: 'delete success',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     // 请求
     getList()
@@ -509,6 +572,8 @@ const deleteGroupFn = async (group_name) => {
     ElMessage({
       type: 'success',
       message: 'Delete completed',
+      showClose: true,
+      duration: 6000,
     })
     getList()
   } else {
@@ -544,6 +609,8 @@ const renameGroupConfirm = async () => {
     ElMessage({
       type: 'success',
       message: 'Rename completed',
+      showClose: true,
+      duration: 6000,
     })
     data.showRenameGroupDialog = false
     getList()
@@ -578,6 +645,8 @@ const renameProjectFn = async () => {
     ElMessage({
       type: 'success',
       message: 'Rename completed',
+      showClose: true,
+      duration: 6000,
     })
     data.showRenameProjectDialog = false
     getList()
@@ -617,24 +686,24 @@ const disabledDate = (time) => {
   if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
     return true
   }
-  
+
   // 获取当前选择的品牌和数据版本对应的可用日期
   const availableMonths = getAvailableMonths()
   console.log('Available months:', availableMonths) // 调试信息
-  
+
   if (!availableMonths.length) {
     return true
   }
-  
+
   // 格式化日期为 YYYYMM 格式
   const year = time.getFullYear()
   const month = String(time.getMonth() + 1).padStart(2, '0')
   const dateStr = `${year}${month}`
-  
+
   // 检查日期是否在可用列表中
   const isDisabled = !availableMonths.includes(dateStr)
   console.log(`Date ${dateStr} is ${isDisabled ? 'disabled' : 'enabled'}`) // 调试信息
-  
+
   return isDisabled
 }
 
@@ -661,12 +730,14 @@ const handleDataVersionChange = (value) => {
 
 // 表单是否有效
 const isFormValid = computed(() => {
-  return createProjectForm.project_name && 
-         createProjectForm.brand_name && 
-         createProjectForm.data_version_id && 
-         createProjectForm.date_range && 
-         createProjectForm.date_range.length === 2 && 
-         checkDateRangeValidity()
+  return (
+    createProjectForm.project_name &&
+    createProjectForm.brand_name &&
+    createProjectForm.data_version_id &&
+    createProjectForm.date_range &&
+    createProjectForm.date_range.length === 2 &&
+    checkDateRangeValidity()
+  )
 })
 
 // 检查日期范围有效性（跨度≥24个月）
@@ -753,6 +824,8 @@ const submitCreateProject = async () => {
     ElMessage({
       message: 'create success',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     data.showCreateProjectDialog = false
     getList()
@@ -804,6 +877,8 @@ const uploadSuccess = (res) => {
     ElMessage({
       type: 'success',
       message: 'Upload success',
+      showClose: true,
+      duration: 6000,
     })
     data.showUploadDialog = false
   } else {
@@ -826,6 +901,8 @@ const shareProjectFn = async () => {
     ElMessage({
       type: 'success',
       message: 'Share Success',
+      showClose: true,
+      duration: 6000,
     })
     data.showShareProjectDialog = false
   } else {
@@ -892,6 +969,8 @@ const forkProjectFn = async () => {
     ElMessage({
       type: 'success',
       message: 'Copy Success',
+      showClose: true,
+      duration: 6000,
     })
     data.showForkProjectDialog = false
     getList()
@@ -914,6 +993,8 @@ const publishProjectFn = async (group_name, project_name, is_publish) => {
     ElMessage({
       message: is_publish === true ? 'Cancel publish success' : 'Publish success',
       type: 'success',
+      showClose: true,
+      duration: 6000,
     })
     getList()
   }
