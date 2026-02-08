@@ -66,34 +66,57 @@ Mock.mock('/api/groups/aaa', 'delete', (options) => {
 })
 
 // 模拟创建项目meta数据接口
-Mock.mock('/api/projects/empty/create/metadata', 'get', (options) => {
+Mock.mock('/multichannel/projects/empty/create/metadata', 'get', (options) => {
   return {
     "belynsta": {
       "name": "belynsta",
       "data_version_id": {
         "202601": {
           "name": 202601,
-          "yyyymm": {
-            "202601": {
-              "name": 202601
-            },
-            "202602": {
-              "name": 202602
-            }
-          }
+          "yyyymm": generateMonths(202401, 202612) // 跨度36个月
         },
         "202602": {
           "name": 202602,
-          "yyyymm": {
-            "202605": {
-              "name": 202605
-            },
-            "202606": {
-              "name": 202606
-            }
-          }
+          "yyyymm": generateMonths(202301, 202512) // 跨度36个月
+        }
+      }
+    },
+    "another_brand": {
+      "name": "another_brand",
+      "data_version_id": {
+        "202501": {
+          "name": 202501,
+          "yyyymm": generateMonths(202201, 202412) // 跨度36个月
+        },
+        "202502": {
+          "name": 202502,
+          "yyyymm": generateMonths(202101, 202312) // 跨度36个月
         }
       }
     }
   }
 })
+
+// 生成连续的月份数组（YYYYMM格式）
+function generateMonths(start, end) {
+  const months = {}
+  const startYear = Math.floor(start / 100)
+  const startMonth = start % 100
+  const endYear = Math.floor(end / 100)
+  const endMonth = end % 100
+
+  let currentYear = startYear
+  let currentMonth = startMonth
+
+  while (currentYear < endYear || (currentYear === endYear && currentMonth <= endMonth)) {
+    const yyyymm = `${currentYear}${String(currentMonth).padStart(2, '0')}`
+    months[yyyymm] = { name: parseInt(yyyymm) }
+    currentMonth++
+    if (currentMonth > 12) {
+      currentMonth = 1
+      currentYear++
+    }
+  }
+
+  return months
+}

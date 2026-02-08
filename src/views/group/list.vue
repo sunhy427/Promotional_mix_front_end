@@ -179,7 +179,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="Select data version" :label-width="200" prop="data_version_id">
-          <el-select v-model="createProjectForm.data_version_id" placeholder="Select" :disabled="!createProjectForm.brand_name">
+          <el-select v-model="createProjectForm.data_version_id" placeholder="Select" :disabled="!createProjectForm.brand_name" @change="handleDataVersionChange">
             <el-option
               :label="item"
               :value="item"
@@ -194,9 +194,10 @@
             range-separator="To"
             start-placeholder="Start Month"
             end-placeholder="End Month"
-            :disabled="!createProjectForm.brand_name"
+            :disabled="!createProjectForm.brand_name || !createProjectForm.data_version_id"
             @change="handleDateRangeChange"
             value-format="YYYYMM"
+            :picker-options="datePickerOptions"
           />
         </el-form-item>
       </el-form>
@@ -607,6 +608,44 @@ const createProjectFormRef = ref(null)
 
 // 元数据缓存
 const metaDataCache = ref({})
+
+// 日期选择器可选范围
+const datePickerOptions = reactive({
+  disabledDate: (time) => {
+    // 如果未选择数据版本，禁用所有日期
+    if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
+      return true
+    }
+    // 获取当前选择的品牌和数据版本对应的可用日期
+    const availableMonths = getAvailableMonths()
+    if (!availableMonths.length) {
+      return true
+    }
+    const dateStr = dayjs(time).format('YYYYMM')
+    return !availableMonths.includes(dateStr)
+  }
+})
+
+// 获取可用的月份列表
+const getAvailableMonths = () => {
+  if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
+    return []
+  }
+  const brandData = metaDataCache.value[createProjectForm.brand_name]
+  if (!brandData || !brandData.data_version_id) {
+    return []
+  }
+  const versionData = brandData.data_version_id[createProjectForm.data_version_id]
+  if (!versionData || !versionData.yyyymm) {
+    return []
+  }
+  return Object.keys(versionData.yyyymm)
+}
+
+// 数据版本选择变化处理
+const handleDataVersionChange = (value) => {
+  createProjectForm.date_range = []
+}
 
 // 表单是否有效
 const isFormValid = computed(() => {
