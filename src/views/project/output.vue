@@ -908,7 +908,7 @@ const costByChannelOptions = reactive({
       name: 'Cost(CNY)',
       type: 'value',
       axisLabel: {
-        formatter: '{value}',
+        formatter: (value) => formatNumber(value),
       },
       splitLine: {
         show: false,
@@ -918,7 +918,7 @@ const costByChannelOptions = reactive({
       name: 'Sales(CNY) ',
       type: 'value',
       axisLabel: {
-        formatter: '{value}',
+        formatter: (value) => formatNumber(value),
       },
     },
   ],
@@ -942,7 +942,7 @@ const touchByChannelOptions = reactive({
       name: 'Touch Point',
       type: 'value',
       axisLabel: {
-        formatter: '{value}',
+        formatter: (value) => formatNumber(value),
       },
       splitLine: {
         show: false,
@@ -952,7 +952,7 @@ const touchByChannelOptions = reactive({
       name: 'Sales(CNY)',
       type: 'value',
       axisLabel: {
-        formatter: '{value}',
+        formatter: (value) => formatNumber(value),
       },
     },
   ],
@@ -1167,7 +1167,7 @@ const responseCurveOptions = reactive({
   yAxis: {
     type: 'value',
     axisLabel: {
-      formatter: '{value}',
+      formatter: (value) => formatNumber(value),
     },
   },
   series: [
