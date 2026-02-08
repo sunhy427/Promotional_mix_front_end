@@ -123,7 +123,7 @@
             </el-col>
             <el-col :span="16">
               <div class="item">
-                <p class="title">Total promotion Contribution</p>
+                <p class="title">Total Promotion Contribution</p>
                 <bar
                   :options="totalPromotionOptions"
                   :chartId="props.simulation + '_totalPromotion'"
