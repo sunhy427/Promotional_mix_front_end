@@ -886,13 +886,7 @@ const costDistributionOptions = reactive({
       label: {
         formatter: (params) => {
           let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
-          } else {
-            return num.toFixed(2) + '，' + params.percent + '%'
-          }
+          return formatNumber(num) + '，' + params.percent + '%'
         },
       },
       data: [],

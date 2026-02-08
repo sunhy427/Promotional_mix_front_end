@@ -859,15 +859,7 @@ const costDistributionOptions = reactive({
 })
 
 const translateNumber = (num, percent) => {
-  let numStr = ''
-  if (num >= 1e9) {
-    numStr = (num / 1e9).toFixed(2) + 'B' + '，' + percent + '%'
-  } else if (num >= 1e6) {
-    numStr = (num / 1e6).toFixed(2) + 'M' + '，' + percent + '%'
-  } else {
-    numStr = num.toFixed(2) + '，' + percent + '%'
-  }
-  return numStr
+  return formatNumber(num) + '，' + percent + '%'
 }
 
 const current_costDistributionOptions = reactive({
@@ -896,13 +888,7 @@ const current_costDistributionOptions = reactive({
       label: {
         formatter: (params) => {
           let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
-          } else {
-            return num.toFixed(2) + '，' + params.percent + '%'
-          }
+          return formatNumber(num) + '，' + params.percent + '%'
         },
       },
       data: [],
@@ -1012,13 +998,7 @@ const current_totalPromotionOptions = reactive({
       label: {
         formatter: (params) => {
           let num = params.value
-          if (num >= 1e9) {
-            return (num / 1e9).toFixed(2) + 'B' + '，' + params.percent + '%'
-          } else if (num >= 1e6) {
-            return (num / 1e6).toFixed(2) + 'M' + '，' + params.percent + '%'
-          } else {
-            return num.toFixed(2) + '，' + params.percent + '%'
-          }
+          return formatNumber(num) + '，' + params.percent + '%'
         },
       },
       data: [],
