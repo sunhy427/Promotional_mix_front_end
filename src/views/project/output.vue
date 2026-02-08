@@ -222,6 +222,9 @@
                   :value="item"
                 />
               </el-select>
+              <el-button type="default" @click="resetROIChart" class="reset-button">
+                重置
+              </el-button>
               <div class="chart-content">
                 <bar
                   :options="ROIChartOptions"
@@ -650,7 +653,38 @@ const changeROI = () => {
   ROIChartOptions.xAxis.data = []
   ROIChartOptions.series[0].data = outputData.roi[outputData.roi_select].y
   ROIChartOptions.xAxis.data = outputData.roi[outputData.roi_select].x
+  
+  // 备份完整数据
+  backupROIChartData()
 }
+
+// 备份 ROIChart 的完整数据
+const backupROIChartData = () => {
+  // 深拷贝数据以防止引用问题
+  roiChartDataBackup = JSON.parse(JSON.stringify({
+    xAxis: ROIChartOptions.xAxis.data,
+    series: ROIChartOptions.series[0].data
+  }))
+  
+  console.log('ROIChart 数据已备份:', roiChartDataBackup)
+}
+
+// 重置 ROIChart，显示所有隐藏的 bar
+const resetROIChart = () => {
+  if (roiChartDataBackup) {
+    ROIChartOptions.xAxis.data = [...roiChartDataBackup.xAxis]
+    ROIChartOptions.series[0].data = [...roiChartDataBackup.series]
+    console.log('ROIChart 已重置')
+  } else {
+    console.log('没有找到可重置的数据')
+  }
+}
+
+// ROIChart 数据备份
+const roiChartDataBackup = reactive({
+  xAxis: [],
+  series: []
+})
 
 const changeMROI = () => {
   MROIChartOptions.xAxis.data = []
