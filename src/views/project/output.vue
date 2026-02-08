@@ -1157,12 +1157,9 @@ const responseCurveOptions = reactive({
   xAxis: {
     type: 'value',
     data: [],
-    // axisLabel: {
-    //   formatter: (params) => {
-    //      return Number(params).toFixed(0)
-    //     // return 4000
-    //   },
-    // },
+    axisLabel: {
+      formatter: (value) => formatNumber(value),
+    },
   },
   yAxis: {
     type: 'value',
