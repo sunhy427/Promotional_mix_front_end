@@ -616,12 +616,19 @@ const datePickerOptions = reactive({
     if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
       return true
     }
+    
     // 获取当前选择的品牌和数据版本对应的可用日期
     const availableMonths = getAvailableMonths()
     if (!availableMonths.length) {
       return true
     }
-    const dateStr = dayjs(time).format('YYYYMM')
+    
+    // 格式化日期为 YYYYMM 格式
+    const year = time.getFullYear()
+    const month = String(time.getMonth() + 1).padStart(2, '0')
+    const dateStr = `${year}${month}`
+    
+    // 检查日期是否在可用列表中
     return !availableMonths.includes(dateStr)
   }
 })
