@@ -184,15 +184,11 @@
           <el-col :span="10">
             <span class="title">Promotion VS Non-promotion</span>
             <div class="chart-content">
-              <el-button type="default" @click="resetPromotionChart" class="reset-button">
-                Reset
-              </el-button>
               <bar
                 :options="promotionOptions"
                 chartId="promotion"
                 v-if="promotionOptions.xAxis[0].data.length > 0"
                 :key="pageParam.timestamp"
-                @click="handlePromotionBarClick"
               ></bar>
             </div>
           </el-col>
@@ -662,7 +658,7 @@ const changeROI = () => {
   ROIChartOptions.xAxis.data = []
   ROIChartOptions.series[0].data = outputData.roi[outputData.roi_select].y
   ROIChartOptions.xAxis.data = outputData.roi[outputData.roi_select].x
-  
+
   // 备份完整数据
   backupROIChartData()
 }
@@ -672,9 +668,9 @@ const backupROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(roiChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(ROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(ROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(ROIChartOptions.series[0].data)),
   })
-  
+
   console.log('ROIChart 数据已备份:', roiChartDataBackup)
 }
 
@@ -692,14 +688,14 @@ const resetROIChart = () => {
 // ROIChart 数据备份
 const roiChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 const changeMROI = () => {
   MROIChartOptions.xAxis.data = []
   MROIChartOptions.series[0].data = outputData.mroi[outputData.mroi_select].y
   MROIChartOptions.xAxis.data = outputData.mroi[outputData.mroi_select].x
-  
+
   // 备份完整数据
   backupMROIChartData()
 }
@@ -709,9 +705,9 @@ const backupMROIChartData = () => {
   // 深拷贝数据以防止引用问题
   Object.assign(mroiChartDataBackup, {
     xAxis: JSON.parse(JSON.stringify(MROIChartOptions.xAxis.data)),
-    series: JSON.parse(JSON.stringify(MROIChartOptions.series[0].data))
+    series: JSON.parse(JSON.stringify(MROIChartOptions.series[0].data)),
   })
-  
+
   console.log('MROIChart 数据已备份:', mroiChartDataBackup)
 }
 
@@ -732,18 +728,18 @@ const handleMROIBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   MROIChartOptions.xAxis.data.splice(dataIndex, 1)
   MROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
 // MROIChart 数据备份
 const mroiChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 点击柱状图 bar 时的隐藏功能
@@ -752,18 +748,18 @@ const handleBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   ROIChartOptions.xAxis.data.splice(dataIndex, 1)
   ROIChartOptions.series[0].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
 // promotionOptions 数据备份
 const promotionChartDataBackup = reactive({
   xAxis: [],
-  series: []
+  series: [],
 })
 
 // 备份 promotionOptions 的完整数据
@@ -773,10 +769,10 @@ const backupPromotionChartData = () => {
     xAxis: JSON.parse(JSON.stringify(promotionOptions.xAxis[0].data)),
     series: [
       JSON.parse(JSON.stringify(promotionOptions.series[0].data)),
-      JSON.parse(JSON.stringify(promotionOptions.series[1].data))
-    ]
+      JSON.parse(JSON.stringify(promotionOptions.series[1].data)),
+    ],
   })
-  
+
   console.log('promotionOptions 数据已备份:', promotionChartDataBackup)
 }
 
@@ -798,12 +794,12 @@ const handlePromotionBarClick = (params) => {
   const dataIndex = params.dataIndex
   const category = params.name
   const value = params.value
-  
+
   // 从图表数据中移除该 bar
   promotionOptions.xAxis[0].data.splice(dataIndex, 1)
   promotionOptions.series[0].data.splice(dataIndex, 1)
   promotionOptions.series[1].data.splice(dataIndex, 1)
-  
+
   console.log(`隐藏了 ${category}: ${value}`)
 }
 
