@@ -8,24 +8,24 @@
         :data="simulationOutput.optimal_channel_performance"
       >
         <el-table-column prop="channel" label="Channel" />
-        <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="formatNumber" />
-        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="formatNumber" />
+        <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="tableFormatNumber" />
+        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="tableFormatNumber" />
         <el-table-column
           prop="sales_contribution_pct_simulated"
           label="Sales % Contribution(simulated)"
-          :formatter="formatNumber"
+          :formatter="formatNumberFG"
         />
         <el-table-column
           prop="sales_contribution_simulated"
           label="Sales Contribution(simulated)"
-          :formatter="formatNumberto0"
+          :formatter="tableFormatNumber"
         />
         <el-table-column
           prop="spending_simulated"
           label="Spending(simulated)"
-          :formatter="formatNumberto0"
+          :formatter="tableFormatNumber"
         />
-        <el-table-column prop="tp_simulated" label="TP(simulated)" :formatter="formatNumberto0" />
+        <el-table-column prop="tp_simulated" label="TP(simulated)" :formatter="tableFormatNumber" />
 
         <el-table-column prop="gr_in_sales_simulated" label="GR in Sales(simulated)" />
         <el-table-column prop="gr_in_spending_simulated" label="GR in Spending(simulated)" />
@@ -39,9 +39,9 @@
         :data="simulationOutput.current_channel_performance"
       >
         <el-table-column prop="channel" label="Channel" />
-        <el-table-column prop="roi" label="ROI" :formatter="formatNumber" />
+        <el-table-column prop="roi" label="ROI" :formatter="tableFormatNumber" />
 
-        <el-table-column prop="mroi" label="MROI" :formatter="formatNumber" />
+        <el-table-column prop="mroi" label="MROI" :formatter="tableFormatNumber" />
         <el-table-column
           prop="sales_contribution_pct"
           label="Sales % Contribution"
@@ -50,10 +50,10 @@
         <el-table-column
           prop="sales_contribution"
           label="Sales Contribution"
-          :formatter="formatNumberto0"
+          :formatter="tableFormatNumber"
         />
 
-        <el-table-column prop="spending" label="Spending" :formatter="formatNumberto0" />
+        <el-table-column prop="spending" label="Spending" :formatter="tableFormatNumber" />
       </el-table>
     </div>
     <el-tabs type="border-card" v-model="data.tabValue">
@@ -93,17 +93,17 @@
                     <el-table-column
                       prop="unit_price"
                       label="unit price"
-                      :formatter="formatNumber"
+                      :formatter="tableFormatNumber"
                     />
                     <el-table-column
                       prop="tp_simulated"
                       label="tp simulated"
-                      :formatter="formatNumberto0"
+                      :formatter="tableFormatNumber"
                     />
                     <el-table-column
                       prop="price"
                       label="current unit price"
-                      :formatter="formatNumber"
+                      :formatter="tableFormatNumber"
                     />
                   </el-table>
                 </div>
@@ -192,7 +192,7 @@
                     prop="price"
                     label="Unit Price(CNY per TP)"
                     align="center"
-                    :formatter="formatNumber"
+                    :formatter="tableFormatNumber"
                   />
                 </el-table>
               </div>
@@ -267,6 +267,17 @@ import { useRouter } from 'vue-router'
 import { nextTick, onMounted, reactive, watch } from 'vue'
 import { previewSimulations } from '../../api/api'
 import bar from '../../components/bar.vue'
+import { formatNumber } from '../../utils/format'
+
+// 格式化百分比的函数
+const formatNumberFG = (row, column, cellValue) => {
+  return Number(cellValue * 100).toFixed(2) + '%'
+}
+
+// 表格格式化函数包装器
+const tableFormatNumber = (row, column, cellValue) => {
+  return formatNumber(cellValue)
+}
 
 const router = useRouter()
 const props = defineProps({
@@ -310,17 +321,6 @@ const Current_output = reactive({
   roi_select: '',
 })
 
-const formatNumber = (row, column, cellValue) => {
-  // return Number(Number(cellValue).toFixed(2)).toLocaleString()
-  return Number(cellValue).toFixed(2)
-}
-
-const formatNumberto0 = (row, column, cellValue) => {
-  return Number(Number(cellValue).toFixed(0)).toLocaleString()
-}
-const formatNumberFG = (row, column, cellValue) => {
-  return Number(cellValue * 100).toFixed(2) + '%'
-}
 const previewSimulationsFn = async () => {
   let param = {
     group_name: data.group_name,

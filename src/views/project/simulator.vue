@@ -333,6 +333,7 @@ import {
 import { useRouter } from 'vue-router'
 import Output from './simulatorOutput.vue'
 import { basic } from '../../config'
+import { formatNumber } from '../../utils/format'
 
 const emits = defineEmits(['setProject'])
 const router = useRouter()
@@ -580,22 +581,13 @@ const deleteSimulationFn = async (simulation_name) => {
     getProjectListFn()
   }
 }
+// 表格格式化函数包装器
 const floatFormat = (row, column, cellValue) => {
-  if (cellValue) {
-    return Number(cellValue)
-      .toFixed(2)
-      .replace(/(\d)(?=(\d{3})+\.)/g, ($0, $1) => {
-        return $1 + ','
-      })
-      .replace(/\.$/, '')
-  }
+  return formatNumber(cellValue)
 }
+
 const floatFormat0 = (cellValue) => {
-  if (cellValue) {
-    return Number(cellValue)
-      .toFixed(0)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  }
+  return formatNumber(cellValue)
 }
 
 const commitSimulation = async (index) => {

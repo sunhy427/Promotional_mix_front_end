@@ -110,7 +110,7 @@
             <div class="chart-content">
               <el-table :data="outputData.current_unit_price" border>
                 <el-table-column prop="channel" label="Channel" align="center" />
-                <el-table-column prop="price" label="Unit Price(CNY per TP)" align="center" />
+                <el-table-column prop="price" label="Unit Price(CNY per TP)" align="center" :formatter="tableFormatNumber" />
               </el-table>
             </div>
           </el-col>
@@ -341,6 +341,12 @@ import { reactive, onMounted, defineProps } from 'vue'
 import { previewModelOutputMetadata, previewModelOutputResult } from '../../api/api'
 import { useRoute, useRouter } from 'vue-router'
 import { basic } from '../../config'
+import { formatNumber } from '../../utils/format'
+
+// 表格格式化函数包装器
+const tableFormatNumber = (row, column, cellValue) => {
+  return formatNumber(cellValue)
+}
 
 const props = defineProps({
   project_status: {
