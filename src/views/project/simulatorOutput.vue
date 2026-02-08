@@ -399,7 +399,7 @@ const previewSimulationsFn = async () => {
     for (let key in res.Current_output.current_unit_price) {
       let item = {
         channel: key,
-        price: res.Current_output.current_unit_price[key].toFixed(2),
+        price: res.Current_output.current_unit_price[key],
       }
       Current_output.current_unit_price.push(item)
     }

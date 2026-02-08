@@ -453,7 +453,7 @@ const previewModelOutputResultFn = async () => {
     for (let key in res.current_unit_price) {
       let item = {
         channel: key,
-        price: res.current_unit_price[key].toFixed(2),
+        price: res.current_unit_price[key],
       }
       outputData.current_unit_price.push(item)
     }
