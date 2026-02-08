@@ -197,7 +197,7 @@
             :disabled="!createProjectForm.brand_name || !createProjectForm.data_version_id"
             @change="handleDateRangeChange"
             value-format="YYYYMM"
-            :picker-options="datePickerOptions"
+            :disabled-date="disabledDate"
           />
         </el-form-item>
       </el-form>
@@ -609,29 +609,32 @@ const createProjectFormRef = ref(null)
 // 元数据缓存
 const metaDataCache = ref({})
 
-// 日期选择器可选范围
-const datePickerOptions = reactive({
-  disabledDate: (time) => {
-    // 如果未选择数据版本，禁用所有日期
-    if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
-      return true
-    }
-    
-    // 获取当前选择的品牌和数据版本对应的可用日期
-    const availableMonths = getAvailableMonths()
-    if (!availableMonths.length) {
-      return true
-    }
-    
-    // 格式化日期为 YYYYMM 格式
-    const year = time.getFullYear()
-    const month = String(time.getMonth() + 1).padStart(2, '0')
-    const dateStr = `${year}${month}`
-    
-    // 检查日期是否在可用列表中
-    return !availableMonths.includes(dateStr)
+// 日期选择器禁用日期判断函数
+const disabledDate = (time) => {
+  // 如果未选择数据版本，禁用所有日期
+  if (!createProjectForm.brand_name || !createProjectForm.data_version_id) {
+    return true
   }
-})
+  
+  // 获取当前选择的品牌和数据版本对应的可用日期
+  const availableMonths = getAvailableMonths()
+  console.log('Available months:', availableMonths) // 调试信息
+  
+  if (!availableMonths.length) {
+    return true
+  }
+  
+  // 格式化日期为 YYYYMM 格式
+  const year = time.getFullYear()
+  const month = String(time.getMonth() + 1).padStart(2, '0')
+  const dateStr = `${year}${month}`
+  
+  // 检查日期是否在可用列表中
+  const isDisabled = !availableMonths.includes(dateStr)
+  console.log(`Date ${dateStr} is ${isDisabled ? 'disabled' : 'enabled'}`) // 调试信息
+  
+  return isDisabled
+}
 
 // 获取可用的月份列表
 const getAvailableMonths = () => {
