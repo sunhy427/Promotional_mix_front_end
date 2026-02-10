@@ -110,7 +110,12 @@
             <div class="chart-content">
               <el-table :data="outputData.current_unit_price" border>
                 <el-table-column prop="channel" label="Channel" align="center" />
-                <el-table-column prop="price" label="Unit Price(CNY per TP)" align="center" :formatter="tableFormatNumber" />
+                <el-table-column
+                  prop="price"
+                  label="Unit Price(CNY per TP)"
+                  align="center"
+                  :formatter="tableFormatNumber"
+                />
               </el-table>
             </div>
           </el-col>
@@ -193,7 +198,7 @@
             </div>
           </el-col>
           <el-col :span="14">
-            <span class="title">Total Promotion Contribution</span>
+            <span class="title">Total Promotion Sales Contribution</span>
             <div class="chart-content">
               <bar
                 :options="totalPromotionOptions"

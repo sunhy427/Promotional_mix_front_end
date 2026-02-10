@@ -762,7 +762,7 @@ const getCurrentSimulatingTaskFn = async (simulation, index) => {
     } else if (data.simulationList[index].progressForm.task_status === 'SUCCESS') {
       ElMessage({
         type: 'success',
-        message: 'SUCCESS',
+        message: 'Simulation Success',
         showClose: true,
         duration: 6000,
       })

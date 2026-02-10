@@ -362,7 +362,7 @@ const getCurrentModelTaskFn = async () => {
     } else if (progressForm.task_status === 'SUCCESS') {
       ElMessage({
         type: 'success',
-        message: 'SUCCESS',
+        message: 'Channel Analysis Success',
         showClose: true,
       duration: 6000,
       })
