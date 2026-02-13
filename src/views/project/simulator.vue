@@ -180,6 +180,7 @@
                     size="small"
                     :options="[true, false]"
                     :disabled="data.currentProject.hide"
+                    @change="(val) => changeConstraint(val, unitIndex, index)"
                   >
                     <template #default="scope">
                       <div class="flex flex-col items-center gap-2 p-2">
@@ -339,6 +340,7 @@ const emits = defineEmits(['setProject'])
 const router = useRouter()
 
 const data = reactive({
+  show: false,
   loading: false,
   dialogFormVisible: false,
   group_name: router.currentRoute._value.params.group,
@@ -389,6 +391,13 @@ const addSimulationFn = () => {
   clearObject(simulationForm)
   data.dialogFormVisible = true
   previewRawDataFn()
+}
+
+const changeConstraint = (value, unitIndex, itemIndex) => {
+  if (!value) {
+    data.simulationList[itemIndex].constraints_on_channels[unitIndex].min_spend = null
+    data.simulationList[itemIndex].constraints_on_channels[unitIndex].max_spend = null
+  }
 }
 
 const previewRawDataFn = async () => {

@@ -14,9 +14,9 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 // import VueWatermark from 'vue-watermark-directive'
 
 // 引入Mock
-import('./mock').then(() => {
-  console.log('Mock data initialized')
-})
+//import('./mock').then(() => {
+//console.log('Mock data initialized')
+// })
 
 const app = createApp(App)
 

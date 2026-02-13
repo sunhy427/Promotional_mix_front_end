@@ -8,8 +8,16 @@
         :data="simulationOutput.optimal_channel_performance"
       >
         <el-table-column prop="channel" label="Channel" />
-        <el-table-column prop="roi_simulated" label="ROI(simulated)" :formatter="tableFormatNumber" />
-        <el-table-column prop="mroi_simulated" label="MROI(simulated)" :formatter="tableFormatNumber" />
+        <el-table-column
+          prop="roi_simulated"
+          label="ROI(simulated)"
+          :formatter="tableFormatNumber"
+        />
+        <el-table-column
+          prop="mroi_simulated"
+          label="MROI(simulated)"
+          :formatter="tableFormatNumber"
+        />
         <el-table-column
           prop="sales_contribution_pct_simulated"
           label="Sales % Contribution(simulated)"
@@ -169,7 +177,7 @@
           </el-row>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Current Performance" name="Current" :lazy="true">
+      <el-tab-pane :label="'Current Performance ( ' + data.model_time_period + ' )'" name="Current" :lazy="true">
         <div class="content-wrap">
           <el-row>
             <el-col :span="14">
@@ -265,7 +273,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { nextTick, onMounted, reactive, watch } from 'vue'
-import { previewSimulations } from '../../api/api'
+import { previewSimulations, previewModelOutputMetadata } from '../../api/api'
 import bar from '../../components/bar.vue'
 import { formatNumber } from '../../utils/format'
 
@@ -294,6 +302,7 @@ const data = reactive({
   tabValue: 'Simulated',
   current_ROItrigger: 'ROI',
   current_ROIChannelValue: '',
+  model_time_period: ''
 })
 
 const simulationOutput = reactive({
@@ -320,6 +329,17 @@ const Current_output = reactive({
   roi_options: ['cost', 'cost_direct'],
   roi_select: '',
 })
+
+const previewModelOutputMetadataFn = async () => {
+  let param = {
+    group_name: data.group_name,
+    project_name: data.project_name,
+  }
+  let res = await previewModelOutputMetadata(param)
+  if (res) {
+    data.model_time_period = res.model_time_period
+  }
+}
 
 const previewSimulationsFn = async () => {
   let param = {
@@ -1072,6 +1092,7 @@ const current_MROIChartOptions = reactive({
 
 onMounted(() => {
   previewSimulationsFn()
+  previewModelOutputMetadataFn()
 })
 </script>
 <style lang="less" scoped>

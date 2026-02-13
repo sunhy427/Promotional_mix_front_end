@@ -813,9 +813,9 @@ const submitCreateProject = async () => {
   let param = {
     project_name: createProjectForm.project_name,
     brand_name: createProjectForm.brand_name,
-    yyyymm_start: yyyymm_start,
-    yyyymm_end: yyyymm_end,
-    data_version_id: createProjectForm.data_version_id,
+    yyyymm_start: Number(yyyymm_start),
+    yyyymm_end: Number(yyyymm_end),
+    data_version_id: Number(createProjectForm.data_version_id),
   }
   createProjectForm.loading = true
   let res = await createProject(param, createProjectForm.group_name)

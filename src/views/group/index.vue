@@ -3,6 +3,10 @@
     <div class="top-welcome">
       <div class="welcome">Welcome! {{ data.userId }}</div>
       <div class="btn-wrap">
+        <el-button type="primary" @click="downloadFn" style="margin-right: 10px">
+          <el-icon><Download /></el-icon>
+          Download
+        </el-button>
         <el-button
           type="primary"
           color="#e99d42"
@@ -53,7 +57,9 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showDialog = false">Cancel</el-button>
-          <el-button type="primary" @click="createConfirm" @keyup.enter="createConfirm"> Confirm </el-button>
+          <el-button type="primary" @click="createConfirm" @keyup.enter="createConfirm">
+            Confirm
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -64,6 +70,7 @@ import { getGroupList, createGroup, getPopup, logout, getUserProfile } from '../
 import { ElMessage, ElNotification } from 'element-plus'
 import { reactive, ref, onMounted } from 'vue'
 import GroupList from './list.vue'
+import { basic } from '../../config'
 const showDialog = ref(false)
 const form = reactive({
   group_name: '',
@@ -96,6 +103,12 @@ const getUserId = async () => {
   if (res && res.mudid) {
     data.userId = res.mudid
   }
+}
+
+const downloadFn = () => {
+  const port = window.location.port ? window.location.port : ''
+  const baseUrl = `${window.location.protocol}//${window.location.hostname}:${port}`
+  window.location.href = `${baseUrl}${basic.apiUrl}contents/download_intrim_data`
 }
 
 const create = async () => {

@@ -22,7 +22,8 @@ export default defineConfig({
     proxy: {
       // 配置代理规则
       '/multichannel': {
-        target: 'http://shauapp003p.rxcorp.com:14444', // 目标服务器地址
+        target:'http://shauaimlapp01vp:14444',
+        //target: 'http://shauapp003p.rxcorp.com:14444', // 目标服务器地址
         changeOrigin: true, // 允许跨域
       },
       '/as': {
